@@ -132,7 +132,7 @@ abstract class PayoneMethod extends BaseMethod
         if ($storeCode === null) {
             $storeCode = $this->getStoreCode();
         }
-        return $this->shopHelper->getConfigParam($param, $this->getCode(), 'payone_cp_payment', $storeCode);
+        return $this->generalConfig->getPaymentValue($this->getCode(), $param, $storeCode);
     }
 
     /**
@@ -142,7 +142,7 @@ abstract class PayoneMethod extends BaseMethod
      */
     public function getOperationMode()
     {
-        return $this->shopHelper->getOperationMode();
+        return $this->generalConfig->getEnvironment();
     }
 
     /**

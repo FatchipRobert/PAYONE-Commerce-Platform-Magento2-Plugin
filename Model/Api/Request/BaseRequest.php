@@ -62,9 +62,9 @@ abstract class BaseRequest
     protected $curl;
 
     /**
-     * @var \Payone\CommercePlatform\Helper\Shop
+     * @var \Payone\CommercePlatform\Gateway\Config\GeneralConfig
      */
-    protected $shopHelper;
+    protected $generalConfig;
 
     /**
      * @var \Payone\CommercePlatform\Helper\Customer
@@ -118,7 +118,7 @@ abstract class BaseRequest
 
     /**
      * @param \Payone\CommercePlatform\Model\Api\Curl $curl
-     * @param \Payone\CommercePlatform\Helper\Shop $shopHelper
+     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
      * @param \Payone\CommercePlatform\Helper\Customer $customerHelper
      * @param \Payone\CommercePlatform\Helper\Api $apiHelper
      * @param \Payone\CommercePlatform\Model\ResourceModel\ApiLog $apiLog
@@ -126,14 +126,14 @@ abstract class BaseRequest
      */
     public function __construct(
         \Payone\CommercePlatform\Model\Api\Curl $curl,
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
+        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig,
         \Payone\CommercePlatform\Helper\Customer $customerHelper,
         \Payone\CommercePlatform\Helper\Api $apiHelper,
         \Payone\CommercePlatform\Model\ResourceModel\ApiLog $apiLog,
         \Payone\CommercePlatform\Model\Api\ResponseFactory $responseFactory
     ) {
         $this->curl = $curl;
-        $this->shopHelper = $shopHelper;
+        $this->generalConfig = $generalConfig;
         $this->customerHelper = $customerHelper;
         $this->apiHelper = $apiHelper;
         $this->apiLog = $apiLog;
@@ -223,7 +223,7 @@ abstract class BaseRequest
     protected function getEndpointParameters()
     {
         $baseParams = [
-            'merchantId' => $this->shopHelper->getMerchantId($this->storeId),
+            'merchantId' => $this->generalConfig->getMerchantId($this->storeId),
         ];
 
         return array_merge($baseParams, $this->endpointParameters);
@@ -299,9 +299,9 @@ abstract class BaseRequest
     protected function getAuthorizationHeader()
     {
         return
-            'GCS v1HMAC:'.$this->shopHelper->getConfigParam('api_key', 'global', 'payone_cp_general', $this->storeId).':'.
+            'GCS v1HMAC:'.$this->generalConfig->getApiKey($this->storeId).':'.
             base64_encode(
-                hash_hmac('sha256', $this->getSignData(), $this->shopHelper->getConfigParam('api_secret', 'global', 'payone_cp_general', $this->storeId), true)
+                hash_hmac('sha256', $this->getSignData(), $this->generalConfig->getApiSecret($this->storeId), true)
             );
     }
 
@@ -331,7 +331,7 @@ abstract class BaseRequest
      */
     protected function getMerchantReference(InfoInterface $payment, $typePrefix)
     {
-        return $typePrefix.$this->shopHelper->getConfigParam('ref_prefix', 'global', 'payone_cp_general', $this->storeId).$payment->getOrder()->getIncrementId();
+        return $typePrefix.$this->generalConfig->getRefPrefix($this->storeId).$payment->getOrder()->getIncrementId();
     }
 
     /**
@@ -341,7 +341,7 @@ abstract class BaseRequest
      */
     protected function isProductionCall()
     {
-        if ($this->shopHelper->getOperationMode($this->storeId) === 'live') {
+        if ($this->generalConfig->isLiveMode($this->storeId) === true) {
             return true;
         }
         return false;

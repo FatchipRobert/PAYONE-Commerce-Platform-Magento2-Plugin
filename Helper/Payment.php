@@ -21,7 +21,7 @@ namespace Payone\CommercePlatform\Helper;
 
 use Payone\CommercePlatform\Model\Payone;
 
-class Payment extends Base
+class Payment extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
      * List of all currently available Payone payment methods

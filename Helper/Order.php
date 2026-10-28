@@ -22,7 +22,7 @@ namespace Payone\CommercePlatform\Helper;
 use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 use Magento\Sales\Model\Order as CoreOrder;
 
-class Order extends Base
+class Order extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
      * Suffix of the Magento capture transaction id for automatic captures (SALE event at PAYONE, no separate capture id)
@@ -47,23 +47,17 @@ class Order extends Base
      * Constructor
      *
      * @param \Magento\Framework\App\Helper\Context                 $context
-     * @param \Magento\Store\Model\StoreManagerInterface            $storeManager
-     * @param \Payone\CommercePlatform\Helper\Shop                  $shopHelper
-     * @param \Magento\Framework\App\State                          $state
      * @param \Magento\Sales\Model\Service\InvoiceService           $invoiceService
      * @param \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender
      * @param OrderCollectionFactory                                $orderCollectionFactory
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
-        \Magento\Framework\App\State $state,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
         OrderCollectionFactory $orderCollectionFactory
     ) {
-        parent::__construct($context, $storeManager, $shopHelper, $state);
+        parent::__construct($context);
         $this->orderCollectionFactory = $orderCollectionFactory;
         $this->invoiceService = $invoiceService;
         $this->invoiceSender = $invoiceSender;

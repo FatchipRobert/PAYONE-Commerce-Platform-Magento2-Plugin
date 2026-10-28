@@ -91,7 +91,7 @@ class GooglePay extends RedirectPaymentMethod
      */
     protected function getMerchantId()
     {
-        return $this->shopHelper->getMerchantId();
+        return $this->generalConfig->getMerchantId();
     }
 
     /**

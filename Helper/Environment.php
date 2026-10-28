@@ -19,7 +19,7 @@
 
 namespace Payone\CommercePlatform\Helper;
 
-class Environment extends Base
+class Environment extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
      * @var \Magento\Framework\App\RequestInterface
@@ -27,23 +27,25 @@ class Environment extends Base
     protected $request;
 
     /**
+     * @var \Payone\CommercePlatform\Gateway\Config\GeneralConfig
+     */
+    protected $generalConfig;
+
+    /**
      * Constructor
      *
-     * @param \Magento\Framework\App\Helper\Context      $context
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Payone\CommercePlatform\Helper\Shop       $shopHelper
-     * @param \Magento\Framework\App\State               $state
-     * @param \Magento\Framework\App\RequestInterface    $request
+     * @param \Magento\Framework\App\Helper\Context                 $context
+     * @param \Magento\Framework\App\RequestInterface               $request
+     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
-        \Magento\Framework\App\State $state,
-        \Magento\Framework\App\RequestInterface $request
+        \Magento\Framework\App\RequestInterface $request,
+        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
     ) {
-        parent::__construct($context, $storeManager, $shopHelper, $state);
+        parent::__construct($context);
         $this->request = $request;
+        $this->generalConfig = $generalConfig;
     }
 
     /**
@@ -53,22 +55,10 @@ class Environment extends Base
      */
     public function getRemoteIp()
     {
-        $proxyMode = (bool)$this->getConfigParam('proxy_mode', 'global', 'payone_cp_general');
+        $proxyMode = $this->generalConfig->isProxyMode();
         $clientIp = $this->request->getClientIp($proxyMode); // may return a comma separated ip list like "<client>, <proxy1>, <proxy2>"
         $splitIp = explode(",", $clientIp); // split by comma
         return trim(current($splitIp)); // return first array element
-    }
-
-    /**
-     * Get the configured IP whitelist for incoming webhooks
-     *
-     * @return array
-     */
-    public function getValidIps()
-    {
-        $validIps = $this->getConfigParam('valid_ips', 'global', 'payone_cp_general');
-        $validIps = preg_split('/\R/', $validIps ?? '');
-        return array_values(array_filter(array_map('trim', $validIps)));
     }
 
     /**
@@ -81,7 +71,7 @@ class Environment extends Base
      */
     public function isRemoteIpValid()
     {
-        $whitelist = $this->getValidIps();
+        $whitelist = $this->generalConfig->getValidIps();
         if (empty($whitelist)) {
             return true;
         }

@@ -19,7 +19,7 @@
 
 namespace Payone\CommercePlatform\Helper;
 
-class Api extends Base
+class Api extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
      * Formats amount for API

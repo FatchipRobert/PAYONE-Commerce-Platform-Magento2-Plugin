@@ -19,7 +19,7 @@
 
 namespace Payone\CommercePlatform\Helper;
 
-class Customer extends Base
+class Customer extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
      * @var \Magento\Directory\Model\RegionFactory
@@ -30,19 +30,13 @@ class Customer extends Base
      * Constructor
      *
      * @param \Magento\Framework\App\Helper\Context      $context
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Payone\CommercePlatform\Helper\Shop       $shopHelper
-     * @param \Magento\Framework\App\State               $state
      * @param \Magento\Directory\Model\RegionFactory     $regionFactory
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
-        \Magento\Framework\App\State $state,
         \Magento\Directory\Model\RegionFactory $regionFactory
     ) {
-        parent::__construct($context, $storeManager, $shopHelper, $state);
+        parent::__construct($context);
         $this->regionFactory = $regionFactory;
     }
 

@@ -87,28 +87,28 @@ class Creditcard extends RedirectPaymentMethod
     protected function getFrontendUiConfig()
     {
         return [
-            "uiConfigCustomizationEnabled" => $this->shopHelper->getConfigParam("customization_enabled", "creditcard"),
-            "uiConfigFormBgColor" => $this->shopHelper->getConfigParam("form_bg_color", "creditcard"),
-            "uiConfigFieldBgColor" => $this->shopHelper->getConfigParam("field_bg_color", "creditcard"),
-            "uiConfigFieldBorder" => $this->shopHelper->getConfigParam("field_border", "creditcard"),
-            "uiConfigFieldOutline" => $this->shopHelper->getConfigParam("field_outline", "creditcard"),
-            "uiConfigFieldLabelColor" => $this->shopHelper->getConfigParam("field_label_color", "creditcard"),
-            "uiConfigFieldPlaceholderColor" => $this->shopHelper->getConfigParam("field_placeholder_color", "creditcard"),
-            "uiConfigFieldTextColor" => $this->shopHelper->getConfigParam("field_text_color", "creditcard"),
-            "uiConfigFieldErrorCodeColor" => $this->shopHelper->getConfigParam("field_error_code_color", "creditcard"),
-            "uiConfigButtonStyle" => $this->shopHelper->getConfigParam("button_style", "creditcard"),
-            "uiConfigButtonTextCase" => $this->shopHelper->getConfigParam("button_text_case", "creditcard"),
-            "uiConfigButtonAndBadgeColor" => $this->shopHelper->getConfigParam("button_badge_color", "creditcard"),
-            "uiConfigButtonFilledHoverColor" => $this->shopHelper->getConfigParam("button_hover_color", "creditcard"),
-            "uiConfigButtonOutlinedHoverColor" => $this->shopHelper->getConfigParam("button_outlined_hover_color", "creditcard"),
-            "uiConfigButtonDisabledColor" => $this->shopHelper->getConfigParam("button_disabled_color", "creditcard"),
-            "uiConfigCardItemActiveColor" => $this->shopHelper->getConfigParam("card_item_active_color", "creditcard"),
-            "uiConfigButtonAndBadgeTextColor" => $this->shopHelper->getConfigParam("button_badge_text_color", "creditcard"),
-            "uiConfigLinkTextColor" => $this->shopHelper->getConfigParam("link_text_color", "creditcard"),
-            "uiConfigAccentColor" => $this->shopHelper->getConfigParam("accent_color", "creditcard"),
-            "uiConfigFontFamily" => $this->shopHelper->getConfigParam("font_family", "creditcard"),
-            "uiConfigButtonAndInputRadius" => $this->shopHelper->getConfigParam("button_input_radius", "creditcard"),
-            "uiConfigCardItemRadius" => $this->shopHelper->getConfigParam("card_item_radius", "creditcard"),
+            "uiConfigCustomizationEnabled" => $this->generalConfig->getGeneralValue("customization_enabled", "creditcard"),
+            "uiConfigFormBgColor" => $this->generalConfig->getGeneralValue("form_bg_color", "creditcard"),
+            "uiConfigFieldBgColor" => $this->generalConfig->getGeneralValue("field_bg_color", "creditcard"),
+            "uiConfigFieldBorder" => $this->generalConfig->getGeneralValue("field_border", "creditcard"),
+            "uiConfigFieldOutline" => $this->generalConfig->getGeneralValue("field_outline", "creditcard"),
+            "uiConfigFieldLabelColor" => $this->generalConfig->getGeneralValue("field_label_color", "creditcard"),
+            "uiConfigFieldPlaceholderColor" => $this->generalConfig->getGeneralValue("field_placeholder_color", "creditcard"),
+            "uiConfigFieldTextColor" => $this->generalConfig->getGeneralValue("field_text_color", "creditcard"),
+            "uiConfigFieldErrorCodeColor" => $this->generalConfig->getGeneralValue("field_error_code_color", "creditcard"),
+            "uiConfigButtonStyle" => $this->generalConfig->getGeneralValue("button_style", "creditcard"),
+            "uiConfigButtonTextCase" => $this->generalConfig->getGeneralValue("button_text_case", "creditcard"),
+            "uiConfigButtonAndBadgeColor" => $this->generalConfig->getGeneralValue("button_badge_color", "creditcard"),
+            "uiConfigButtonFilledHoverColor" => $this->generalConfig->getGeneralValue("button_hover_color", "creditcard"),
+            "uiConfigButtonOutlinedHoverColor" => $this->generalConfig->getGeneralValue("button_outlined_hover_color", "creditcard"),
+            "uiConfigButtonDisabledColor" => $this->generalConfig->getGeneralValue("button_disabled_color", "creditcard"),
+            "uiConfigCardItemActiveColor" => $this->generalConfig->getGeneralValue("card_item_active_color", "creditcard"),
+            "uiConfigButtonAndBadgeTextColor" => $this->generalConfig->getGeneralValue("button_badge_text_color", "creditcard"),
+            "uiConfigLinkTextColor" => $this->generalConfig->getGeneralValue("link_text_color", "creditcard"),
+            "uiConfigAccentColor" => $this->generalConfig->getGeneralValue("accent_color", "creditcard"),
+            "uiConfigFontFamily" => $this->generalConfig->getGeneralValue("font_family", "creditcard"),
+            "uiConfigButtonAndInputRadius" => $this->generalConfig->getGeneralValue("button_input_radius", "creditcard"),
+            "uiConfigCardItemRadius" => $this->generalConfig->getGeneralValue("card_item_radius", "creditcard"),
         ];
     }
 
@@ -125,7 +125,7 @@ class Creditcard extends RedirectPaymentMethod
             'ctpRegisterEnabled' => $this->getPaymentConfigParam('clicktopay_register_enabled'),
             'ctpShopName' => $this->getPaymentConfigParam('clicktopay_shopname'),
         ];
-        if ($this->shopHelper->getConfigParam("customization_enabled", "creditcard")) {
+        if ($this->generalConfig->getGeneralValue("customization_enabled", "creditcard")) {
             $frontendConfig = array_merge($frontendConfig, $this->getFrontendUiConfig());
         }
 

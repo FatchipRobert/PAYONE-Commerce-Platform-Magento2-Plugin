@@ -100,7 +100,7 @@ class CommerceCase extends BaseRequest
                     'surname' => $billingAddress->getLastname(),
                 ]
             ],
-            'locale' => $this->shopHelper->getLocale(),
+            'locale' => $this->generalConfig->getLanguage($this->storeId),
             'businessRelation' => $this->isB2BOrder($order) === true ? 'B2B' : 'B2C',
         ];
 

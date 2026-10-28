@@ -70,7 +70,7 @@ class DirectDebit extends DirectPaymentMethod
      * @param string                                                          $code
      * @param string                                                          $formBlockType
      * @param string                                                          $infoBlockType
-     * @param \Payone\CommercePlatform\Helper\Shop                            $shopHelper
+     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig           $generalConfig
      * @param \Payone\CommercePlatform\Model\Api\Request\OneStepFactory       $oneStepRequestFactory
      * @param \Payone\CommercePlatform\Model\Api\Request\CaptureFactory       $captureRequestFactory
      * @param \Payone\CommercePlatform\Model\Api\Request\RefundFactory        $refundRequestFactory
@@ -91,7 +91,7 @@ class DirectDebit extends DirectPaymentMethod
         $code,
         $formBlockType,
         $infoBlockType,
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
+        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig,
         \Payone\CommercePlatform\Model\Api\Request\OneStepFactory $oneStepRequestFactory,
         \Payone\CommercePlatform\Model\Api\Request\CaptureFactory $captureRequestFactory,
         \Payone\CommercePlatform\Model\Api\Request\RefundFactory $refundRequestFactory,
@@ -104,7 +104,7 @@ class DirectDebit extends DirectPaymentMethod
         ?\Magento\Payment\Gateway\Command\CommandManagerInterface $commandExecutor = null,
         ?\Psr\Log\LoggerInterface $logger = null
     ) {
-        parent::__construct($eventManager, $valueHandlerPool, $paymentDataObjectFactory, $code, $formBlockType, $infoBlockType, $shopHelper, $oneStepRequestFactory, $captureRequestFactory, $refundRequestFactory, $cancelPaymentRequestFactory, $url, $checkoutSession, $commandPool, $validatorPool, $commandExecutor, $logger);
+        parent::__construct($eventManager, $valueHandlerPool, $paymentDataObjectFactory, $code, $formBlockType, $infoBlockType, $generalConfig, $oneStepRequestFactory, $captureRequestFactory, $refundRequestFactory, $cancelPaymentRequestFactory, $url, $checkoutSession, $commandPool, $validatorPool, $commandExecutor, $logger);
 
         $this->countryHelper = $countryHelper;
     }

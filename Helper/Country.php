@@ -22,7 +22,7 @@ namespace Payone\CommercePlatform\Helper;
 /**
  * Helper class for everything that has to do with countries
  */
-class Country extends Base
+class Country extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
      * List of all countries where the state parameter has to be submitted
@@ -50,23 +50,25 @@ class Country extends Base
     protected $country;
 
     /**
+     * @var \Payone\CommercePlatform\Gateway\Config\GeneralConfig
+     */
+    protected $generalConfig;
+
+    /**
      * Constructor
      *
-     * @param \Magento\Framework\App\Helper\Context      $context
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Payone\CommercePlatform\Helper\Shop       $shopHelper
-     * @param \Magento\Framework\App\State               $state
-     * @param \Magento\Directory\Model\Country           $country
+     * @param \Magento\Framework\App\Helper\Context                 $context
+     * @param \Magento\Directory\Model\Country                      $country
+     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
-        \Magento\Framework\App\State $state,
-        \Magento\Directory\Model\Country $country
+        \Magento\Directory\Model\Country $country,
+        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
     ) {
-        parent::__construct($context, $storeManager, $shopHelper, $state);
+        parent::__construct($context);
         $this->country = $country;
+        $this->generalConfig = $generalConfig;
     }
 
     /**
@@ -94,7 +96,7 @@ class Country extends Base
     {
         $result = [];
 
-        $countryCodes = $this->getConfigParam('sepa_country', $paymentMethod, 'payone_cp_payment');
+        $countryCodes = $this->generalConfig->getPaymentValue($paymentMethod, 'sepa_country');
         if ($countryCodes) {
             $countries = explode(',', $countryCodes);
             foreach ($countries as $countryCode) {

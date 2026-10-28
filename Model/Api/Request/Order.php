@@ -40,7 +40,7 @@ class Order extends BaseRequest
 
     /**
      * @param \Payone\CommercePlatform\Model\Api\Curl $curl
-     * @param \Payone\CommercePlatform\Helper\Shop $shopHelper
+     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
      * @param \Payone\CommercePlatform\Helper\Customer $customerHelper
      * @param \Payone\CommercePlatform\Helper\Api $apiHelper
      * @param \Payone\CommercePlatform\Model\ResourceModel\ApiLog $apiLog
@@ -49,14 +49,14 @@ class Order extends BaseRequest
      */
     public function __construct(
         \Payone\CommercePlatform\Model\Api\Curl $curl,
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
+        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig,
         \Payone\CommercePlatform\Helper\Customer $customerHelper,
         \Payone\CommercePlatform\Helper\Api $apiHelper,
         \Payone\CommercePlatform\Model\ResourceModel\ApiLog $apiLog,
         \Payone\CommercePlatform\Model\Api\ResponseFactory $responseFactory,
         \Payone\CommercePlatform\Helper\Environment $environmentHelper,
     ) {
-        parent::__construct($curl, $shopHelper, $customerHelper, $apiHelper, $apiLog, $responseFactory);
+        parent::__construct($curl, $generalConfig, $customerHelper, $apiHelper, $apiLog, $responseFactory);
         $this->environmentHelper = $environmentHelper;
     }
 
@@ -98,7 +98,7 @@ class Order extends BaseRequest
         ];
         $parameters['paymentMethodSpecificInput'][$methodInstance->getSpecificInputIdentifier()]['paymentProductId'] = $methodInstance->getPaymentProductId();
 
-        if ((bool)$this->shopHelper->getConfigParam('transmit_ip', 'global', 'payone_cp_general', $this->storeId) === true) {
+        if ($this->generalConfig->isTransmitIp($this->storeId) === true) {
             $parameters['paymentMethodSpecificInput']['customerDevice']['ipAddress'] = $this->environmentHelper->getRemoteIp();
         }
         #$parameters['paymentMethodSpecificInput']['customerDevice']['deviceToken'] = "TODO"; // Only needed for Payone BNPL payment methods?

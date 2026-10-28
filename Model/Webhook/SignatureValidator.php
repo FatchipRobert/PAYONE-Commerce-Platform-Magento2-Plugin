@@ -29,9 +29,9 @@ class SignatureValidator
     public const HEADER_SIGNATURE = 'X-GCS-Signature';
 
     /**
-     * @var \Payone\CommercePlatform\Helper\Shop
+     * @var \Payone\CommercePlatform\Gateway\Config\GeneralConfig
      */
-    protected $shopHelper;
+    protected $generalConfig;
 
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
@@ -41,14 +41,14 @@ class SignatureValidator
     /**
      * Constructor
      *
-     * @param \Payone\CommercePlatform\Helper\Shop       $shopHelper
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
+     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
+     * @param \Magento\Store\Model\StoreManagerInterface            $storeManager
      */
     public function __construct(
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
+        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig,
         \Magento\Store\Model\StoreManagerInterface $storeManager
     ) {
-        $this->shopHelper = $shopHelper;
+        $this->generalConfig = $generalConfig;
         $this->storeManager = $storeManager;
     }
 
@@ -63,9 +63,9 @@ class SignatureValidator
     protected function getSecretByKeyId($keyId)
     {
         foreach ($this->storeManager->getStores(true) as $store) {
-            $apiKey = (string)$this->shopHelper->getConfigParam('api_key', 'global', 'payone_cp_general', $store->getCode());
+            $apiKey = $this->generalConfig->getApiKey($store->getCode());
             if ($apiKey !== '' && hash_equals($apiKey, $keyId)) {
-                $secret = (string)$this->shopHelper->getConfigParam('api_secret', 'global', 'payone_cp_general', $store->getCode());
+                $secret = $this->generalConfig->getApiSecret($store->getCode());
                 return $secret !== '' ? $secret : null;
             }
         }

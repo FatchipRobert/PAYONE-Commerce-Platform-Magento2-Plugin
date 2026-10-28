@@ -51,23 +51,31 @@ class ConfigProvider implements ConfigProviderInterface
     protected $checkoutSession;
 
     /**
+     * @var \Payone\CommercePlatform\Gateway\Config\GeneralConfig
+     */
+    protected $generalConfig;
+
+    /**
      * Constructor
      *
-     * @param \Magento\Payment\Helper\Data            $dataHelper
-     * @param \Payone\CommercePlatform\Helper\Payment $paymentHelper
-     * @param \Magento\Framework\Escaper              $escaper
-     * @param \Magento\Checkout\Model\Session         $checkoutSession
+     * @param \Magento\Payment\Helper\Data                          $dataHelper
+     * @param \Payone\CommercePlatform\Helper\Payment               $paymentHelper
+     * @param \Magento\Framework\Escaper                            $escaper
+     * @param \Magento\Checkout\Model\Session                       $checkoutSession
+     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
      */
     public function __construct(
         \Magento\Payment\Helper\Data $dataHelper,
         \Payone\CommercePlatform\Helper\Payment $paymentHelper,
         \Magento\Framework\Escaper $escaper,
-        \Magento\Checkout\Model\Session $checkoutSession
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
     ) {
         $this->dataHelper = $dataHelper;
         $this->paymentHelper = $paymentHelper;
         $this->escaper = $escaper;
         $this->checkoutSession = $checkoutSession;
+        $this->generalConfig = $generalConfig;
     }
 
     /**
@@ -78,8 +86,8 @@ class ConfigProvider implements ConfigProviderInterface
     protected function getPayoneCustomConfig()
     {
         $config = [
-            'mode' => $this->paymentHelper->getConfigParam('environment'),
-            'fullLocale' => $this->paymentHelper->getConfigParam('code', 'locale', 'general'),
+            'mode' => $this->generalConfig->getEnvironment(),
+            'fullLocale' => $this->generalConfig->getLocale(),
             'checkoutErrorMessage' => $this->checkoutSession->getData('payone_cp_checkout_error_message', true), // read once and clear
         ];
         return $config;

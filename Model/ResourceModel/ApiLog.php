@@ -46,9 +46,9 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     ];
 
     /**
-     * @var \Payone\CommercePlatform\Helper\Shop
+     * @var \Payone\CommercePlatform\Gateway\Config\GeneralConfig
      */
-    protected $shopHelper;
+    protected $generalConfig;
 
     /**
      * @var \Payone\CommercePlatform\Helper\Api
@@ -76,7 +76,7 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      * Class constructor
      *
      * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
-     * @param \Payone\CommercePlatform\Helper\Shop $shopHelper
+     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
      * @param \Payone\CommercePlatform\Helper\Api $apiHelper
      * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig
      * @param \Magento\Framework\App\ResourceConnection\ConnectionFactory $connectionFactory
@@ -84,14 +84,14 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      */
     public function __construct(
         \Magento\Framework\Model\ResourceModel\Db\Context $context,
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
+        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig,
         \Payone\CommercePlatform\Helper\Api $apiHelper,
         \Magento\Framework\App\DeploymentConfig $deploymentConfig,
         \Magento\Framework\App\ResourceConnection\ConnectionFactory $connectionFactory,
         $connectionName = null
     ) {
         parent::__construct($context, $connectionName);
-        $this->shopHelper = $shopHelper;
+        $this->generalConfig = $generalConfig;
         $this->apiHelper = $apiHelper;
         $this->deploymentConfig = $deploymentConfig;
         $this->connectionFactory = $connectionFactory;
@@ -216,7 +216,7 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
                 'order_increment_id' => $orderIncrementId,
                 'store_id' => $request->getStoreId(),
                 'payment_method' => $paymentMethod,
-                'merchant_id' => $this->shopHelper->getMerchantId($request->getStoreId()),
+                'merchant_id' => $this->generalConfig->getMerchantId($request->getStoreId()),
                 'request' => (new \ReflectionClass($request::class))->getShortName(),
                 'response' => $responseStatus,
                 'request_details' => $this->maskDetails($requestRaw),

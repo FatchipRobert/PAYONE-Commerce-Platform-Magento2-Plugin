@@ -158,6 +158,23 @@ class LineItemRequest extends BaseRequest
     }
 
     /**
+     * Checks if the object is an instance of at least one of the given classes
+     *
+     * @param mixed $entity
+     * @param string[] $classes
+     * @return bool
+     */
+    protected function isInstanceOfAny($entity, array $classes)
+    {
+        foreach ($classes as $class) {
+            if ($entity instanceof $class) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns all cart line items of the given quote, order, invoice or creditmemo
      *
      * @param mixed $entity
@@ -167,14 +184,14 @@ class LineItemRequest extends BaseRequest
     {
         $lineItems = [];
 
-        if (!$this->shopHelper->instanceOfAny($entity, [Quote::class, Order::class, Invoice::class, Creditmemo::class])) {
+        if (!$this->isInstanceOfAny($entity, [Quote::class, Order::class, Invoice::class, Creditmemo::class])) {
             return $lineItems;
         }
 
         foreach ($entity->getAllItems() as $item) {
             if (($entity instanceof Order && $item->isDummy() === false) ||
                 ($entity instanceof Quote && $item->getParentItemId() === null) ||
-                ($this->shopHelper->instanceOfAny($entity, [Invoice::class, Creditmemo::class]) && $item->getOrderItem()->isDummy() === false)
+                ($this->isInstanceOfAny($entity, [Invoice::class, Creditmemo::class]) && $item->getOrderItem()->isDummy() === false)
             ) { // prevent variant-products of adding 2 items
                 $lineItems[] = $this->getProductLineItem($item);
             }

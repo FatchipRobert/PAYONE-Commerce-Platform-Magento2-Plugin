@@ -19,7 +19,7 @@
 
 namespace Payone\CommercePlatform\Helper;
 
-class Json extends Base
+class Json extends \Magento\Framework\App\Helper\AbstractHelper
 {
     /**
      * Decodes a JSON string to an associative array

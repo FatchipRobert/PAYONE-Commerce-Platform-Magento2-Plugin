@@ -26,9 +26,9 @@ use Magento\Framework\Exception\LocalizedException;
 abstract class BaseMethod extends Adapter
 {
     /**
-     * @var \Payone\CommercePlatform\Helper\Shop
+     * @var \Payone\CommercePlatform\Gateway\Config\GeneralConfig
      */
-    protected $shopHelper;
+    protected $generalConfig;
 
     /**
      * @var \Payone\CommercePlatform\Model\Api\Request\OneStepFactory
@@ -78,7 +78,7 @@ abstract class BaseMethod extends Adapter
      * @param string $code
      * @param string $formBlockType
      * @param string $infoBlockType
-     * @param \Payone\CommercePlatform\Helper\Shop $shopHelper
+     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
      * @param \Payone\CommercePlatform\Model\Api\Request\OneStepFactory $oneStepRequestFactory
      * @param \Payone\CommercePlatform\Model\Api\Request\CaptureFactory $captureRequestFactory
      * @param \Payone\CommercePlatform\Model\Api\Request\RefundFactory $refundRequestFactory
@@ -98,7 +98,7 @@ abstract class BaseMethod extends Adapter
         $code,
         $formBlockType,
         $infoBlockType,
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
+        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig,
         \Payone\CommercePlatform\Model\Api\Request\OneStepFactory $oneStepRequestFactory,
         \Payone\CommercePlatform\Model\Api\Request\CaptureFactory $captureRequestFactory,
         \Payone\CommercePlatform\Model\Api\Request\RefundFactory $refundRequestFactory,
@@ -117,7 +117,7 @@ abstract class BaseMethod extends Adapter
 
         parent::__construct($eventManager, $valueHandlerPool, $paymentDataObjectFactory, $code, $formBlockType, $infoBlockType, $commandPool, $validatorPool, $commandExecutor, $logger);
 
-        $this->shopHelper = $shopHelper;
+        $this->generalConfig = $generalConfig;
         $this->oneStepRequestFactory = $oneStepRequestFactory;
         $this->captureRequestFactory = $captureRequestFactory;
         $this->refundRequestFactory = $refundRequestFactory;

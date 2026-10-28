@@ -25,9 +25,9 @@ use Payone\CommercePlatform\Model\Api\Response;
 class WebhookMessage extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
 {
     /**
-     * @var \Payone\CommercePlatform\Helper\Shop
+     * @var \Payone\CommercePlatform\Gateway\Config\GeneralConfig
      */
-    protected $shopHelper;
+    protected $generalConfig;
 
     /**
      * @var \Payone\CommercePlatform\Helper\Json
@@ -43,20 +43,20 @@ class WebhookMessage extends \Magento\Framework\Model\ResourceModel\Db\AbstractD
      * Class constructor
      *
      * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
-     * @param \Payone\CommercePlatform\Helper\Shop $shopHelper
+     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
      * @param \Payone\CommercePlatform\Helper\Json $jsonHelper
      * @param \Payone\CommercePlatform\Helper\Order $orderHelper
      * @param string $connectionName
      */
     public function __construct(
         \Magento\Framework\Model\ResourceModel\Db\Context $context,
-        \Payone\CommercePlatform\Helper\Shop $shopHelper,
+        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig,
         \Payone\CommercePlatform\Helper\Json $jsonHelper,
         \Payone\CommercePlatform\Helper\Order $orderHelper,
         $connectionName = null
     ) {
         parent::__construct($context, $connectionName);
-        $this->shopHelper = $shopHelper;
+        $this->generalConfig = $generalConfig;
         $this->jsonHelper = $jsonHelper;
         $this->orderHelper = $orderHelper;
     }
@@ -109,7 +109,7 @@ class WebhookMessage extends \Magento\Framework\Model\ResourceModel\Db\AbstractD
                 'store_id' => $storeId,
                 'payment_id' => !empty($message['payment']['id']) ? $message['payment']['id'] : null,
                 'payment_method' => $paymentMethod,
-                'merchant_id' => $this->shopHelper->getMerchantId($storeId),
+                'merchant_id' => $this->generalConfig->getMerchantId($storeId),
                 'status' => !empty($message['payment']['status']) ? $message['payment']['status'] : null,
                 'message' => json_encode($message),
             ]
