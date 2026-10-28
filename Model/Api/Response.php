@@ -151,6 +151,12 @@ class Response
             return [$response['message']];
         }
 
+        // A failed payment inside a successful call (e.g. HTTP 201 for POST /commerce-cases) is only reported in a nested errorResponse
+        $errorResponse = $this->findData('errorResponse');
+        if (is_array($errorResponse) && !empty($errorResponse['errors'])) {
+            return $errorResponse['errors'];
+        }
+
         return null;
     }
 
