@@ -27,78 +27,18 @@ use Locale;
 class Shop extends Base
 {
     /**
-     * Product metadata object
-     *
-     * @var \Magento\Framework\App\ProductMetadata
-     */
-    protected $productMetadata;
-
-    /**
      * Constructor
      *
      * @param \Magento\Framework\App\Helper\Context      $context
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Framework\App\State               $state
-     * @param \Magento\Framework\App\ProductMetadata     $productMetadata
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\App\State $state,
-        \Magento\Framework\App\ProductMetadata $productMetadata
+        \Magento\Framework\App\State $state
     ) {
         parent::__construct($context, $storeManager, $this, $state);
-        $this->productMetadata = $productMetadata;
-    }
-
-    /**
-     * Returns the shop-version of the Magento 2 shop
-     *
-     * @return string
-     */
-    public function getMagentoVersion()
-    {
-        return $this->productMetadata->getVersion();
-    }
-
-    /**
-     * Returns the magento edition
-     *
-     * @return string
-     */
-    public function getMagentoEdition()
-    {
-        return $this->productMetadata->getEdition();
-    }
-
-    /**
-     * Retrieve label store scope
-     *
-     * @return int
-     */
-    public function getStoreId()
-    {
-        return $this->storeManager->getStore()->getId();
-    }
-
-    /**
-     * Return the name of the current store
-     *
-     * @return int
-     */
-    public function getStoreName()
-    {
-        return $this->storeManager->getStore()->getName();
-    }
-
-    /**
-     * Returns the stores base url
-     *
-     * @return string
-     */
-    public function getStoreBaseUrl()
-    {
-        return $this->storeManager->getStore()->getBaseUrl();
     }
 
     /**

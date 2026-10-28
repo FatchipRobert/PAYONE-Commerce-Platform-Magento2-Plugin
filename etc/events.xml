@@ -17,9 +17,6 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    <event name="checkout_submit_all_after">
-        <observer name="payone_cp_checkout_submit_all_after" instance="Payone\CommercePlatform\Observer\CheckoutSubmitAllAfter" />
-    </event>
     <event name="sales_order_payment_capture">
         <observer name="payone_cp_order_payment_capture" instance="Payone\CommercePlatform\Observer\OrderPaymentCapture" />
     </event>
