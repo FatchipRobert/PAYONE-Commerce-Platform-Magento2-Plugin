@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="payone_cp_protocol_api" resource="default" engine="innodb" comment="Log all API requests">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true"/>
+        <column xsi:type="varchar" name="order_increment_id" nullable="true" length="32"/>
+        <column xsi:type="varchar" name="payment_id" nullable="true" length="64"/>
+        <column xsi:type="int" name="store_id" nullable="true" unsigned="true"/>
+        <column xsi:type="timestamp" name="date" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"/>
+        <column xsi:type="varchar" name="payment_method" nullable="true" length="64"/>
+        <column xsi:type="varchar" name="merchant_id" nullable="true" length="255"/>
+        <column xsi:type="varchar" name="request" nullable="true" length="255"/>
+        <column xsi:type="varchar" name="response" nullable="true" length="255"/>
+        <column xsi:type="text" name="request_details" nullable="true"/>
+        <column xsi:type="text" name="response_details" nullable="true"/>
+        <column xsi:type="varchar" name="commerce_case_id" nullable="true" length="64"/>
+        <column xsi:type="varchar" name="checkout_id" nullable="true" length="64"/>
+        <column xsi:type="varchar" name="payment_execution_id" nullable="true" length="64"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <index referenceId="PAYONE_CP_API_LOG_ORDER_INCREMENT_ID" indexType="btree">
+            <column name="order_increment_id"/>
+        </index>
+    </table>
+    <table name="payone_cp_protocol_webhook" resource="default" engine="innodb" comment="Log all webhook messages">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true"/>
+        <column xsi:type="varchar" name="order_increment_id" nullable="true" length="32"/>
+        <column xsi:type="varchar" name="payment_id" nullable="true" length="64"/>
+        <column xsi:type="int" name="store_id" nullable="true" unsigned="true"/>
+        <column xsi:type="timestamp" name="date" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"/>
+        <column xsi:type="varchar" name="payment_method" nullable="true" length="64"/>
+        <column xsi:type="varchar" name="merchant_id" nullable="true" length="255"/>
+        <column xsi:type="varchar" name="status" nullable="true" length="255"/>
+        <column xsi:type="varchar" name="event_id" nullable="true" length="64" comment="Webhook event id, used as idempotency key"/>
+        <column xsi:type="varchar" name="type" nullable="true" length="64" comment="Webhook event type"/>
+        <column xsi:type="boolean" name="processed" nullable="false" default="false" comment="Webhook was processed successfully"/>
+        <column xsi:type="text" name="message" nullable="true"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <index referenceId="PAYONE_CP_API_LOG_ORDER_INCREMENT_ID" indexType="btree">
+            <column name="order_increment_id"/>
+        </index>
+        <index referenceId="PAYONE_CP_PROTOCOL_WEBHOOK_EVENT_ID" indexType="btree">
+            <column name="event_id"/>
+        </index>
+    </table>
+    <table name="sales_order" resource="sales" engine="innodb" comment="Sales Flat Order">
+        <column xsi:type="varchar" name="payone_cp_commerce_case_id" nullable="true" length="255" comment="Payone CP CommerceCase ID"/>
+        <column xsi:type="varchar" name="payone_cp_checkout_id" nullable="true" length="255" comment="Payone CP Checkout ID"/>
+        <column xsi:type="varchar" name="payone_cp_payment_id" nullable="true" length="255" comment="Payone CP Payment ID"/>
+        <column xsi:type="varchar" name="payone_cp_payment_execution_id" nullable="true" length="255" comment="Payone CP Payment Execution ID"/>
+        <index referenceId="PAYONE_CP_SALES_ORDER_COMMERCE_CASE_ID" indexType="btree">
+            <column name="payone_cp_commerce_case_id"/>
+        </index>
+        <index referenceId="PAYONE_CP_SALES_ORDER_CHECKOUT_ID" indexType="btree">
+            <column name="payone_cp_checkout_id"/>
+        </index>
+        <index referenceId="PAYONE_CP_SALES_ORDER_PAYMENT_ID" indexType="btree">
+            <column name="payone_cp_payment_id"/>
+        </index>
+        <index referenceId="PAYONE_CP_SALES_ORDER_PAYMENT_EXECUTION_ID" indexType="btree">
+            <column name="payone_cp_payment_execution_id"/>
+        </index>
+    </table>
+</schema>

@@ -1,0 +1,63 @@
+{
+    "payone_cp_protocol_api": {
+        "column": {
+            "entity_id": true,
+            "order_increment_id": true,
+            "store_id": true,
+            "date": true,
+            "payment_method": true,
+            "request": true,
+            "response": true,
+            "merchant_id": true,
+            "request_details": true,
+            "response_details": true,
+            "commerce_case_id": true,
+            "checkout_id": true,
+            "payment_id": true,
+            "payment_execution_id": true
+        },
+        "index": {
+            "PAYONE_CP_PROTOCOL_API_ORDER_INCREMENT_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "payone_cp_protocol_webhook": {
+        "column": {
+            "entity_id": true,
+            "order_increment_id": true,
+            "payment_id": true,
+            "store_id": true,
+            "date": true,
+            "payment_method": true,
+            "merchant_id": true,
+            "type": true,
+            "message": true,
+            "status": true,
+            "event_id": true,
+            "processed": true
+        },
+        "index": {
+            "PAYONE_CP_PROTOCOL_WEBHOOK_ORDER_INCREMENT_ID": true,
+            "PAYONE_CP_PROTOCOL_WEBHOOK_EVENT_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "sales_order": {
+        "column": {
+            "payone_cp_payment_id": true,
+            "payone_cp_commerce_case_id": true,
+            "payone_cp_checkout_id": true,
+            "payone_cp_payment_execution_id": true
+        },
+        "index": {
+            "SALES_ORDER_PAYONE_CP_PAYMENT_ID": true,
+            "SALES_ORDER_PAYONE_CP_COMMERCE_CASE_ID": true,
+            "SALES_ORDER_PAYONE_CP_CHECKOUT_ID": true,
+            "SALES_ORDER_PAYONE_CP_PAYMENT_EXECUTION_ID": true
+        }
+    }
+}

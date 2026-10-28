@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="payone_cp_config_provider" xsi:type="object">Payone\CommercePlatform\Model\ConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

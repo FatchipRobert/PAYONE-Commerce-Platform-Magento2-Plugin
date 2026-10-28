@@ -1,0 +1,8 @@
+"Shipping Costs","Versandkosten"
+"Coupon","Gutschein"
+"Discount","Rabatt"
+"Valid PAYONE IPs","Gültige PAYONE IPs"
+"IP addresses allowed to send webhooks, one per line (Format xxx.xxx.xxx.xxx). As a Wildcard You can use *, ranges can be given as xxx.xxx.xxx.xxx/yy. Leave empty to disable the check.","IP-Adressen, die Webhooks senden dürfen, eine pro Zeile (Format xxx.xxx.xxx.xxx). Als Platzhalter kann * verwendet werden, Bereiche können als xxx.xxx.xxx.xxx/yy angegeben werden. Leer lassen, um die Prüfung zu deaktivieren."
+"Your payment is still being processed. You will receive a confirmation as soon as the payment is completed.","Ihre Zahlung wird noch bearbeitet. Sie erhalten eine Bestätigung, sobald die Zahlung abgeschlossen ist."
+"Payment failed at PAYONE (status %1), order cancelled.","Zahlung bei PAYONE fehlgeschlagen (Status %1), Bestellung storniert."
+"The payment has been cancelled.","Die Zahlung wurde abgebrochen."

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="checkout_submit_all_after">
+        <observer name="payone_cp_checkout_submit_all_after" instance="Payone\CommercePlatform\Observer\CheckoutSubmitAllAfter" />
+    </event>
+    <event name="sales_order_payment_capture">
+        <observer name="payone_cp_order_payment_capture" instance="Payone\CommercePlatform\Observer\OrderPaymentCapture" />
+    </event>
+    <event name="payone_cp_webhook_all">
+        <observer name="payone_cp_webhook_all" instance="Payone\CommercePlatform\Observer\Webhook\All" />
+    </event>
+    <event name="payone_cp_webhook_payment_captured">
+        <observer name="payone_cp_webhook_payment_captured" instance="Payone\CommercePlatform\Observer\Webhook\Captured" />
+    </event>
+</config>

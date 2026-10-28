@@ -1,0 +1,51 @@
+<?php
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * PHP version 8
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+
+/** @var \Payone\CommercePlatform\Block\Adminhtml\Protocol\Api\View $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$apiLog = $block->getApiLogEntry();
+
+?>
+<?php if (!$apiLog): ?>
+    <?= $escaper->escapeHtml(__('API-log entry could not be found!')) ?>
+<?php else: ?>
+    <div data-mage-init='{"floatingHeader": {}}' class="page-actions"><?= /* @noEscape */ $block->getButtonsHtml() ?></div>
+    <section class="admin__page-section order-view-account-information">
+        <div class="admin__page-section-content">
+            <div class="admin__page-section-item">
+                <div class="admin__page-section-item-title">
+                    <span class="title"><?= $escaper->escapeHtml(__('Request')) ?></span>
+                </div>
+                <div class="admin__page-section-item-content">
+                    <pre><code class="language-json"><?= $escaper->escapeHtml($apiLog->getRequestDetails()) ?></code></pre>
+                </div>
+            </div>
+            <div class="admin__page-section-item">
+                <div class="admin__page-section-item-title">
+                    <span class="title"><?= $escaper->escapeHtml(__('Response')) ?></span>
+                </div>
+                <div class="admin__page-section-item-content">
+                    <pre><code class="language-json"><?= $escaper->escapeHtml($apiLog->getResponseDetails()) ?></code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script type="text/x-magento-init">{"*": {"Payone_CommercePlatform/js/protocol-highlight": {}}}</script>
+<?php endif; ?>

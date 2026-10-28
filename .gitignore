@@ -1,0 +1,14 @@
+# Claude Code
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+
+# Progress files
+TODO.md
+REFACTOR.md
+
+# PhpStorm
+.idea/
+
+# Local coding standard config
+phpcs.xml

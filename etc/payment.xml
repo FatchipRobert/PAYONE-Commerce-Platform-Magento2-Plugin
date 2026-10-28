@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<payment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Payment:etc/payment.xsd">
+    <groups>
+        <group id="payone_cp">
+            <label>Payone Commerce Plattform Payment Methods</label>
+        </group>
+    </groups>
+    <methods>
+        <method name="payone_cp_creditcard">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="payone_cp_directdebit">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="payone_cp_paypal">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="payone_cp_googlepay">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+    </methods>
+</payment>

@@ -1,0 +1,28 @@
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+.admin__menu .item-payone-cp > a:before {
+    content: '' !important;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAFTklEQVR4nL2YXYhVVRTHf+t+zKijJSWmZmFBkBEkEaVFRUJTWUkpFESiGYSQWm+91FvRS4lBDwZF5JP5kOVDmVhoFKI+JFmKkJEQjB+QKaUz995z/z3stb17zkz3njvdccFmn7PPXmv999prr73OMpwkGYCZyd8fBB4GbgeuAZr0lsrA38BvwHfALjM7n8cxCpw/PyfpoK48/Spp/RhMkszbdEnbEobG/1SYJa0uqdZmbj153ilphqSSJDNJZQe9E1gG1IA+H/sd+BE4C9SBy5Yeh+TbNgzcBgz6WNPHAc4Dh13uJWAecCcw37+PAP3ADjNbcRmbpFcc/bD3pyStljTQ1ovGQyldK+mIpGZitT9cxw3jzL9a0lpJp3MYVsUJsyQNKWxpQ9IZSQsTAWVJlQ6tKqlP0oCDk6QR77+QNCeRV0pklpPxhQmOTNIvkvpx9KkfvOAMfUoOTwerlb1/L2eFbZJK/q0ynjwF/+/352ecL/r/IJK2+nZI0klJU32V3YJb7HKi5Q7GRUaQbWSY66wqnOZIm0rAAlrOv9/MLgE2Kg51wOj9my6nRDhoLxIOVh9g7RbsuszM6sD+5NOiCjA9GRhyQYWtZ2aZpCXAUgdUBTab2RGfNpLML5nZfwX8qPNsMjazAjSSgZqZSSpqvMu0jtGLGpT0PSGsHAH2AN+YWbMDSAjhJ1K9khNcyHIQrAE0Jd0IPE0rDjYIcTDSMuA14KCkjWZ2oAPIUdZp67wdqOS+sxqYAWQur5KbV/NvdwPfSnooWrKIkrywQuR+mkmaCqwhrLoE/AnsJexEP7CIcFuI4J/TgA8k3QEMS+p4GCdqwbILXgnc7MpLwNtmttLMVpjZ48BC4C0HHLf/FuBR5++of6IAo/+s875CsN7W9JYwswtm9jqwz3VlBGsudr6OPt81QA/MknQPsIRglRKw3czOAJhZw8NP1efvjewOalZRfROyoG/PhoS/QfAt80XEwGxmlgFzciLqRXV1dUg8PGR++S8nbHUF+NLMDvu0LGGpSZoNPEUrDAEcnxSABIs1CdfYDFq548eSpjiACLBMyPXeBa5zvsj/tc/p+BtRGGASWqYAa3P8m7zlF3O9P2fe+oAPzexovCZ7BpAQmDNJTxJCS0Zw+AYwJhF1ir5WJVh0N/BqvIUKKe0CoNyKG3L87RZZ9TYEvAE8YWb/ACqaLRWyYJK13AXcR7BeGTjkrUzrDo39ReA0cAz4wczOuaxuUrmuD8l6gtUahC1aY2ZHizB6PGx2A64QwCS0zCdcbZnz7QGOSeqjvT/JgXU8EBMCSCs0rCIktzXClr7vuWM2UeVFqOO/AiG0TAdeIlijSihX7PLvvS6JFAdIK2t5jPDvEn/et5jZSPJ9UgGmCvLKonVe9r4CXAA+8fdJ29qIJx/HqsmFX/HM937gAVo53w4zO+Ohp6fWc91Tk6FKCTiXDMx1pRUza3jE30zYVnOQ77igXm9tDN5zk7GLJeAnf2kCSyXNM7NhSdOAjwgXfo1g6e1m9jPh2uvZ4YgL9nv+3jgMnETSoP/FZ94fl7RF0jF/r3nF4LykBUUqBd2C81iKpOddZyzDrEVSv4NpamxNMH1/1oX0q3MxqWhLi0e3KlS4YhFrSNIscshrahUcY5XprKTlvbLYOBacplDqO+UYYuFpI4SaSUwEPiP8gNcJN0U8GCeAz4EBehtWKsBswq/pTT4WE+CvCBm70srSgEL5NdJ4Wz5ZlOr5VKEc3So4aXQRfb2kE1cIWEoH5H6eYrIxAyEBmAk8QgjQC4Grery9EIL+X4Ti0m4z25fHAfAvrPdZUOA5dNEAAAAASUVORK5CYII=');
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+    background-size: 23px auto;
+    color: transparent;
+    opacity: 0.60;
+}
+
+.admin__menu .item-payone-cp > a:hover:before {
+    opacity: 1;
+}

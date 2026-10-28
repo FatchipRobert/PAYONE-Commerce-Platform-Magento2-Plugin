@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+    <policies>
+        <policy id="script-src">
+            <values>
+                <value id="payone_cp_ccv2_script" type="host">*.tokenization.secure.payone.com</value>
+                <value id="payone_cp_googlepay_script" type="host">pay.google.com</value>
+            </values>
+        </policy>
+        <policy id="frame-src">
+            <values>
+                <value id="payone_cp_ccv2_script" type="host">*.tokenization.secure.payone.com</value>
+                <value id="payone_cp_googlepay_frame" type="host">pay.google.com</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="payone_cp_ccv2_connect" type="host">*.tokenization.secure.payone.com</value>
+                <value id="payone_cp_googlepay_connect" type="host">pay.google.com</value>
+                <value id="payone_cp_googlepay_connect_google" type="host">google.com</value>
+                <value id="payone_cp_googlepay_connect_www" type="host">www.google.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="payone_cp_googlepay_img" type="host">www.gstatic.com</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>

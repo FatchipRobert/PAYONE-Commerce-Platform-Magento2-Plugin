@@ -1,0 +1,157 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Payone\CommercePlatform\Api\ClickToPayInterface" type="Payone\CommercePlatform\Service\V1\ClickToPay" />
+    <preference for="Payone\CommercePlatform\Api\Data\ClickToPayResponseInterface" type="Payone\CommercePlatform\Service\V1\Data\ClickToPayResponse" />
+
+    <!-- START - PAYMENT CONFIG -->
+    <type name="Payone\CommercePlatform\Model\Method\BaseMethod">
+        <arguments>
+            <!-- A default code has to be set here - correct code is set in the constructor -->
+            <argument name="code" xsi:type="string">Payone\CommercePlatform\Model\Payone::METHOD_CREDITCARD</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
+            <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\Info</argument>
+        </arguments>
+    </type>
+
+    <!-- START - EVERY PAYMENT METHOD NEEDS ONE OF THESE BLOCKS -->
+    <!-- Creditcard Config Handler -->
+    <type name="Payone\CommercePlatform\Model\Method\Creditcard">
+        <arguments>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPValueHandlerPoolCreditcard</argument>
+        </arguments>
+    </type>
+    <virtualType name="PayoneCPValueHandlerPoolCreditcard" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PayoneCPConfigValueHandlerCreditcard</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPConfigValueHandlerCreditcard" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PayoneCPCreditcardVaultPaymentConfigCreditcard</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPCreditcardVaultPaymentConfigCreditcard" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_CREDITCARD</argument>
+        </arguments>
+    </virtualType>
+    <!-- END - EVERY PAYMENT METHOD NEEDS ONE OF THESE BLOCKS... -->
+
+    <!-- Direct Debit Config Handler -->
+    <type name="Payone\CommercePlatform\Model\Method\DirectDebit">
+        <arguments>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPValueHandlerPoolDirectDebit</argument>
+        </arguments>
+    </type>
+    <virtualType name="PayoneCPValueHandlerPoolDirectDebit" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PayoneCPConfigValueHandlerDirectDebit</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPConfigValueHandlerDirectDebit" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PayoneCPVaultPaymentConfigDirectDebit</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPVaultPaymentConfigDirectDebit" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_DIRECT_DEBIT</argument>
+        </arguments>
+    </virtualType>
+    <!-- PayPal Config Handler -->
+    <type name="Payone\CommercePlatform\Model\Method\PayPal">
+        <arguments>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPValueHandlerPoolPayPal</argument>
+        </arguments>
+    </type>
+    <virtualType name="PayoneCPValueHandlerPoolPayPal" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PayoneCPConfigValueHandlerPayPal</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPConfigValueHandlerPayPal" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PayoneCPVaultPaymentConfigPayPal</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPVaultPaymentConfigPayPal" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_PAYPAL</argument>
+        </arguments>
+    </virtualType>
+    <!-- Google Pay Config Handler -->
+    <type name="Payone\CommercePlatform\Model\Method\GooglePay">
+        <arguments>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPValueHandlerPoolGooglePay</argument>
+        </arguments>
+    </type>
+    <virtualType name="PayoneCPValueHandlerPoolGooglePay" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PayoneCPConfigValueHandlerGooglePay</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPConfigValueHandlerGooglePay" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PayoneCPVaultPaymentConfigGooglePay</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPVaultPaymentConfigGooglePay" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_GOOGLEPAY</argument>
+        </arguments>
+    </virtualType>
+    <!-- END - PAYMENT CONFIG -->
+
+    <virtualType name="Payone\CommercePlatform\Model\ResourceModel\ApiLog\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">payone_cp_protocol_api</argument>
+            <argument name="resourceModel" xsi:type="string">Payone\CommercePlatform\Model\ResourceModel\ApiLog</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Payone\CommercePlatform\Model\ResourceModel\WebhookMessage\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">payone_cp_protocol_webhook</argument>
+            <argument name="resourceModel" xsi:type="string">Payone\CommercePlatform\Model\ResourceModel\WebhookMessage</argument>
+        </arguments>
+    </virtualType>
+    <type name="Magento\Config\Model\Config\TypePool">
+        <arguments>
+            <argument name="sensitive" xsi:type="array">
+                <item name="payone_cp_general/global/api_secret" xsi:type="string">1</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="payone_cp_protocol_api_grid_data_source" xsi:type="string">Payone\CommercePlatform\Model\ResourceModel\ApiLog\Grid\Collection</item>
+                <item name="payone_cp_protocol_webhook_grid_data_source" xsi:type="string">Payone\CommercePlatform\Model\ResourceModel\WebhookMessage\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

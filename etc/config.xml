@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <payone_cp_creditcard>
+                <active>1</active>
+                <payment_action>authorize</payment_action>
+                <model>Payone\CommercePlatform\Model\Method\Creditcard</model>
+                <title>PAYONE Credit Card</title>
+                <allowspecific>0</allowspecific>
+                <group>payone_cp</group>
+                <is_gateway>1</is_gateway>
+                <can_use_checkout>1</can_use_checkout>
+                <can_authorize>1</can_authorize>
+                <can_capture>1</can_capture>
+                <can_capture_partial>1</can_capture_partial>
+                <can_authorize_vault>0</can_authorize_vault>
+                <can_capture_vault>0</can_capture_vault>
+                <can_use_internal>1</can_use_internal>
+                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                <can_refund>1</can_refund>
+                <can_void>1</can_void>
+                <can_cancel>1</can_cancel>
+                <can_edit>0</can_edit>
+                <can_review_payment>0</can_review_payment>
+                <can_deny_payment>0</can_deny_payment>
+            </payone_cp_creditcard>
+            <payone_cp_directdebit>
+                <active>1</active>
+                <payment_action>authorize</payment_action>
+                <model>Payone\CommercePlatform\Model\Method\DirectDebit</model>
+                <title>PAYONE Direct Debit</title>
+                <allowspecific>0</allowspecific>
+                <group>payone_cp</group>
+                <is_gateway>1</is_gateway>
+                <can_use_checkout>1</can_use_checkout>
+                <can_authorize>1</can_authorize>
+                <can_capture>1</can_capture>
+                <can_capture_partial>1</can_capture_partial>
+                <can_authorize_vault>0</can_authorize_vault>
+                <can_capture_vault>0</can_capture_vault>
+                <can_use_internal>1</can_use_internal>
+                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                <can_refund>1</can_refund>
+                <can_void>1</can_void>
+                <can_cancel>1</can_cancel>
+                <can_edit>0</can_edit>
+                <can_review_payment>0</can_review_payment>
+                <can_deny_payment>0</can_deny_payment>
+            </payone_cp_directdebit>
+            <payone_cp_paypal>
+                <active>1</active>
+                <payment_action>authorize</payment_action>
+                <model>Payone\CommercePlatform\Model\Method\PayPal</model>
+                <title>PAYONE PayPal</title>
+                <allowspecific>0</allowspecific>
+                <group>payone_cp</group>
+                <is_gateway>1</is_gateway>
+                <can_use_checkout>1</can_use_checkout>
+                <can_authorize>1</can_authorize>
+                <can_capture>1</can_capture>
+                <can_capture_partial>1</can_capture_partial>
+                <can_authorize_vault>0</can_authorize_vault>
+                <can_capture_vault>0</can_capture_vault>
+                <can_use_internal>1</can_use_internal>
+                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                <can_refund>1</can_refund>
+                <can_void>1</can_void>
+                <can_cancel>1</can_cancel>
+                <can_edit>0</can_edit>
+                <can_review_payment>0</can_review_payment>
+                <can_deny_payment>0</can_deny_payment>
+            </payone_cp_paypal>
+            <payone_cp_googlepay>
+                <active>1</active>
+                <payment_action>authorize</payment_action>
+                <model>Payone\CommercePlatform\Model\Method\GooglePay</model>
+                <title>PAYONE Google Pay</title>
+                <allowspecific>0</allowspecific>
+                <group>payone_cp</group>
+                <is_gateway>1</is_gateway>
+                <can_use_checkout>1</can_use_checkout>
+                <can_authorize>1</can_authorize>
+                <can_capture>1</can_capture>
+                <can_capture_partial>1</can_capture_partial>
+                <can_authorize_vault>0</can_authorize_vault>
+                <can_capture_vault>0</can_capture_vault>
+                <can_use_internal>1</can_use_internal>
+                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                <can_refund>1</can_refund>
+                <can_void>1</can_void>
+                <can_cancel>1</can_cancel>
+                <can_edit>0</can_edit>
+                <can_review_payment>0</can_review_payment>
+                <can_deny_payment>0</can_deny_payment>
+            </payone_cp_googlepay>
+        </payment>
+        <payone_cp_general>
+            <global>
+                <api_key></api_key>
+                <api_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+                <transmit_ip>1</transmit_ip>
+                <valid_ips><![CDATA[185.60.20.0/24
+52.57.137.71
+3.69.190.236
+3.64.115.185
+82.98.224.158
+3.75.34.*
+3.127.45.*
+18.198.31.*]]></valid_ips>
+            </global>
+            <invoicing>
+                <transmit_enabled>1</transmit_enabled>
+            </invoicing>
+            <creditcard>
+                <customization_enabled>0</customization_enabled>
+            </creditcard>
+            <emails>
+                <send_invoice_email>0</send_invoice_email>
+            </emails>
+        </payone_cp_general>
+        <payone_cp_payment>
+            <payone_cp_creditcard>
+                <clicktopay_enabled>1</clicktopay_enabled>
+                <clicktopay_register_enabled>1</clicktopay_register_enabled>
+                <mode>live</mode>
+            </payone_cp_creditcard>
+            <payone_cp_directdebit>
+                <request_bic>0</request_bic>
+                <sepa_country>DE</sepa_country>
+            </payone_cp_directdebit>
+        </payone_cp_payment>
+    </default>
+</config>

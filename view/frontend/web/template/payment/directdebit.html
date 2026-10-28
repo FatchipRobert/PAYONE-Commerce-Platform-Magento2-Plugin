@@ -1,0 +1,129 @@
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <div class="payment-method-title field choice">
+        <input type="radio"
+               name="payment[method]"
+               class="radio"
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()">
+        <label data-bind="attr: {'for': getCode()}" class="label"><span data-bind="text: getTitle()"></span></label>
+    </div>
+
+    <div class="payment-method-content">
+        <!-- ko foreach: getRegion('messages') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+        <div class="payment-method-billing-address">
+            <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+
+        <form class="debit_form" id="debit_form" action="#" method="post" data-bind="attr: {id: getCode() + '_debit_form'}">
+            <fieldset data-bind="attr: {class: 'fieldset payment items ccard ' + getCode(), id: 'payone_form_debit'}">
+                <legend class="visually-hidden payone" data-bind="text: getTitle()"></legend>
+                <div class="field">
+                    <label data-bind="attr: {for: getCode() + '_country'}" class="label">
+                        <span><!-- ko i18n: 'Bank country'--><!-- /ko --></span>
+                    </label>
+                    <div class='control'>
+                        <select style="width:200px;" name="payment[debit_country]" class="select"
+                                data-bind=" attr: {id: getCode() + '_country', 'data-container': getCode() + '_country'},
+                                        enable: true,
+                                        options: getCountries(),
+                                        optionsValue: 'id',
+                                        optionsText: 'title',
+                                        optionsCaption: $t('--Please Select--'),
+                                        value: bankCountry">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field number required">
+                    <label data-bind="attr: {for: getCode() + '_accountholder'}" class="label">
+                        <span><!-- ko i18n: 'Account holder'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input type="text" name="payment[accountholder]" class="input-text" value=""
+                               data-bind="attr: {
+                                    autocomplete: off,
+                                    id: getCode() + '_accountholder',
+                                    title: $t('Account holder'),
+                                    'data-container': getCode() + '-accountholder'},
+                              value: accountholder,
+                              valueUpdate: 'keyup' ">
+                    </div>
+                </div>
+
+                <div class="field number required">
+                    <label data-bind="attr: {for: getCode() + '_iban'}" class="label">
+                        <span><!-- ko i18n: 'IBAN'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input type="text" name="payment[iban]" class="input-text" value=""
+                               data-bind="attr: {
+                                    autocomplete: 'off',
+                                    id: getCode() + '_iban',
+                                    'data-container': getCode() + '-iban'},
+                              value: iban,
+                              valueUpdate: 'keyup' ">
+                    </div>
+                </div>
+
+                <!-- ko if: requestBic() -->
+                <div class="field number required">
+                    <label data-bind="attr: {for: getCode() + '_bic'}" class="label">
+                        <span><!-- ko i18n: 'BIC'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input type="text" name="payment[bic]" class="input-text" value=""
+                               data-bind="attr: {
+                                    autocomplete: 'off',
+                                    id: getCode() + '_bic',
+                                    'data-container': getCode() + '-bic'},
+                              value: bic,
+                              valueUpdate: 'keyup' ">
+                    </div>
+                </div>
+                <!--/ko-->
+            </fieldset>
+        </form>
+
+        <p data-bind="html: getInstructions()"></p>
+        <div class="checkout-agreements-block">
+            <!-- ko foreach: $parent.getRegion('before-place-order') -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button class="action primary checkout"
+                        type="submit"
+                        data-bind="
+                        click: placeOrder,
+                        attr: {title: $t('Place Order')},
+                        enable: (getCode() == isChecked()),
+                        css: {disabled: !isPlaceOrderActionAllowed()}
+                        "
+                        disabled>
+                    <span data-bind="i18n: 'Place Order'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

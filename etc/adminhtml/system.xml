@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="payone_cp" translate="label" sortOrder="1111111">
+            <label>Payone Commerce Platform</label>
+        </tab>
+        <section id="payone_cp_general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>General</label>
+            <tab>payone_cp</tab>
+            <resource>Payone_CommercePlatform::payone_cp_configuration_general</resource>
+            <group id="global" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Global</label>
+                <field id="merchant_id" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Merchant ID</label>
+                </field>
+                <field id="api_key" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Key</label>
+                </field>
+                <field id="api_secret" translate="label" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Secret</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="environment" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Environment</label>
+                    <source_model>Payone\CommercePlatform\Model\Source\Environment</source_model>
+                    <tooltip>Production = live. Pre-Production = test.</tooltip>
+                </field>
+                <field id="ref_prefix" translate="label,comment,tooltip" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Referencenumber prefix</label>
+                    <comment><![CDATA[optional - Please consider the maximum length of our <a href="https://docs.payone.com/display/PLATFORM/reference+-+definition" target="_blank" rel="noopener noreferrer" title="Documentation: Reference Definition">reference parameter</a>. We strongly suggest using a max of 5 characters as your prefix.]]></comment>
+                    <tooltip>A unique referencenumber has to be transferred to PAYONE with every request. This is a consecutive number, normally starting at 1. When operating multiple shops ( e.g. live- and test-shop ) with the same PAYONE account-data there will be problems when the current referencenumber was already used. This can be avoided by using different prefixes on different shops.</tooltip>
+                </field>
+                <field id="allowspecific" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Payment from Applicable Countries</label>
+                    <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+                </field>
+                <field id="specificcountry" translate="label" type="multiselect" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Payment from Specific Countries</label>
+                    <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+                    <depends>
+                        <field id="allowspecific">1</field>
+                    </depends>
+                </field>
+                <field id="transmit_ip" translate="label" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Transmit IP address</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="proxy_mode" translate="label" type="select" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Proxy-Mode</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If your shop is behind a Proxy. Enable this option to transmit the HTTP_X_FORWARDED_FOR</comment>
+                </field>
+                <field id="valid_ips" translate="label,comment" type="textarea" sortOrder="87" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Valid PAYONE IPs</label>
+                    <comment><![CDATA[IP addresses allowed to send webhooks, one per line (Format xxx.xxx.xxx.xxx). As a Wildcard You can use *, ranges can be given as xxx.xxx.xxx.xxx/yy. Leave empty to disable the check.]]></comment>
+                </field>
+                <field id="transmit_customerid" translate="label" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Transmit customer-id</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+            <group id="creditcard" translate="label" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Payment Creditcard (Click to Pay)</label>
+                <field id="customization_enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Customization enabled</label>
+                    <comment><![CDATA[<br><br>All colors can be entered as a HTML hex code in this format: <b>#3F44FF</b>]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="form_bg_color" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Form background color</label>
+                </field>
+                <field id="field_bg_color" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Field background color</label>
+                </field>
+                <field id="field_border" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Field border</label>
+                </field>
+                <field id="field_outline" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Field outline</label>
+                </field>
+                <field id="field_label_color" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Field label color</label>
+                </field>
+                <field id="field_placeholder_color" translate="label" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Field placeholder color</label>
+                </field>
+                <field id="field_text_color" translate="label" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Field text color</label>
+                </field>
+                <field id="field_error_code_color" translate="label" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Field error code color</label>
+                </field>
+                <field id="button_style" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Button style</label>
+                </field>
+                <field id="button_text_case" translate="label" type="select" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Button text case</label>
+                    <source_model>Payone\CommercePlatform\Model\Source\ButtonTextCase</source_model>
+                </field>
+                <field id="button_badge_color" translate="label" type="text" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Button and badge color</label>
+                </field>
+                <field id="button_hover_color" translate="label" type="text" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Button filled hover color</label>
+                </field>
+                <field id="button_outlined_hover_color" translate="label" type="text" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Button outlined hover color</label>
+                </field>
+                <field id="button_disabled_color" translate="label" type="text" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Button disabled color</label>
+                </field>
+                <field id="card_item_active_color" translate="label" type="text" sortOrder="160" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Card item active color</label>
+                </field>
+                <field id="button_badge_text_color" translate="label" type="text" sortOrder="170" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Button and badge text color</label>
+                </field>
+                <field id="link_text_color" translate="label" type="text" sortOrder="180" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Link text color</label>
+                </field>
+                <field id="accent_color" translate="label" type="text" sortOrder="190" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Accent color</label>
+                </field>
+                <field id="font_family" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Font family</label>
+                </field>
+                <field id="button_input_radius" translate="label" type="text" sortOrder="210" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Button an dinput radius</label>
+                </field>
+                <field id="card_item_radius" translate="label" type="text" sortOrder="220" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Card item radius</label>
+                </field>
+            </group>
+            <group id="emails" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Emails</label>
+                <field id="send_invoice_email" translate="label,comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Send invoice email</label>
+                    <comment>For authorization only - where the invoice is created automatically when the PAID status arrives.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+        <section id="payone_cp_payment" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Payment</label>
+            <tab>payone_cp</tab>
+            <resource>Payone_CommercePlatform::payone_cp_configuration_payment</resource>
+            <include path="Payone_CommercePlatform::system/payone_cp_creditcard.xml"/>
+            <include path="Payone_CommercePlatform::system/payone_cp_directdebit.xml"/>
+            <include path="Payone_CommercePlatform::system/payone_cp_paypal.xml"/>
+            <include path="Payone_CommercePlatform::system/payone_cp_googlepay.xml"/>
+        </section>
+    </system>
+</config>

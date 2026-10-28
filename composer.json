@@ -1,0 +1,31 @@
+{
+    "name": "payone-gmbh/commerce-platform-magento-2",
+    "description": "PAYONE Commerce Platform payment integration for Magento 2",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": "MIT",
+    "support": {
+        "email": "tech.support@payone.com"
+    },
+    "require": {
+        "php": "~8.1.0|~8.2.0|~8.3.0|~8.4.0",
+        "ext-intl": "*",
+        "magento/framework": "^103.0.4",
+        "magento/module-csp": "^100.4.3",
+        "magento/module-webapi": "^100.4.3"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Payone\\CommercePlatform\\": ""
+        }
+    }
+}
