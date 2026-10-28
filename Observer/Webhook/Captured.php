@@ -17,42 +17,39 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Observer\Webhook;
 
-use Magento\Sales\Model\Order;
-use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
-use Payone\CommercePlatform\Helper\Order as OrderHelper;
+use Magento\Framework\Event\ObserverInterface;
+use Magento\Sales\Model\Order;
+use Payone\CommercePlatform\Model\Webhook\InvoiceCreator;
 
+/**
+ * payment.captured webhook: creates the invoice for automatically captured payments
+ */
 class Captured implements ObserverInterface
 {
     /**
-     * @var OrderHelper
+     * @param InvoiceCreator $invoiceCreator
      */
-    protected $orderHelper;
-
-    /**
-     * Constructor.
-     *
-     * @param OrderHelper $orderHelper
-     */
-    public function __construct(OrderHelper $orderHelper)
-    {
-        $this->orderHelper = $orderHelper;
+    public function __construct(
+        private readonly InvoiceCreator $invoiceCreator,
+    ) {
     }
 
     /**
-     * Handly Notify OK status
+     * Creates the invoice unless the order still waits for its authorization
      *
-     * @param  Observer $observer
+     * @param Observer $observer
      * @return void
      */
-    public function execute(Observer $observer)
+    public function execute(Observer $observer): void
     {
-        /* @var $order Order */
-        $order = $observer->getOrder();
-        $webhookMessage = $observer->getWebhookMessage();
-        if (empty($order) || empty($webhookMessage)) {
+        $order = $observer->getData('order');
+        $webhookMessage = $observer->getData('webhook_message');
+        if (!$order instanceof Order || empty($webhookMessage)) {
             return;
         }
 
@@ -61,6 +58,6 @@ class Captured implements ObserverInterface
             return;
         }
 
-        $this->orderHelper->createInvoice($order);
+        $this->invoiceCreator->createInvoice($order);
     }
 }

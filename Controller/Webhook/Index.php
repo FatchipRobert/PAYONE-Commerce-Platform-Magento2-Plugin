@@ -17,84 +17,52 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Controller\Webhook;
 
-use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
+use Magento\Framework\App\Request\Http;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\Result\RawFactory;
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Serialize\Serializer\Json;
+use Payone\CommercePlatform\Model\RemoteIp;
+use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage;
+use Payone\CommercePlatform\Model\Webhook\IpValidator;
 use Payone\CommercePlatform\Model\Webhook\SignatureValidator;
+use Psr\Log\LoggerInterface;
 
-class Index extends Action implements CsrfAwareActionInterface
+/**
+ * Receives the PAYONE webhooks (payone_cp/webhook)
+ */
+class Index implements HttpPostActionInterface, CsrfAwareActionInterface
 {
     /**
-     * Result factory for file-download
-     *
-     * @var \Magento\Framework\Controller\Result\RawFactory
-     */
-    protected $resultRawFactory;
-
-    /**
-     * @var \Payone\CommercePlatform\Model\ResourceModel\WebhookMessage
-     */
-    protected $webhookMessage;
-
-    /**
-     * @var \Payone\CommercePlatform\Helper\Json
-     */
-    protected $jsonHelper;
-
-    /**
-     * @var \Magento\Framework\Event\ManagerInterface
-     */
-    protected $eventManager;
-
-    /**
-     * @var \Payone\CommercePlatform\Helper\Environment
-     */
-    protected $environmentHelper;
-
-    /**
-     * @var \Payone\CommercePlatform\Model\Webhook\SignatureValidator
-     */
-    protected $signatureValidator;
-
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * Constructor
-     *
-     * @param \Magento\Framework\App\Action\Context                       $context
-     * @param \Magento\Framework\Controller\Result\RawFactory             $resultRawFactory
-     * @param \Payone\CommercePlatform\Model\ResourceModel\WebhookMessage $webhookMessage
-     * @param \Payone\CommercePlatform\Helper\Json                        $jsonHelper
-     * @param \Magento\Framework\Event\ManagerInterface                   $eventManager
-     * @param \Payone\CommercePlatform\Helper\Environment                 $environmentHelper
-     * @param \Payone\CommercePlatform\Model\Webhook\SignatureValidator   $signatureValidator
-     * @param \Psr\Log\LoggerInterface                                    $logger
+     * @param Http $request
+     * @param RawFactory $resultRawFactory
+     * @param WebhookMessage $webhookMessage
+     * @param Json $json
+     * @param ManagerInterface $eventManager
+     * @param IpValidator $ipValidator
+     * @param RemoteIp $remoteIp
+     * @param SignatureValidator $signatureValidator
+     * @param LoggerInterface $logger
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Framework\Controller\Result\RawFactory $resultRawFactory,
-        \Payone\CommercePlatform\Model\ResourceModel\WebhookMessage $webhookMessage,
-        \Payone\CommercePlatform\Helper\Json $jsonHelper,
-        \Magento\Framework\Event\ManagerInterface $eventManager,
-        \Payone\CommercePlatform\Helper\Environment $environmentHelper,
-        \Payone\CommercePlatform\Model\Webhook\SignatureValidator $signatureValidator,
-        \Psr\Log\LoggerInterface $logger
+        private readonly Http $request,
+        private readonly RawFactory $resultRawFactory,
+        private readonly WebhookMessage $webhookMessage,
+        private readonly Json $json,
+        private readonly ManagerInterface $eventManager,
+        private readonly IpValidator $ipValidator,
+        private readonly RemoteIp $remoteIp,
+        private readonly SignatureValidator $signatureValidator,
+        private readonly LoggerInterface $logger,
     ) {
-        parent::__construct($context);
-        $this->resultRawFactory = $resultRawFactory;
-        $this->webhookMessage = $webhookMessage;
-        $this->jsonHelper = $jsonHelper;
-        $this->eventManager = $eventManager;
-        $this->environmentHelper = $environmentHelper;
-        $this->signatureValidator = $signatureValidator;
-        $this->logger = $logger;
     }
 
     /**
@@ -114,94 +82,34 @@ class Index extends Action implements CsrfAwareActionInterface
     }
 
     /**
-     * Return request parameter value
-     *
-     * @param  string $key
-     * @return string
-     */
-    protected function getParam($key)
-    {
-        return $this->getRequest()->getParam($key, '');
-    }
-
-    /**
-     * Return Post array
-     *
-     * @return array
-     */
-    protected function getPostArray()
-    {
-        return $this->getRequest()->getPostValue();
-    }
-
-    /**
-     * Returns the raw request body - the signature is calculated over the unmodified body
-     *
-     * @return string
-     */
-    protected function getRawBody()
-    {
-        return (string)$this->getRequest()->getContent();
-    }
-
-    /**
-     * Creates the plain text response
-     *
-     * @param  int    $httpCode
-     * @param  string $output
-     * @return \Magento\Framework\Controller\Result\Raw
-     */
-    protected function getResult($httpCode, $output)
-    {
-        $resultRaw = $this->resultRawFactory->create();
-        $resultRaw->setHttpResponseCode($httpCode);
-        $resultRaw->setHeader('Content-Type', 'text/plain', true);
-        $resultRaw->setContents($output);
-        return $resultRaw;
-    }
-
-    /**
-     * Logs a rejected webhook with minimal metadata - never the body or the secret
-     *
-     * @param  string $reason
-     * @return void
-     */
-    protected function logRejected($reason)
-    {
-        $this->logger->warning('PAYONE CP webhook rejected: '.$reason, [
-            'ip' => $this->environmentHelper->getRemoteIp(),
-            'keyId' => (string)$this->getRequest()->getHeader(SignatureValidator::HEADER_KEY_ID),
-        ]);
-    }
-
-    /**
      * Executing webhook handling
      *
      * Order of checks follows the PAYONE documentation: verify first, then parse, then execute business logic
      *
-     * @return \Magento\Framework\Controller\Result\Raw
+     * @return Raw
      */
-    public function execute()
+    public function execute(): Raw
     {
-        if (!$this->environmentHelper->isRemoteIpValid()) {
+        if (!$this->ipValidator->isValid($this->remoteIp->get())) {
             $this->logRejected('IP not allowed');
             return $this->getResult(403, 'Access denied');
         }
 
-        $rawBody = $this->getRawBody();
-        if (!$this->signatureValidator->isValid($this->getRequest(), $rawBody)) {
+        // The signature is calculated over the unmodified body
+        $rawBody = (string)$this->request->getContent();
+        if (!$this->signatureValidator->isValid($this->request, $rawBody)) {
             $this->logRejected('invalid signature');
             return $this->getResult(401, 'Invalid signature');
         }
 
-        $webhookMessage = $this->jsonHelper->jsonDecode($rawBody);
-        if (!is_array($webhookMessage) || empty($webhookMessage['type']) || empty($webhookMessage['id'])) {
+        $webhookMessage = $this->decodeMessage($rawBody);
+        if ($webhookMessage === null || empty($webhookMessage['type']) || empty($webhookMessage['id'])) {
             $this->logRejected('invalid message');
             return $this->getResult(400, 'Invalid message');
         }
 
         // Webhooks can be delivered multiple times (retries) - the event id is the idempotency key
-        if ($this->webhookMessage->isEventProcessed($webhookMessage['id'])) {
+        if ($this->webhookMessage->isEventProcessed((string)$webhookMessage['id'])) {
             return $this->getResult(200, 'OK');
         }
 
@@ -222,5 +130,51 @@ class Index extends Action implements CsrfAwareActionInterface
 
         $this->webhookMessage->markProcessed($entityId);
         return $this->getResult(200, 'OK');
+    }
+
+    /**
+     * Decodes the JSON body, null if it is not a JSON object
+     *
+     * @param string $rawBody
+     * @return array|null
+     */
+    private function decodeMessage(string $rawBody): ?array
+    {
+        try {
+            $decoded = $this->json->unserialize($rawBody);
+        } catch (\InvalidArgumentException) {
+            return null;
+        }
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * Creates the plain text response
+     *
+     * @param int $httpCode
+     * @param string $output
+     * @return Raw
+     */
+    private function getResult(int $httpCode, string $output): Raw
+    {
+        $resultRaw = $this->resultRawFactory->create();
+        $resultRaw->setHttpResponseCode($httpCode);
+        $resultRaw->setHeader('Content-Type', 'text/plain', true);
+        $resultRaw->setContents($output);
+        return $resultRaw;
+    }
+
+    /**
+     * Logs a rejected webhook with minimal metadata - never the body or the secret
+     *
+     * @param string $reason
+     * @return void
+     */
+    private function logRejected(string $reason): void
+    {
+        $this->logger->warning('PAYONE CP webhook rejected: '.$reason, [
+            'ip' => $this->remoteIp->get(),
+            'keyId' => (string)$this->request->getHeader(SignatureValidator::HEADER_KEY_ID),
+        ]);
     }
 }

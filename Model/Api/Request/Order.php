@@ -34,9 +34,9 @@ class Order extends BaseRequest
     protected $httpMethod = self::METHOD_POST;
 
     /**
-     * @var \Payone\CommercePlatform\Helper\Environment
+     * @var \Payone\CommercePlatform\Model\RemoteIp
      */
-    protected $environmentHelper;
+    protected $remoteIp;
 
     /**
      * @param \Payone\CommercePlatform\Model\Api\Curl $curl
@@ -45,7 +45,8 @@ class Order extends BaseRequest
      * @param \Payone\CommercePlatform\Helper\Api $apiHelper
      * @param \Payone\CommercePlatform\Model\ResourceModel\ApiLog $apiLog
      * @param \Payone\CommercePlatform\Model\Api\ResponseFactory $responseFactory
-     * @param \Payone\CommercePlatform\Helper\Environment $environmentHelper
+     * @param \Payone\CommercePlatform\Model\Country $country
+     * @param \Payone\CommercePlatform\Model\RemoteIp $remoteIp
      */
     public function __construct(
         \Payone\CommercePlatform\Model\Api\Curl $curl,
@@ -54,10 +55,11 @@ class Order extends BaseRequest
         \Payone\CommercePlatform\Helper\Api $apiHelper,
         \Payone\CommercePlatform\Model\ResourceModel\ApiLog $apiLog,
         \Payone\CommercePlatform\Model\Api\ResponseFactory $responseFactory,
-        \Payone\CommercePlatform\Helper\Environment $environmentHelper,
+        \Payone\CommercePlatform\Model\Country $country,
+        \Payone\CommercePlatform\Model\RemoteIp $remoteIp,
     ) {
-        parent::__construct($curl, $generalConfig, $customerHelper, $apiHelper, $apiLog, $responseFactory);
-        $this->environmentHelper = $environmentHelper;
+        parent::__construct($curl, $generalConfig, $customerHelper, $apiHelper, $apiLog, $responseFactory, $country);
+        $this->remoteIp = $remoteIp;
     }
 
     /**
@@ -99,7 +101,7 @@ class Order extends BaseRequest
         $parameters['paymentMethodSpecificInput'][$methodInstance->getSpecificInputIdentifier()]['paymentProductId'] = $methodInstance->getPaymentProductId();
 
         if ($this->generalConfig->isTransmitIp($this->storeId) === true) {
-            $parameters['paymentMethodSpecificInput']['customerDevice']['ipAddress'] = $this->environmentHelper->getRemoteIp();
+            $parameters['paymentMethodSpecificInput']['customerDevice']['ipAddress'] = $this->remoteIp->get();
         }
         #$parameters['paymentMethodSpecificInput']['customerDevice']['deviceToken'] = "TODO"; // Only needed for Payone BNPL payment methods?
 

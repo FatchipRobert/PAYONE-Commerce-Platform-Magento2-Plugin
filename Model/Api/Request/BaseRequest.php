@@ -117,12 +117,18 @@ abstract class BaseRequest
     protected $logRequest = true;
 
     /**
+     * @var \Payone\CommercePlatform\Model\Country
+     */
+    protected $country;
+
+    /**
      * @param \Payone\CommercePlatform\Model\Api\Curl $curl
      * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
      * @param \Payone\CommercePlatform\Helper\Customer $customerHelper
      * @param \Payone\CommercePlatform\Helper\Api $apiHelper
      * @param \Payone\CommercePlatform\Model\ResourceModel\ApiLog $apiLog
      * @param \Payone\CommercePlatform\Model\Api\ResponseFactory $responseFactory
+     * @param \Payone\CommercePlatform\Model\Country $country
      */
     public function __construct(
         \Payone\CommercePlatform\Model\Api\Curl $curl,
@@ -130,7 +136,8 @@ abstract class BaseRequest
         \Payone\CommercePlatform\Helper\Customer $customerHelper,
         \Payone\CommercePlatform\Helper\Api $apiHelper,
         \Payone\CommercePlatform\Model\ResourceModel\ApiLog $apiLog,
-        \Payone\CommercePlatform\Model\Api\ResponseFactory $responseFactory
+        \Payone\CommercePlatform\Model\Api\ResponseFactory $responseFactory,
+        \Payone\CommercePlatform\Model\Country $country
     ) {
         $this->curl = $curl;
         $this->generalConfig = $generalConfig;
@@ -138,6 +145,7 @@ abstract class BaseRequest
         $this->apiHelper = $apiHelper;
         $this->apiLog = $apiLog;
         $this->responseFactory = $responseFactory;
+        $this->country = $country;
     }
 
     /**

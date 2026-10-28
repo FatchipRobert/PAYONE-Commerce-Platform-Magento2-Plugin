@@ -17,48 +17,34 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Model\ResourceModel;
 
-use Payone\CommercePlatform\Model\Api\Request\BaseRequest;
-use Payone\CommercePlatform\Model\Api\Response;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\Model\ResourceModel\Db\Context;
+use Magento\Sales\Model\Order;
+use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
+use Payone\CommercePlatform\Model\OrderLocator;
 
-class WebhookMessage extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
+/**
+ * Webhook protocol (payone_cp_protocol_webhook), also used for the idempotency of webhook events
+ */
+class WebhookMessage extends AbstractDb
 {
     /**
-     * @var \Payone\CommercePlatform\Gateway\Config\GeneralConfig
-     */
-    protected $generalConfig;
-
-    /**
-     * @var \Payone\CommercePlatform\Helper\Json
-     */
-    protected $jsonHelper;
-
-    /**
-     * @var \Payone\CommercePlatform\Helper\Order
-     */
-    protected $orderHelper;
-
-    /**
-     * Class constructor
-     *
-     * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
-     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
-     * @param \Payone\CommercePlatform\Helper\Json $jsonHelper
-     * @param \Payone\CommercePlatform\Helper\Order $orderHelper
-     * @param string $connectionName
+     * @param Context $context
+     * @param GeneralConfig $generalConfig
+     * @param OrderLocator $orderLocator
+     * @param string|null $connectionName
      */
     public function __construct(
-        \Magento\Framework\Model\ResourceModel\Db\Context $context,
-        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig,
-        \Payone\CommercePlatform\Helper\Json $jsonHelper,
-        \Payone\CommercePlatform\Helper\Order $orderHelper,
-        $connectionName = null
+        Context $context,
+        private readonly GeneralConfig $generalConfig,
+        private readonly OrderLocator $orderLocator,
+        ?string $connectionName = null,
     ) {
         parent::__construct($context, $connectionName);
-        $this->generalConfig = $generalConfig;
-        $this->jsonHelper = $jsonHelper;
-        $this->orderHelper = $orderHelper;
     }
 
     /**
@@ -75,30 +61,30 @@ class WebhookMessage extends \Magento\Framework\Model\ResourceModel\Db\AbstractD
      * Returns the order belonging to the payment of the webhook message
      *
      * @param array $message
-     * @return \Magento\Sales\Model\Order|null
+     * @return Order|null
      */
-    public function getOrderByMessage($message)
+    public function getOrderByMessage(array $message): ?Order
     {
         if (empty($message['payment']['id'])) {
             return null;
         }
 
-        return $this->orderHelper->getOrderByPayonePaymentId($message['payment']['id']);
+        return $this->orderLocator->getByPayonePaymentId((string)$message['payment']['id']);
     }
 
     /**
      * Save webhook message to database
      *
-     * @param  array $message
+     * @param array $message
      * @return int entity_id of the new entry
      */
-    public function addWebhookMessage($message)
+    public function addWebhookMessage(array $message): int
     {
         $order = $this->getOrderByMessage($message);
 
         $orderIncrementId = $order !== null ? $order->getIncrementId() : null;
         $paymentMethod = $order !== null ? $order->getPayment()->getMethod() : null;
-        $storeId = $order !== null ? $order->getStoreId() : null;
+        $storeId = $order !== null ? (int)$order->getStoreId() : null;
 
         $this->getConnection()->insert(
             $this->getMainTable(),
@@ -120,10 +106,10 @@ class WebhookMessage extends \Magento\Framework\Model\ResourceModel\Db\AbstractD
     /**
      * Checks if a webhook event with the given event id was already processed successfully
      *
-     * @param  string $eventId
+     * @param string $eventId
      * @return bool
      */
-    public function isEventProcessed($eventId)
+    public function isEventProcessed(string $eventId): bool
     {
         $select = $this->getConnection()->select()
             ->from($this->getMainTable(), ['entity_id'])
@@ -136,10 +122,10 @@ class WebhookMessage extends \Magento\Framework\Model\ResourceModel\Db\AbstractD
     /**
      * Marks the webhook entry as successfully processed
      *
-     * @param  int $entityId
+     * @param int $entityId
      * @return $this
      */
-    public function markProcessed($entityId)
+    public function markProcessed(int $entityId): self
     {
         $this->getConnection()->update($this->getMainTable(), ['processed' => 1], ['entity_id = ?' => $entityId]);
         return $this;

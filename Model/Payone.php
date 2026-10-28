@@ -41,4 +41,9 @@ abstract class Payone
     public const PAYMENT_METHOD_TYPE_REDIRECT = 'redirectPaymentMethod';
     public const PAYMENT_METHOD_TYPE_SEPA = 'sepaDirectDebitPaymentMethod';
     public const PAYMENT_METHOD_TYPE_FINANCING = 'financingPaymentMethod';
+
+    /* TRANSACTIONS */
+
+    /* Suffix of the Magento capture transaction id for automatic captures (SALE event at PAYONE, no separate capture id) */
+    public const TRANSACTION_SUFFIX_SALE = '-sale';
 }

@@ -22,7 +22,6 @@ namespace Payone\CommercePlatform\Model\Api\Request;
 use Magento\Payment\Model\InfoInterface;
 use Magento\Sales\Model\Order;
 use Magento\Quote\Model\Quote;
-use Payone\CommercePlatform\Helper\Country;
 
 class Checkout extends LineItemRequest
 {
@@ -87,7 +86,7 @@ class Checkout extends LineItemRequest
                 ]
             ];
 
-            if (!empty($shippingAddress->getRegionCode()) && Country::isStateNeeded($shippingAddress->getCountryId()) === true) {
+            if (!empty($shippingAddress->getRegionCode()) && $this->country->isStateNeeded((string)$shippingAddress->getCountryId()) === true) {
                 $parameters['shipping']['address']['state'] = $this->customerHelper->getRegionCode($shippingAddress);
             }
 

@@ -21,7 +21,6 @@ namespace Payone\CommercePlatform\Model\Api\Request;
 
 use Magento\Payment\Model\InfoInterface;
 use Magento\Sales\Model\Order;
-use Payone\CommercePlatform\Helper\Country;
 
 class CommerceCase extends BaseRequest
 {
@@ -104,7 +103,7 @@ class CommerceCase extends BaseRequest
             'businessRelation' => $this->isB2BOrder($order) === true ? 'B2B' : 'B2C',
         ];
 
-        if (!empty($billingAddress->getRegionCode()) && Country::isStateNeeded($billingAddress->getCountryId()) === true) {
+        if (!empty($billingAddress->getRegionCode()) && $this->country->isStateNeeded((string)$billingAddress->getCountryId()) === true) {
             $parameters['billingAddress']['state'] = $this->customerHelper->getRegionCode($billingAddress);
         }
         if (!empty($billingAddress->getCompany())) {

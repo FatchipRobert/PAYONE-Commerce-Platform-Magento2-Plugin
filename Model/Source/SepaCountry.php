@@ -17,41 +17,33 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Model\Source;
 
-use Magento\Framework\Option\ArrayInterface;
+use Magento\Framework\Data\OptionSourceInterface;
+use Payone\CommercePlatform\Model\Country;
 
 /**
  * Source class for existing SEPA countries
  */
-class SepaCountry implements ArrayInterface
+class SepaCountry implements OptionSourceInterface
 {
     /**
      * All SEPA countries
-     *
-     * @var array
      */
-    protected $sepaCountries = [
+    private const SEPA_COUNTRIES = [
         "AX", "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "GF", "DE", "GI",
         "GR", "GP", "HU", "IS", "IE", "IT", "LV", "LI", "LT", "LU", "MT", "MQ", "YT", "MC",
         "NL", "NO", "PL", "PT", "RE", "RO", "BL", "MF", "PM", "SK", "SI", "ES", "SE", "CH", "GB"
     ];
 
     /**
-     * PAYONE country helper
-     *
-     * @var \Payone\CommercePlatform\Helper\Country
+     * @param Country $country
      */
-    protected $countryHelper;
-
-    /**
-     * Constructor
-     *
-     * @param \Payone\CommercePlatform\Helper\Country $countryHelper
-     */
-    public function __construct(\Payone\CommercePlatform\Helper\Country $countryHelper)
-    {
-        $this->countryHelper = $countryHelper;
+    public function __construct(
+        private readonly Country $country,
+    ) {
     }
 
     /**
@@ -59,12 +51,12 @@ class SepaCountry implements ArrayInterface
      *
      * @return array
      */
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
         $options = [];
-        foreach ($this->sepaCountries as $countryCode) {
-            $name = $this->countryHelper->getCountryNameByIso2($countryCode);
-            if ($name) {
+        foreach (self::SEPA_COUNTRIES as $countryCode) {
+            $name = $this->country->getName($countryCode);
+            if ($name !== null) {
                 $options[$name] = [
                     'value' => $countryCode,
                     'label' => $name,

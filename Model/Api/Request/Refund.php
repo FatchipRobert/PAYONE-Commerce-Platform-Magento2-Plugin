@@ -20,7 +20,7 @@
 namespace Payone\CommercePlatform\Model\Api\Request;
 
 use Magento\Payment\Model\InfoInterface;
-use Payone\CommercePlatform\Helper\Order as OrderHelper;
+use Payone\CommercePlatform\Model\Payone;
 
 class Refund extends LineItemRequest
 {
@@ -51,7 +51,7 @@ class Refund extends LineItemRequest
             return $this->getMerchantReference($payment, self::REFERENCE_PREFIX_CAPTURE);
         }
         $paymentId = $payment->getOrder()->getData('payone_cp_payment_id');
-        if (in_array($invoice->getTransactionId(), [$paymentId, $paymentId.OrderHelper::TRANSACTION_SUFFIX_SALE], true)) {
+        if (in_array($invoice->getTransactionId(), [$paymentId, $paymentId.Payone::TRANSACTION_SUFFIX_SALE], true)) {
             return null;
         }
         return $this->getCaptureMerchantReference($payment, $invoice);

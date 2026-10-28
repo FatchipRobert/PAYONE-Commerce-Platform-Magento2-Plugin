@@ -22,9 +22,9 @@ namespace Payone\CommercePlatform\Model\Api;
 class Response
 {
     /**
-     * @var \Payone\CommercePlatform\Helper\Json
+     * @var \Magento\Framework\Serialize\Serializer\Json
      */
-    protected $jsonHelper;
+    protected $json;
 
     /**
      * @var string
@@ -42,16 +42,16 @@ class Response
     protected $httpStatus;
 
     /**
-     * @param \Payone\CommercePlatform\Helper\Json $jsonHelper
+     * @param \Magento\Framework\Serialize\Serializer\Json $json
      * @param string $responseRaw
      * @param int|null $httpStatus
      */
     public function __construct(
-        \Payone\CommercePlatform\Helper\Json $jsonHelper,
+        \Magento\Framework\Serialize\Serializer\Json $json,
         $responseRaw = null,
         $httpStatus = null
     ) {
-        $this->jsonHelper = $jsonHelper;
+        $this->json = $json;
         $this->httpStatus = $httpStatus !== null ? (int)$httpStatus : null;
         if (!empty($responseRaw)) {
             $this->setResponseRaw($responseRaw);
@@ -97,7 +97,7 @@ class Response
     public function setResponseRaw($responseRaw)
     {
         $this->responseRaw = $responseRaw;
-        $this->response = $this->jsonHelper->jsonDecode($this->getResponseRaw());
+        $this->response = $this->decodeJson($this->getResponseRaw());
     }
 
     /**
@@ -190,6 +190,56 @@ class Response
      */
     public function findData($searchField)
     {
-        return $this->jsonHelper->findValueByKey($this->getResponse(), $searchField);
+        return $this->findValueByKey($this->getResponse(), $searchField);
+    }
+
+    /**
+     * Decodes a JSON object, null for empty, invalid or non-object JSON (e.g. HTML error pages)
+     *
+     * @param mixed $json
+     * @return array|null
+     */
+    private function decodeJson($json)
+    {
+        if (!is_string($json) || trim($json) === '') {
+            return null;
+        }
+
+        try {
+            $decoded = $this->json->unserialize(trim($json));
+        } catch (\InvalidArgumentException $e) {
+            return null;
+        }
+
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
+     * Searches the array recursively for the given key and returns the first value found
+     *
+     * @param mixed $data
+     * @param string $searchField
+     * @return mixed
+     */
+    private function findValueByKey($data, $searchField)
+    {
+        if (!is_array($data)) {
+            return null;
+        }
+
+        foreach ($data as $key => $value) {
+            if ($key === $searchField) {
+                return $value;
+            }
+
+            if (is_array($value)) {
+                $result = $this->findValueByKey($value, $searchField);
+                if ($result !== null) {
+                    return $result;
+                }
+            }
+        }
+
+        return null;
     }
 }

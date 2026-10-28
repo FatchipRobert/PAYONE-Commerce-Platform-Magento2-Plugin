@@ -55,6 +55,7 @@ class OneStep extends BaseRequest
      * @param \Payone\CommercePlatform\Helper\Api $apiHelper
      * @param \Payone\CommercePlatform\Model\ResourceModel\ApiLog $apiLog
      * @param \Payone\CommercePlatform\Model\Api\ResponseFactory $responseFactory
+     * @param \Payone\CommercePlatform\Model\Country $country
      * @param \Payone\CommercePlatform\Model\Api\Request\CommerceCaseFactory $commerceCaseRequestFactory
      * @param \Payone\CommercePlatform\Model\Api\Request\CheckoutFactory $checkoutRequestFactory
      * @param \Payone\CommercePlatform\Model\Api\Request\OrderFactory $orderRequestFactory
@@ -66,11 +67,12 @@ class OneStep extends BaseRequest
         \Payone\CommercePlatform\Helper\Api                            $apiHelper,
         \Payone\CommercePlatform\Model\ResourceModel\ApiLog            $apiLog,
         \Payone\CommercePlatform\Model\Api\ResponseFactory             $responseFactory,
+        \Payone\CommercePlatform\Model\Country                         $country,
         \Payone\CommercePlatform\Model\Api\Request\CommerceCaseFactory $commerceCaseRequestFactory,
         \Payone\CommercePlatform\Model\Api\Request\CheckoutFactory     $checkoutRequestFactory,
         \Payone\CommercePlatform\Model\Api\Request\OrderFactory        $orderRequestFactory,
     ) {
-        parent::__construct($curl, $generalConfig, $customerHelper, $apiHelper, $apiLog, $responseFactory);
+        parent::__construct($curl, $generalConfig, $customerHelper, $apiHelper, $apiLog, $responseFactory, $country);
         $this->commerceCaseRequestFactory = $commerceCaseRequestFactory;
         $this->checkoutRequestFactory = $checkoutRequestFactory;
         $this->orderRequestFactory = $orderRequestFactory;

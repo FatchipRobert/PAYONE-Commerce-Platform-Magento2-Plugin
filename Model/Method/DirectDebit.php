@@ -47,9 +47,9 @@ class DirectDebit extends DirectPaymentMethod
     protected $isAutomaticCaptureMethod = true;
 
     /**
-     * @var \Payone\CommercePlatform\Helper\Country
+     * @var \Payone\CommercePlatform\Model\Country
      */
-    protected $countryHelper;
+    protected $country;
 
     /**
      * Can be used to assign data from frontend to info instance
@@ -77,7 +77,7 @@ class DirectDebit extends DirectPaymentMethod
      * @param \Payone\CommercePlatform\Model\Api\Request\CancelPaymentFactory $cancelPaymentRequestFactory
      * @param \Magento\Framework\Url                                          $url
      * @param \Magento\Checkout\Model\Session                                 $checkoutSession
-     * @param \Payone\CommercePlatform\Helper\Country                         $countryHelper
+     * @param \Payone\CommercePlatform\Model\Country                          $country
      * @param \Magento\Payment\Gateway\Command\CommandPoolInterface|null      $commandPool
      * @param \Magento\Payment\Gateway\Validator\ValidatorPoolInterface|null  $validatorPool
      * @param \Magento\Payment\Gateway\Command\CommandManagerInterface|null   $commandExecutor
@@ -98,7 +98,7 @@ class DirectDebit extends DirectPaymentMethod
         \Payone\CommercePlatform\Model\Api\Request\CancelPaymentFactory $cancelPaymentRequestFactory,
         \Magento\Framework\Url $url,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Payone\CommercePlatform\Helper\Country $countryHelper,
+        \Payone\CommercePlatform\Model\Country $country,
         ?\Magento\Payment\Gateway\Command\CommandPoolInterface $commandPool = null,
         ?\Magento\Payment\Gateway\Validator\ValidatorPoolInterface $validatorPool = null,
         ?\Magento\Payment\Gateway\Command\CommandManagerInterface $commandExecutor = null,
@@ -106,7 +106,7 @@ class DirectDebit extends DirectPaymentMethod
     ) {
         parent::__construct($eventManager, $valueHandlerPool, $paymentDataObjectFactory, $code, $formBlockType, $infoBlockType, $generalConfig, $oneStepRequestFactory, $captureRequestFactory, $refundRequestFactory, $cancelPaymentRequestFactory, $url, $checkoutSession, $commandPool, $validatorPool, $commandExecutor, $logger);
 
-        $this->countryHelper = $countryHelper;
+        $this->country = $country;
     }
 
     /**
@@ -117,7 +117,7 @@ class DirectDebit extends DirectPaymentMethod
     public function getFrontendConfig()
     {
         $frontendConfig = parent::getFrontendConfig();
-        $frontendConfig['sepaCountries'] = $this->countryHelper->getEnabledCountries($this->methodCode);
+        $frontendConfig['sepaCountries'] = $this->country->getEnabledCountries($this->methodCode);
         $frontendConfig['requestBic'] = $this->isBicNeeded();
         return $frontendConfig;
     }
