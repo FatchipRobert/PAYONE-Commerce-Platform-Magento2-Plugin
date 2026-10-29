@@ -20,37 +20,15 @@
 namespace Payone\CommercePlatform\Model\Method;
 
 use Payone\CommercePlatform\Model\Payone;
-use Magento\Sales\Model\Order;
 
 class Creditcard extends RedirectPaymentMethod
 {
-    public const CREDITCARD_PAYMENT_PRODUCT_IDS = [
-        'VISA' => 1,
-        'AMERICAN_EXPRESS' => 2,
-        'MASTERCARD' => 3,
-        'DINERS' => 123,
-    ];
-
     /**
      * Method identifier of this payment method
      *
      * @var string
      */
     protected $methodCode = Payone::METHOD_CREDITCARD;
-
-    /**
-     * @var int
-     */
-    protected $paymentProductId = 1;
-    # Visa - 1
-    # American Express - 2
-    # Mastercard - 3
-    # Diners Club - 123
-
-    /**
-     * @var string
-     */
-    protected $paymentMethodType = Payone::PAYMENT_METHOD_TYPE_CARD;
 
     /**
      * Can be used to assign data from frontend to info instance
@@ -63,21 +41,6 @@ class Creditcard extends RedirectPaymentMethod
         'cardtype',
         'cardinputmode',
     ];
-
-    /**
-     * Returns the PAYONE payment product id of the selected card type
-     *
-     * @return int
-     */
-    public function getPaymentProductId()
-    {
-        $cardType = $this->getInfoInstance()->getAdditionalInformation('cardtype');
-        if (!empty($cardType) && isset(self::CREDITCARD_PAYMENT_PRODUCT_IDS[$cardType])) {
-            return self::CREDITCARD_PAYMENT_PRODUCT_IDS[$cardType];
-        }
-
-        return $this->paymentProductId;
-    }
 
     /**
      * Returns the UI customization config for the hosted tokenization form
@@ -130,35 +93,5 @@ class Creditcard extends RedirectPaymentMethod
         }
 
         return $frontendConfig;
-    }
-
-    /**
-     * Return parameters specific to this payment type
-     *
-     * @param  Order|null $order
-     * @return array
-     */
-    public function getPaymentSpecificParameters(?Order $order = null)
-    {
-        $parameters = parent::getPaymentSpecificParameters($order);
-
-        $parameters['authorizationMode'] = $this->isAutomaticCapture() ? "SALE" : "PRE_AUTHORIZATION";
-        $parameters['paymentProcessingToken'] = $this->getInfoInstance()->getAdditionalInformation('pseudocardpan');
-        $parameters['transactionChannel'] = 'ECOMMERCE';
-        $parameters['card']['cardholderName'] = $this->getInfoInstance()->getAdditionalInformation('cardholder');
-        $parameters['returnUrl'] = $this->getReturnUrl($order);
-
-        /*
-          "authorizationMode": "SALE",
-          "paymentProcessingToken": "9410000000000001950",
-          "transactionChannel": "ECOMMERCE",
-          "paymentProductId": 1,
-          "card": {
-            "cardholderName": "Wile E.Coyote"
-          },
-          "returnUrl": "https://pmi.prelive.pay1-test.de/system/test/api_test.php?exit=success&txid=__txid__"
-         */
-
-        return $parameters;
     }
 }

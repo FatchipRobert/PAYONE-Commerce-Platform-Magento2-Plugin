@@ -20,7 +20,6 @@
 namespace Payone\CommercePlatform\Model\Method;
 
 use Payone\CommercePlatform\Model\Payone;
-use Magento\Sales\Model\Order;
 
 class DirectDebit extends DirectPaymentMethod
 {
@@ -30,16 +29,6 @@ class DirectDebit extends DirectPaymentMethod
      * @var string
      */
     protected $methodCode = Payone::METHOD_DIRECT_DEBIT;
-
-    /**
-     * @var int
-     */
-    protected $paymentProductId = 771;
-
-    /**
-     * @var string
-     */
-    protected $paymentMethodType = Payone::PAYMENT_METHOD_TYPE_SEPA;
 
     /**
      * @var bool
@@ -71,8 +60,6 @@ class DirectDebit extends DirectPaymentMethod
      * @param string                                                          $formBlockType
      * @param string                                                          $infoBlockType
      * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig           $generalConfig
-     * @param \Payone\CommercePlatform\Model\Api\Request\OneStepFactory       $oneStepRequestFactory
-     * @param \Magento\Framework\Url                                          $url
      * @param \Magento\Checkout\Model\Session                                 $checkoutSession
      * @param \Payone\CommercePlatform\Model\Country                          $country
      * @param \Magento\Payment\Gateway\Command\CommandPoolInterface|null      $commandPool
@@ -89,8 +76,6 @@ class DirectDebit extends DirectPaymentMethod
         $formBlockType,
         $infoBlockType,
         \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig,
-        \Payone\CommercePlatform\Model\Api\Request\OneStepFactory $oneStepRequestFactory,
-        \Magento\Framework\Url $url,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Payone\CommercePlatform\Model\Country $country,
         ?\Magento\Payment\Gateway\Command\CommandPoolInterface $commandPool = null,
@@ -98,7 +83,7 @@ class DirectDebit extends DirectPaymentMethod
         ?\Magento\Payment\Gateway\Command\CommandManagerInterface $commandExecutor = null,
         ?\Psr\Log\LoggerInterface $logger = null
     ) {
-        parent::__construct($eventManager, $valueHandlerPool, $paymentDataObjectFactory, $code, $formBlockType, $infoBlockType, $generalConfig, $oneStepRequestFactory, $url, $checkoutSession, $commandPool, $validatorPool, $commandExecutor, $logger);
+        parent::__construct($eventManager, $valueHandlerPool, $paymentDataObjectFactory, $code, $formBlockType, $infoBlockType, $generalConfig, $checkoutSession, $commandPool, $validatorPool, $commandExecutor, $logger);
 
         $this->country = $country;
     }
@@ -124,37 +109,5 @@ class DirectDebit extends DirectPaymentMethod
     protected function isBicNeeded()
     {
         return (bool)$this->getPaymentConfigParam('request_bic');
-    }
-
-    /**
-     * Return parameters specific to this payment type
-     *
-     * @param  Order|null $order
-     * @return array
-     */
-    public function getPaymentSpecificParameters(?Order $order = null)
-    {
-        $parameters = parent::getPaymentSpecificParameters($order);
-
-        $infoInstance = $this->getInfoInstance();
-
-        $parameters[$this->getPaymentProductInputIdentifier()] = [
-            'mandate' => [
-                'recurrenceType' => 'UNIQUE',
-                'bankAccountIban' => [
-                    'iban' => $infoInstance->getAdditionalInformation('iban'),
-                    'accountHolder' => $infoInstance->getAdditionalInformation('accountholder'),
-                ],
-                'dateOfSignature' => '20220101', ///@TODO: KLÄREN!!! Parameter von Playground übernommen
-                'creditorId' => 'DE98ZZZ09999999999', ///@TODO: KLÄREN!!! Parameter von Playground übernommen
-                'uniqueMandateReference' => date('YmdHis'), ///@TODO: KLÄREN!!! Parameter von Playground übernommen
-            ],
-        ];
-
-        if ($this->isBicNeeded() === true) {
-            $parameters[$this->getPaymentProductInputIdentifier()]['mandate']['bankAccountIban']['bic'] = $infoInstance->getAdditionalInformation('bic');
-        }
-
-        return $parameters;
     }
 }

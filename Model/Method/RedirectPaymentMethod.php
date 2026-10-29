@@ -19,12 +19,10 @@
 
 namespace Payone\CommercePlatform\Model\Method;
 
+/**
+ * Redirect methods stay in pending_payment until the webhook authorizes them (can_initialize = 1 in config.xml)
+ */
 class RedirectPaymentMethod extends PayoneMethod
 {
-    /**
-     * Determines if payment is set to pending_payment instead of direct authorization
-     *
-     * @var bool
-     */
-    protected $isPaymentPendingMethod = true;
+
 }

@@ -20,7 +20,6 @@
 namespace Payone\CommercePlatform\Model\Method;
 
 use Payone\CommercePlatform\Model\Payone;
-use Magento\Sales\Model\Order;
 
 class GooglePay extends RedirectPaymentMethod
 {
@@ -30,16 +29,6 @@ class GooglePay extends RedirectPaymentMethod
      * @var string
      */
     protected $methodCode = Payone::METHOD_GOOGLEPAY;
-
-    /**
-     * @var int
-     */
-    protected $paymentProductId = 320;
-
-    /**
-     * @var string
-     */
-    protected $paymentMethodType = Payone::PAYMENT_METHOD_TYPE_MOBILE;
 
     /**
      * Can be used to assign data from frontend to info instance
@@ -107,22 +96,5 @@ class GooglePay extends RedirectPaymentMethod
         $frontendConfig['googlePayMerchantId'] = $this->getPaymentConfigParam('google_pay_merchant_id');
         $frontendConfig['operationMode'] = $this->getOperationMode();
         return $frontendConfig;
-    }
-
-    /**
-     * Return parameters specific to this payment type
-     *
-     * @param  Order|null $order
-     * @return array
-     */
-    public function getPaymentSpecificParameters(?Order $order = null)
-    {
-        $parameters = parent::getPaymentSpecificParameters($order);
-
-        $parameters['encryptedPaymentData'] = $this->getInfoInstance()->getAdditionalInformation('payment_token');
-        $parameters['authorizationMode'] = $this->isAutomaticCapture() ? "SALE" : "PRE_AUTHORIZATION";
-        $parameters['threeDSecure']['redirectionData']['returnUrl'] = $this->getReturnUrl($order);
-
-        return $parameters;
     }
 }

@@ -17,13 +17,18 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Observer\Webhook;
 
-use Magento\Sales\Model\Order;
-use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
-use Payone\CommercePlatform\Model\Method\BaseMethod;
+use Magento\Framework\Event\ObserverInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
+use Magento\Sales\Model\Order;
 
+/**
+ * Every webhook: authorizes or cancels orders of redirect methods (pending_payment) according to the payment status
+ */
 class All implements ObserverInterface
 {
     /**
@@ -43,17 +48,72 @@ class All implements ObserverInterface
     ];
 
     /**
+     * @param OrderRepositoryInterface $orderRepository
+     */
+    public function __construct(
+        private readonly OrderRepositoryInterface $orderRepository,
+    ) {
+    }
+
+    /**
+     * Handles the webhook for the order
+     *
+     * @param Observer $observer
+     * @return void
+     */
+    public function execute(Observer $observer): void
+    {
+        /** @var Order|null $order */
+        $order = $observer->getOrder();
+        $webhookMessage = $observer->getWebhookMessage();
+        if (empty($order) || empty($webhookMessage)) {
+            return;
+        }
+
+        if ($this->isAuthorizationNeeded($order, $webhookMessage)) {
+            $this->authorize($order, (string)($webhookMessage['payment']['id'] ?? ''));
+            $this->orderRepository->save($order); // the authorization transaction is created when the order is saved
+        } elseif ($this->isCancellationNeeded($order, $webhookMessage)) {
+            $order->cancel();
+            $order->addCommentToStatusHistory(
+                __('Payment failed at PAYONE (status %1), order cancelled.', $this->getPaymentStatus($webhookMessage))
+            );
+            $this->orderRepository->save($order);
+        }
+
+        $order->getPayment()->getMethodInstance()->handleWebhookSpecific($order, $webhookMessage);
+    }
+
+    /**
+     * Registers the authorization of the payment, which was executed at PAYONE after the redirect
+     *
+     * Offline (no gateway call) - like authorize() in the checkout for direct methods: transaction, state, comment.
+     * The transaction id has to be set first, registerAuthorizationNotification() skips existing transactions.
+     *
+     * @param Order $order
+     * @param string $paymentId
+     * @return void
+     */
+    private function authorize(Order $order, string $paymentId): void
+    {
+        $payment = $order->getPayment();
+        $payment->setTransactionId($paymentId);
+        $payment->setIsTransactionClosed(false);
+        $payment->registerAuthorizationNotification((float)$order->getBaseTotalDue());
+    }
+
+    /**
      * Pending payment methods are authorized by the first successful webhook
      *
      * Every other webhook (rejected, cancelled, follow-up webhooks) must not authorize the order
      *
-     * @param  Order $order
-     * @param  array $webhookMessage
+     * @param Order $order
+     * @param array $webhookMessage
      * @return bool
      */
-    protected function isAuthorizationNeeded(Order $order, $webhookMessage)
+    private function isAuthorizationNeeded(Order $order, array $webhookMessage): bool
     {
-        return $this->isOrderAwaitingPayment($order) === true
+        return $this->isOrderAwaitingPayment($order)
             && in_array($this->getPaymentStatus($webhookMessage), self::STATUS_LIST_AUTHORIZED, true);
     }
 
@@ -62,28 +122,26 @@ class All implements ObserverInterface
      *
      * Needed when the customer does not return to the shop - otherwise the Returned controller cancels the order
      *
-     * @param  Order $order
-     * @param  array $webhookMessage
+     * @param Order $order
+     * @param array $webhookMessage
      * @return bool
      */
-    protected function isCancellationNeeded(Order $order, $webhookMessage)
+    private function isCancellationNeeded(Order $order, array $webhookMessage): bool
     {
-        return $this->isOrderAwaitingPayment($order) === true
+        return $this->isOrderAwaitingPayment($order)
             && in_array($this->getPaymentStatus($webhookMessage), self::STATUS_LIST_FAILED, true)
-            && $order->canCancel() === true;
+            && $order->canCancel();
     }
 
     /**
-     * Checks if the order of a pending payment method is still waiting for the payment
+     * Checks if the order of a redirect method (initialize instead of authorize) is still waiting for the payment
      *
-     * @param  Order $order
+     * @param Order $order
      * @return bool
      */
-    protected function isOrderAwaitingPayment(Order $order)
+    private function isOrderAwaitingPayment(Order $order): bool
     {
-        /** @var BaseMethod $methodInstance */
-        $methodInstance = $order->getPayment()->getMethodInstance();
-        if ($methodInstance->isPendingPaymentMethod() === false) {
+        if (!$order->getPayment()->getMethodInstance()->isInitializeNeeded()) {
             return false; // payment has already been authorized in the checkout
         }
 
@@ -94,48 +152,11 @@ class All implements ObserverInterface
     /**
      * Returns the payment status of the webhook message
      *
-     * @param  array $webhookMessage
+     * @param array $webhookMessage
      * @return string|null
      */
-    protected function getPaymentStatus($webhookMessage)
+    private function getPaymentStatus(array $webhookMessage): ?string
     {
         return $webhookMessage['payment']['status'] ?? null;
-    }
-
-    /**
-     * Handly Notify OK status
-     *
-     * @param  Observer $observer
-     * @return void
-     */
-    public function execute(Observer $observer)
-    {
-        /* @var $order Order */
-        $order = $observer->getOrder();
-        $webhookMessage = $observer->getWebhookMessage();
-        if (empty($order) || empty($webhookMessage)) {
-            return;
-        }
-
-        $transId = null;
-        if (!empty($webhookMessage['payment']['id'])) {
-            $transId = $webhookMessage['payment']['id'];
-        }
-
-        $payment = $order->getPayment();
-
-        /** @var BaseMethod $methodInstance */
-        $methodInstance = $payment->getMethodInstance();
-        if ($this->isAuthorizationNeeded($order, $webhookMessage) === true) {
-            $methodInstance->authorizePayment($payment, $transId);
-
-            $order->save(); // Transaction is created in order save and therefor needs to be done
-        } elseif ($this->isCancellationNeeded($order, $webhookMessage) === true) {
-            $order->cancel();
-            $order->addCommentToStatusHistory(__('Payment failed at PAYONE (status %1), order cancelled.', $this->getPaymentStatus($webhookMessage)));
-            $order->save();
-        }
-
-        $methodInstance->handleWebhookSpecific($order, $webhookMessage);
     }
 }

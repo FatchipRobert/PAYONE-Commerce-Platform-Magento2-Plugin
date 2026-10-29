@@ -132,6 +132,8 @@
     <virtualType name="PayoneCPCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
         <arguments>
             <argument name="commands" xsi:type="array">
+                <item name="authorize" xsi:type="string">PayoneCPAuthorizeCommand</item>
+                <item name="initialize" xsi:type="string">PayoneCPInitializeCommand</item>
                 <item name="capture" xsi:type="string">PayoneCPCaptureCommand</item>
                 <item name="refund" xsi:type="string">PayoneCPRefundCommand</item>
                 <item name="void" xsi:type="string">PayoneCPCancelCommand</item>
@@ -149,6 +151,67 @@
         </arguments>
     </virtualType>
 
+    <!-- authorize (direct methods, e.g. SEPA) and initialize (redirect methods, can_initialize = 1): same request, POST /commerce-cases with autoExecuteOrder -->
+    <virtualType name="PayoneCPAuthorizeCommand" type="PayoneCPGatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">PayoneCPPaymentRequestBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">PayoneCPPaymentTransferFactory</argument>
+            <argument name="handler" xsi:type="object">PayoneCPAuthorizeHandler</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPInitializeCommand" type="PayoneCPAuthorizeCommand">
+        <arguments>
+            <argument name="handler" xsi:type="object">PayoneCPInitializeHandler</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPPaymentRequestBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="context" xsi:type="string">Payone\CommercePlatform\Gateway\Request\OrderContextBuilder</item>
+                <item name="commerce_case" xsi:type="string">Payone\CommercePlatform\Gateway\Request\CommerceCaseBuilder</item>
+                <item name="checkout" xsi:type="string">Payone\CommercePlatform\Gateway\Request\CheckoutBuilder</item>
+                <item name="order" xsi:type="string">Payone\CommercePlatform\Gateway\Request\OrderBuilder</item>
+                <item name="payment_method_specific" xsi:type="string">Payone\CommercePlatform\Gateway\Request\PaymentMethodSpecificBuilder</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPPaymentTransferFactory" type="Payone\CommercePlatform\Gateway\Http\TransferFactory">
+        <arguments>
+            <argument name="endpoint" xsi:type="string">/v1/{merchantId}/commerce-cases</argument>
+            <argument name="httpMethod" xsi:type="string">POST</argument>
+            <argument name="requestName" xsi:type="string">OneStep</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPAuthorizeHandler" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="payment_ids" xsi:type="string">Payone\CommercePlatform\Gateway\Response\PaymentIdsHandler</item>
+                <item name="redirect_url" xsi:type="string">Payone\CommercePlatform\Gateway\Response\RedirectUrlHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPInitializeHandler" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="payment_ids" xsi:type="string">Payone\CommercePlatform\Gateway\Response\PaymentIdsHandler</item>
+                <item name="redirect_url" xsi:type="string">Payone\CommercePlatform\Gateway\Response\RedirectUrlHandler</item>
+                <item name="pending_state" xsi:type="string">Payone\CommercePlatform\Gateway\Response\PendingStateHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Payment method specific input: one builder per payment method -->
+    <type name="Payone\CommercePlatform\Gateway\Request\PaymentMethodSpecificBuilder">
+        <arguments>
+            <argument name="builders" xsi:type="array">
+                <item name="payone_cp_creditcard" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\CreditcardBuilder</item>
+                <item name="payone_cp_directdebit" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\DirectDebitBuilder</item>
+                <item name="payone_cp_paypal" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\PayPalBuilder</item>
+                <item name="payone_cp_googlepay" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\GooglePayBuilder</item>
+            </argument>
+        </arguments>
+    </type>
+
     <virtualType name="PayoneCPCaptureCommand" type="PayoneCPGatewayCommand">
         <arguments>
             <argument name="requestBuilder" xsi:type="object">PayoneCPCaptureRequestBuilder</argument>
@@ -159,6 +222,7 @@
     <virtualType name="PayoneCPCaptureRequestBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
         <arguments>
             <argument name="builders" xsi:type="array">
+                <item name="context" xsi:type="string">Payone\CommercePlatform\Gateway\Request\OrderContextBuilder</item>
                 <item name="references" xsi:type="string">Payone\CommercePlatform\Gateway\Request\PaymentReferencesBuilder</item>
                 <item name="capture" xsi:type="string">Payone\CommercePlatform\Gateway\Request\CaptureBuilder</item>
             </argument>
@@ -182,6 +246,7 @@
     <virtualType name="PayoneCPRefundRequestBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
         <arguments>
             <argument name="builders" xsi:type="array">
+                <item name="context" xsi:type="string">Payone\CommercePlatform\Gateway\Request\OrderContextBuilder</item>
                 <item name="references" xsi:type="string">Payone\CommercePlatform\Gateway\Request\PaymentReferencesBuilder</item>
                 <item name="refund" xsi:type="string">Payone\CommercePlatform\Gateway\Request\RefundBuilder</item>
             </argument>
@@ -205,6 +270,7 @@
     <virtualType name="PayoneCPCancelRequestBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">
         <arguments>
             <argument name="builders" xsi:type="array">
+                <item name="context" xsi:type="string">Payone\CommercePlatform\Gateway\Request\OrderContextBuilder</item>
                 <item name="references" xsi:type="string">Payone\CommercePlatform\Gateway\Request\PaymentReferencesBuilder</item>
                 <item name="cancel" xsi:type="string">Payone\CommercePlatform\Gateway\Request\CancelBuilder</item>
             </argument>

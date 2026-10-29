@@ -25,8 +25,7 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Payone\CommercePlatform\Gateway\SubjectReader;
 
 /**
- * URI parameters of operations on an existing payment (capture, refund, cancel) from the sales_order columns,
- * plus store and order data for the credentials and the API log
+ * URI parameters of operations on an existing payment (capture, refund, cancel) from the sales_order columns
  */
 class PaymentReferencesBuilder implements BuilderInterface
 {
@@ -46,8 +45,7 @@ class PaymentReferencesBuilder implements BuilderInterface
      */
     public function build(array $buildSubject): array
     {
-        $payment = $this->subjectReader->readPayment($buildSubject)->getPayment();
-        $order = $payment->getOrder();
+        $order = $this->subjectReader->readPayment($buildSubject)->getPayment()->getOrder();
 
         return [
             'uri' => [
@@ -55,9 +53,6 @@ class PaymentReferencesBuilder implements BuilderInterface
                 'checkoutId' => (string)$order->getData('payone_cp_checkout_id'),
                 'paymentExecutionId' => (string)$order->getData('payone_cp_payment_execution_id'),
             ],
-            'store_id' => (int)$order->getStoreId(),
-            'order_increment_id' => (string)$order->getIncrementId(),
-            'payment_method' => (string)$payment->getMethod(),
         ];
     }
 }

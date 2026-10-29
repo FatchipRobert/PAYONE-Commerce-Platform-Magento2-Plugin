@@ -21,20 +21,9 @@ namespace Payone\CommercePlatform\Model\Method;
 
 use Magento\Sales\Model\Order;
 use Magento\Framework\DataObject;
-use Magento\Payment\Model\InfoInterface;
 
 abstract class PayoneMethod extends BaseMethod
 {
-    /**
-     * @var int
-     */
-    protected $paymentProductId;
-
-    /**
-     * @var string
-     */
-    protected $paymentMethodType;
-
     /**
      * Can be used to assign data from frontend to info instance
      *
@@ -48,17 +37,6 @@ abstract class PayoneMethod extends BaseMethod
     protected $isAutomaticCaptureMethod = false;
 
     /**
-     * Return parameters specific to this payment type
-     *
-     * @param  Order|null $order
-     * @return array
-     */
-    public function getPaymentSpecificParameters(?Order $order = null)
-    {
-        return []; // filled in child classes
-    }
-
-    /**
      * Hook for extension by the real payment method classes
      *
      * @return array
@@ -66,36 +44,6 @@ abstract class PayoneMethod extends BaseMethod
     public function getFrontendConfig()
     {
         return []; // filled in child classes
-    }
-
-    /**
-     * Returns the PAYONE payment product id of this method
-     *
-     * @return int
-     */
-    public function getPaymentProductId()
-    {
-        return $this->paymentProductId;
-    }
-
-    /**
-     * Returns the API key of the method specific input, e.g. "cardPaymentMethodSpecificInput"
-     *
-     * @return string
-     */
-    public function getSpecificInputIdentifier()
-    {
-        return $this->paymentMethodType."SpecificInput";
-    }
-
-    /**
-     * Returns the API key of the product specific input, e.g. "paymentProduct771SpecificInput"
-     *
-     * @return string
-     */
-    public function getPaymentProductInputIdentifier()
-    {
-        return "paymentProduct".$this->getPaymentProductId()."SpecificInput";
     }
 
     /**
@@ -174,38 +122,6 @@ abstract class PayoneMethod extends BaseMethod
             return null;
         }
         return $store->getCode();
-    }
-
-    /**
-     * Sets the transaction id on the payment and optionally saves the payment
-     *
-     * @param  InfoInterface $payment
-     * @param  string $transactionId
-     * @param  bool $save
-     * @return void
-     */
-    public function setTransactionId(InfoInterface $payment, $transactionId, $save = false)
-    {
-        $payment->setTransactionId($transactionId);
-        $payment->setIsTransactionClosed(0);
-        if ($save === true) {
-            $payment->save();
-        }
-    }
-
-    /**
-     * Return returnUrl for redirect payment types
-     *
-     * @param  Order $order
-     * @return string
-     */
-    public function getReturnUrl(?Order $order = null)
-    {
-        $addedParams = '';
-        if ($order !== null) {
-            $addedParams = '?incrementId='.$order->getIncrementId();
-        }
-        return $this->url->getUrl('payone_cp/onepage/returned').$addedParams;
     }
 
     /**
