@@ -169,9 +169,8 @@ define(
                     merchantName: this.getFrontendConfigParam('storeName')
                 };
 
-                let googlePayMerchantId = this.getFrontendConfigParam('googlePayMerchantId');
-                if (this.getFrontendConfigParam('operationMode') == "live" || googlePayMerchantId) {
-                    paymentDataRequest.merchantInfo.merchantId = googlePayMerchantId;
+                if (this.getFrontendConfigParam('operationMode') == "live") {
+                    paymentDataRequest.merchantInfo.merchantId = this.getFrontendConfigParam('googlePayMerchantId');
                 }
 
                 return paymentDataRequest;
