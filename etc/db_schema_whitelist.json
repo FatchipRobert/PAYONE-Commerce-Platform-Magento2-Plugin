@@ -36,7 +36,8 @@
             "message": true,
             "status": true,
             "event_id": true,
-            "processed": true
+            "processed": true,
+            "processing_attempts": true
         },
         "index": {
             "PAYONE_CP_PROTOCOL_WEBHOOK_ORDER_INCREMENT_ID": true,

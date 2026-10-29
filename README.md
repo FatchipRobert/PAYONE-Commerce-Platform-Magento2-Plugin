@@ -16,13 +16,14 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 *	Void and cancellation of open authorizations directly from the order
 *	Shopping cart transmission with line items, shipping costs and discounts
 *	Card data is entered in PAYONE's hosted tokenization fields and never touches the shop
-*	Status updates via webhooks, secured by HMAC signature check and an optional IP whitelist
+*	Status updates via webhooks, secured by HMAC signature check and an optional IP whitelist, processed asynchronously via the Magento message queue
 *	Protocol of all API calls and webhooks in the Admin Panel, with sensitive data such as IBAN and tokens masked
 
 ## Requirements
 *	Magento 2.4.4 or higher
 *	PHP 8.1, 8.2, 8.3 or 8.4
 *	A PAYONE Commerce Platform merchant account with API key and API secret
+*	Magento cron (`bin/magento cron:run`) running every minute – it starts the message queue consumer that processes the webhooks
 
 ## Installation
 *	Go to your installation directory of Magento 2 and perform the following commands
@@ -37,7 +38,19 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 *	**Webhooks:** Configure the following webhook URL for your merchant account in the PAYONE Commerce Platform:
 	`https://<your-shop-domain>/payone_cp/webhook`
 	Webhooks are only accepted with a valid signature of your API key. Additionally, the IP addresses PAYONE sends webhooks from can be restricted with the setting *Valid PAYONE IPs*.
+*	**Webhook processing:** see the next section.
 *	**Logs:** API calls and received webhooks can be found under *PAYONE → Logs → Api* and *PAYONE → Logs → Webhook*.
+
+## Webhook processing (message queue)
+Incoming webhooks are only checked, stored and confirmed to PAYONE right away. The actual processing (authorizing or cancelling the order, creating the invoice and sending the invoice email) is done by the message queue consumer `payone_cp.webhook.process`. This way PAYONE always gets a fast answer and does not resend webhooks because of slow processing.
+
+*	**Default setup:** Nothing to do as long as the Magento cron is running. The cron job `consumers_runner` starts the consumer automatically. With the default setting `queue/consumers_wait_for_messages = 1` the consumer then keeps running in the background and processes new webhooks within seconds.
+*	**Restricted consumers:** If the cron consumer runner is disabled (`cron_consumers_runner/cron_run = false` in `app/etc/env.php`) or limited to a list of consumers (`cron_consumers_runner/consumers`), add `payone_cp.webhook.process` to that list or run the consumer yourself, e.g. with supervisor or systemd:
+	`php bin/magento queue:consumers:start payone_cp.webhook.process`
+	Otherwise the webhooks are stored but not processed, and orders stay in *Pending Payment*.
+*	**After a module update:** A running consumer keeps the old code until it is restarted: `php bin/magento queue:consumers:restart`
+*	**Failed processing:** The webhook stays marked as unprocessed in the webhook log and is put back into the queue by the cron job `payone_cp_webhook_retry` every 5 minutes, up to 5 attempts. Errors are written to `var/log/system.log` ("PAYONE CP webhook processing failed").
+*	The message queue uses the database (MySQL) by default; RabbitMQ is used automatically if it is configured as the default queue connection.
 
 ## More information
 *	For the PAYONE Commerce Platform documentation see: https://docs.payone.com

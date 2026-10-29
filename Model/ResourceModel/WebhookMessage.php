@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace Payone\CommercePlatform\Model\ResourceModel;
 
+use Magento\Framework\DB\Sql\Expression;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 use Magento\Framework\Model\ResourceModel\Db\Context;
 use Magento\Sales\Model\Order;
@@ -101,6 +102,70 @@ class WebhookMessage extends AbstractDb
             ]
         );
         return (int)$this->getConnection()->lastInsertId($this->getMainTable());
+    }
+
+    /**
+     * Checks if a webhook event with the given event id was already received (processed or not)
+     *
+     * @param string $eventId
+     * @return bool
+     */
+    public function isEventReceived(string $eventId): bool
+    {
+        $select = $this->getConnection()->select()
+            ->from($this->getMainTable(), ['entity_id'])
+            ->where('event_id = ?', $eventId)
+            ->limit(1);
+        return (bool)$this->getConnection()->fetchOne($select);
+    }
+
+    /**
+     * Returns the stored webhook entry (entity_id, event_id, processed, processing_attempts, message)
+     *
+     * @param int $entityId
+     * @return array|null
+     */
+    public function getEntry(int $entityId): ?array
+    {
+        $select = $this->getConnection()->select()
+            ->from($this->getMainTable(), ['entity_id', 'event_id', 'processed', 'processing_attempts', 'message'])
+            ->where('entity_id = ?', $entityId);
+        $entry = $this->getConnection()->fetchRow($select);
+        return $entry ?: null;
+    }
+
+    /**
+     * Counts a processing attempt
+     *
+     * @param int $entityId
+     * @return void
+     */
+    public function addProcessingAttempt(int $entityId): void
+    {
+        $this->getConnection()->update(
+            $this->getMainTable(),
+            ['processing_attempts' => new Expression('processing_attempts + 1')],
+            ['entity_id = ?' => $entityId]
+        );
+    }
+
+    /**
+     * Returns the entries whose processing failed and that may be tried again
+     *
+     * Entries with 0 attempts are still waiting in the queue and are not returned.
+     *
+     * @param int $maxAttempts
+     * @return int[]
+     */
+    public function getIdsForRetry(int $maxAttempts): array
+    {
+        $select = $this->getConnection()->select()
+            ->from($this->getMainTable(), ['entity_id'])
+            ->where('processed = ?', 0)
+            ->where('processing_attempts > ?', 0)
+            ->where('processing_attempts < ?', $maxAttempts)
+            ->order('entity_id ASC');
+        return array_map('intval', $this->getConnection()->fetchCol($select));
     }
 
     /**

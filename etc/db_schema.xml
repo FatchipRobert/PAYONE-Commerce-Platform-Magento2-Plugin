@@ -51,6 +51,7 @@
         <column xsi:type="varchar" name="event_id" nullable="true" length="64" comment="Webhook event id, used as idempotency key"/>
         <column xsi:type="varchar" name="type" nullable="true" length="64" comment="Webhook event type"/>
         <column xsi:type="boolean" name="processed" nullable="false" default="false" comment="Webhook was processed successfully"/>
+        <column xsi:type="smallint" name="processing_attempts" unsigned="true" nullable="false" default="0" comment="Number of processing attempts (queue consumer)"/>
         <column xsi:type="text" name="message" nullable="true"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="entity_id"/>

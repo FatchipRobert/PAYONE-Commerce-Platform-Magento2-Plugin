@@ -12,6 +12,8 @@
         "ext-intl": "*",
         "magento/framework": "^103.0.4",
         "magento/module-csp": "^100.4.3",
+        "magento/module-message-queue": "^100.4",
+        "magento/module-mysql-mq": "^100.4",
         "magento/module-webapi": "^100.4.3"
     },
     "repositories": [

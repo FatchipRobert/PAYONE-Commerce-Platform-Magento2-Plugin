@@ -28,11 +28,13 @@ use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\Controller\Result\RawFactory;
-use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\MessageQueue\PublisherInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Payone\CommercePlatform\Model\RemoteIp;
 use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage;
 use Payone\CommercePlatform\Model\Webhook\IpValidator;
+use Payone\CommercePlatform\Model\Webhook\Processor;
+use Payone\CommercePlatform\Model\Webhook\QueueConsumer;
 use Payone\CommercePlatform\Model\Webhook\SignatureValidator;
 use Psr\Log\LoggerInterface;
 
@@ -46,7 +48,8 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
      * @param RawFactory $resultRawFactory
      * @param WebhookMessage $webhookMessage
      * @param Json $json
-     * @param ManagerInterface $eventManager
+     * @param PublisherInterface $publisher
+     * @param Processor $processor
      * @param IpValidator $ipValidator
      * @param RemoteIp $remoteIp
      * @param SignatureValidator $signatureValidator
@@ -57,7 +60,8 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
         private readonly RawFactory $resultRawFactory,
         private readonly WebhookMessage $webhookMessage,
         private readonly Json $json,
-        private readonly ManagerInterface $eventManager,
+        private readonly PublisherInterface $publisher,
+        private readonly Processor $processor,
         private readonly IpValidator $ipValidator,
         private readonly RemoteIp $remoteIp,
         private readonly SignatureValidator $signatureValidator,
@@ -109,28 +113,21 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
         }
 
         // Webhooks can be delivered multiple times (retries) - the event id is the idempotency key
-        if ($this->webhookMessage->isEventProcessed((string)$webhookMessage['id'])) {
+        if ($this->webhookMessage->isEventReceived((string)$webhookMessage['id'])) {
             $this->logTiming('duplicate', $webhookMessage); // TODO: REMOVE temporary retry analysis (TODO.md)
             return $this->getResult(200, 'OK');
         }
 
+        // Accept only - the processing (observers) runs in the queue consumer, so PAYONE gets its answer at once
         $entityId = $this->webhookMessage->addWebhookMessage($webhookMessage);
-
         try {
-            $params = [
-                'order' => $this->webhookMessage->getOrderByMessage($webhookMessage),
-                'webhook_message' => $webhookMessage,
-            ];
-            $this->eventManager->dispatch('payone_cp_webhook_all', $params);
-            $this->eventManager->dispatch('payone_cp_webhook_'.strtolower(str_replace('.', '_', $webhookMessage['type'])), $params);
+            $this->publisher->publish(QueueConsumer::TOPIC, (string)$entityId);
         } catch (\Exception $e) {
-            // Non-2xx response makes PAYONE retry the webhook later
-            $this->logger->error('PAYONE CP webhook processing failed: '.$e->getMessage(), ['eventId' => $webhookMessage['id']]);
-            return $this->getResult(500, 'Processing failed');
+            $this->logger->warning('PAYONE CP webhook could not be queued, processing it directly: '.$e->getMessage());
+            $this->processor->process($entityId);
         }
 
-        $this->webhookMessage->markProcessed($entityId);
-        $this->logTiming('processed', $webhookMessage); // TODO: REMOVE temporary retry analysis (TODO.md)
+        $this->logTiming('accepted', $webhookMessage); // TODO: REMOVE temporary retry analysis (TODO.md)
         return $this->getResult(200, 'OK');
     }
 
@@ -140,7 +137,7 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
      * To find out why PAYONE retries some webhooks after ~10 minutes although they were answered with 200 (TODO.md).
      *
      * @todo Remove when the retry analysis is done
-     * @param string $result "processed" or "duplicate"
+     * @param string $result "accepted" or "duplicate"
      * @param array $webhookMessage
      * @return void
      */
