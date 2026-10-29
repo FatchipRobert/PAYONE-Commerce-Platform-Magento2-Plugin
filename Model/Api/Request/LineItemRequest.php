@@ -23,7 +23,6 @@ use Magento\Quote\Model\Quote;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Creditmemo;
-use Magento\Payment\Model\InfoInterface;
 
 class LineItemRequest extends BaseRequest
 {
@@ -31,31 +30,6 @@ class LineItemRequest extends BaseRequest
     public const TYPE_SHIPMENT = 'SHIPMENT';
     public const TYPE_HANDLING = 'HANDLING_FEE';
     public const TYPE_DISCOUNT = 'DISCOUNT';
-
-    /**
-     * Returns the merchantReference of the capture of the given invoice
-     * Invoices are numbered by creation: 1st invoice cp<increment_id>, 2nd cp<increment_id>-2, ...
-     * Works for the invoice which is currently captured (not saved yet) and for saved invoices (refund)
-     *
-     * @param InfoInterface $payment
-     * @param Invoice $invoice
-     * @return string
-     */
-    protected function getCaptureMerchantReference(InfoInterface $payment, Invoice $invoice)
-    {
-        $position = 1;
-        foreach ($payment->getOrder()->getInvoiceCollection() as $orderInvoice) {
-            if (empty($orderInvoice->getId()) || $orderInvoice->getId() == $invoice->getId()) {
-                continue;
-            }
-            if (empty($invoice->getId()) || $orderInvoice->getId() < $invoice->getId()) {
-                $position++; // invoice created before the given one
-            }
-        }
-
-        $referenceSuffix = $position > 1 ? '-'.$position : '';
-        return $this->getMerchantReference($payment, self::REFERENCE_PREFIX_CAPTURE).$referenceSuffix;
-    }
 
     /**
      * Builds a single cart line item
