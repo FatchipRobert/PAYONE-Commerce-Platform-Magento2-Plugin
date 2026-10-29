@@ -127,6 +127,56 @@
     </virtualType>
     <!-- END - PAYMENT CONFIG -->
 
+    <!-- START - SERVICE COMMANDS (API calls outside of payment operations, return an ArrayResult) -->
+    <virtualType name="PayoneCPServiceCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="get_jwt" xsi:type="string">PayoneCPGetJwtCommand</item>
+                <item name="get_checkout_details" xsi:type="string">PayoneCPGetCheckoutDetailsCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PayoneCPGetJwtCommand" type="Payone\CommercePlatform\Gateway\Command\ResultCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Payone\CommercePlatform\Gateway\Request\GetJwtBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">PayoneCPGetJwtTransferFactory</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPGetJwtTransferFactory" type="Payone\CommercePlatform\Gateway\Http\TransferFactory">
+        <arguments>
+            <argument name="endpoint" xsi:type="string">/v1/{merchantId}/authentication-tokens</argument>
+            <argument name="httpMethod" xsi:type="string">POST</argument>
+            <argument name="requestName" xsi:type="string">GetJWT</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="PayoneCPGetCheckoutDetailsCommand" type="Payone\CommercePlatform\Gateway\Command\ResultCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Payone\CommercePlatform\Gateway\Request\GetCheckoutDetailsBuilder</argument>
+            <argument name="transferFactory" xsi:type="object">PayoneCPGetCheckoutDetailsTransferFactory</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPGetCheckoutDetailsTransferFactory" type="Payone\CommercePlatform\Gateway\Http\TransferFactory">
+        <arguments>
+            <argument name="endpoint" xsi:type="string">/v1/{merchantId}/commerce-cases/{commerceCaseId}/checkouts/{checkoutId}</argument>
+            <argument name="httpMethod" xsi:type="string">GET</argument>
+            <argument name="requestName" xsi:type="string">GetCheckoutDetails</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Payone\CommercePlatform\Service\V1\ClickToPay">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">PayoneCPServiceCommandPool</argument>
+        </arguments>
+    </type>
+    <type name="Payone\CommercePlatform\Controller\Onepage\Returned">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">PayoneCPServiceCommandPool</argument>
+        </arguments>
+    </type>
+    <!-- END - SERVICE COMMANDS -->
+
     <virtualType name="Payone\CommercePlatform\Model\ResourceModel\ApiLog\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
         <arguments>
             <argument name="mainTable" xsi:type="string">payone_cp_protocol_api</argument>

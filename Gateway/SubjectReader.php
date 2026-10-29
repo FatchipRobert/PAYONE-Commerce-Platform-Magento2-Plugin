@@ -23,6 +23,7 @@ namespace Payone\CommercePlatform\Gateway;
 
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader as CoreSubjectReader;
+use Magento\Sales\Model\Order;
 
 /**
  * Reads values from the command subject and from API responses
@@ -63,6 +64,31 @@ class SubjectReader
     public function readResponse(array $subject): array
     {
         return CoreSubjectReader::readResponse($subject);
+    }
+
+    /**
+     * Returns the order of a subject without payment context (service commands)
+     *
+     * @param array $subject
+     * @return Order
+     */
+    public function readOrder(array $subject): Order
+    {
+        if (!isset($subject['order']) || !$subject['order'] instanceof Order) {
+            throw new \InvalidArgumentException('Order should be provided');
+        }
+        return $subject['order'];
+    }
+
+    /**
+     * Returns the store id of a subject without payment context (service commands), null = current store
+     *
+     * @param array $subject
+     * @return int|null
+     */
+    public function readStoreId(array $subject): ?int
+    {
+        return isset($subject['store_id']) ? (int)$subject['store_id'] : null;
     }
 
     /**

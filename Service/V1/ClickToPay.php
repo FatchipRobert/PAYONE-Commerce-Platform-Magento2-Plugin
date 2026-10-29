@@ -1,5 +1,4 @@
 <?php
-
 /**
  * PAYONE Commerce Platform Magento 2 Connector
  *
@@ -18,77 +17,42 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Service\V1;
 
+use Magento\Authorization\Model\UserContextInterface;
 use Magento\Framework\Exception\AuthorizationException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Payment\Gateway\Command\CommandException;
+use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
-use Magento\Quote\Model\MaskedQuoteIdToQuoteIdInterface;
 use Magento\Quote\Api\Data\CartInterface;
-use Magento\Authorization\Model\UserContextInterface;
-use Payone\CommercePlatform\Api\Data\ClickToPayResponseInterfaceFactory;
-use Payone\CommercePlatform\Model\Api\Request\GetJWTFactory;
-use Payone\CommercePlatform\Model\Method\Creditcard;
+use Magento\Quote\Model\MaskedQuoteIdToQuoteIdInterface;
 use Payone\CommercePlatform\Api\ClickToPayInterface;
+use Payone\CommercePlatform\Api\Data\ClickToPayResponseInterfaceFactory;
 use Payone\CommercePlatform\Model\Payone;
-use Magento\Checkout\Model\Type\Onepage;
-use Magento\Customer\Model\Group;
+use Payone\CommercePlatform\Service\V1\Data\ClickToPayResponse;
 
 /**
- * Web API model for the PAYONE Creditcard
+ * Web API for the JWT of the Click to Pay credit card form
  */
 class ClickToPay implements ClickToPayInterface
 {
     /**
-     * @var CartRepositoryInterface
-     */
-    protected $cartRepository;
-
-    /**
-     * @var MaskedQuoteIdToQuoteIdInterface
-     */
-    protected $maskedQuoteIdToQuoteId;
-
-    /**
-     * @var UserContextInterface
-     */
-    protected $userContext;
-
-    /**
-     * Factory for the response object
-     *
-     * @var ClickToPayResponseInterfaceFactory
-     */
-    protected $responseFactory;
-
-    /**
-     * Factory for the JWT request - a new request object per call, as request objects hold state
-     *
-     * @var GetJWTFactory
-     */
-    protected $jwtRequestFactory;
-
-    /**
-     * Constructor.
-     *
      * @param CartRepositoryInterface $cartRepository
      * @param MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId
      * @param UserContextInterface $userContext
      * @param ClickToPayResponseInterfaceFactory $responseFactory
-     * @param GetJWTFactory $jwtRequestFactory
+     * @param CommandPoolInterface $commandPool PayoneCPServiceCommandPool
      */
     public function __construct(
-        CartRepositoryInterface $cartRepository,
-        MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId,
-        UserContextInterface $userContext,
-        ClickToPayResponseInterfaceFactory $responseFactory,
-        GetJWTFactory $jwtRequestFactory,
+        private readonly CartRepositoryInterface $cartRepository,
+        private readonly MaskedQuoteIdToQuoteIdInterface $maskedQuoteIdToQuoteId,
+        private readonly UserContextInterface $userContext,
+        private readonly ClickToPayResponseInterfaceFactory $responseFactory,
+        private readonly CommandPoolInterface $commandPool,
     ) {
-        $this->cartRepository = $cartRepository;
-        $this->maskedQuoteIdToQuoteId = $maskedQuoteIdToQuoteId;
-        $this->userContext = $userContext;
-        $this->responseFactory = $responseFactory;
-        $this->jwtRequestFactory = $jwtRequestFactory;
     }
 
     /**
@@ -109,7 +73,7 @@ class ClickToPay implements ClickToPayInterface
     }
 
     /**
-     * Get JWT for ClickToPay process
+     * Get JWT for ClickToPay process (guest checkout)
      *
      * @param string $cartId
      * @return ClickToPayResponse
@@ -132,14 +96,13 @@ class ClickToPay implements ClickToPayInterface
     }
 
     /**
-     * Get JWT for ClickToPay process
+     * Sets the credit card method on the quote and requests the JWT
      *
-     * @param  CartInterface $quote
+     * @param CartInterface $quote
      * @return ClickToPayResponse
      */
-    private function process(CartInterface $quote)
+    private function process(CartInterface $quote): ClickToPayResponse
     {
-        $success = false;
         $response = $this->responseFactory->create();
 
         $payment = $quote->getPayment();
@@ -148,17 +111,15 @@ class ClickToPay implements ClickToPayInterface
         $quote->setPayment($payment);
         $this->cartRepository->save($quote);
 
-        $apiResponse = $this->jwtRequestFactory->create()->sendRequest();
-
-        if ($apiResponse->isSuccessResponse() === true) {
-            $success = true;
-
-            $response->setData('jwt', $apiResponse->findData('token'));
-        } else {
-            $response->setData('errormessage', __($apiResponse->getFirstErrorMessage()));
+        try {
+            $result = $this->commandPool->get('get_jwt')->execute(['store_id' => $quote->getStoreId()]);
+            $response->setData('jwt', $result->get()['token'] ?? null);
+            $response->setData('success', true);
+        } catch (CommandException $e) {
+            $response->setData('errormessage', $e->getMessage());
+            $response->setData('success', false);
         }
 
-        $response->setData('success', $success);
         return $response;
     }
 }

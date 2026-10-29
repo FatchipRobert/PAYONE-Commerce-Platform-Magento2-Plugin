@@ -17,14 +17,29 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Controller\Onepage;
 
+use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Controller\Result\RedirectFactory;
+use Magento\Framework\Message\ManagerInterface;
+use Magento\Payment\Gateway\Command\CommandException;
+use Magento\Payment\Gateway\Command\CommandPoolInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage\CollectionFactory;
 
-class Returned extends \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
+/**
+ * Return of the customer from a redirect (3DS, PayPal, ...)
+ */
+class Returned implements HttpGetActionInterface, HttpPostActionInterface, CsrfAwareActionInterface
 {
     /**
      * Status values according to the PAYONE Commerce Platform StatusValue enum (PCP-ServerSDK-php)
@@ -43,62 +58,21 @@ class Returned extends \Magento\Framework\App\Action\Action implements CsrfAware
     public const RETRY_MILLISECONDS_SLEEP = 100; // 1/10th second
 
     /**
-     * @var \Magento\Checkout\Model\Session
-     */
-    protected $checkoutSession;
-
-    /**
-     * @var \Magento\Sales\Api\OrderRepositoryInterface
-     */
-    protected $orderRepository;
-
-    /**
-     * @var \Magento\Framework\Message\ManagerInterface
-     */
-    protected $messageManager;
-
-    /**
-     * @var \Magento\Framework\Controller\Result\RedirectFactory
-     */
-    protected $resultRedirectFactory;
-
-    /**
-     * @var \Payone\CommercePlatform\Model\Api\Request\GetCheckoutDetailsFactory
-     */
-    protected $getCheckoutDetailsFactory;
-
-    /**
-     * @var \Payone\CommercePlatform\Model\ResourceModel\WebhookMessage\CollectionFactory
-     */
-    protected $webhookMessageCollectionFactory;
-
-    /**
-     * Constructor
-     *
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
-     * @param \Magento\Framework\Message\ManagerInterface $messageManager
-     * @param \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory
-     * @param \Payone\CommercePlatform\Model\Api\Request\GetCheckoutDetailsFactory $getCheckoutDetailsFactory
-     * @param \Payone\CommercePlatform\Model\ResourceModel\WebhookMessage\CollectionFactory $webhookMessageCollectionFactory
+     * @param Session $checkoutSession
+     * @param OrderRepositoryInterface $orderRepository
+     * @param ManagerInterface $messageManager
+     * @param RedirectFactory $resultRedirectFactory
+     * @param CollectionFactory $webhookMessageCollectionFactory
+     * @param CommandPoolInterface $commandPool PayoneCPServiceCommandPool
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
-        \Magento\Framework\Message\ManagerInterface $messageManager,
-        \Magento\Framework\Controller\Result\RedirectFactory $resultRedirectFactory,
-        \Payone\CommercePlatform\Model\Api\Request\GetCheckoutDetailsFactory $getCheckoutDetailsFactory,
-        \Payone\CommercePlatform\Model\ResourceModel\WebhookMessage\CollectionFactory $webhookMessageCollectionFactory
+        private readonly Session $checkoutSession,
+        private readonly OrderRepositoryInterface $orderRepository,
+        private readonly ManagerInterface $messageManager,
+        private readonly RedirectFactory $resultRedirectFactory,
+        private readonly CollectionFactory $webhookMessageCollectionFactory,
+        private readonly CommandPoolInterface $commandPool,
     ) {
-        parent::__construct($context);
-        $this->checkoutSession = $checkoutSession;
-        $this->orderRepository = $orderRepository;
-        $this->messageManager = $messageManager;
-        $this->resultRedirectFactory = $resultRedirectFactory;
-        $this->getCheckoutDetailsFactory = $getCheckoutDetailsFactory;
-        $this->webhookMessageCollectionFactory = $webhookMessageCollectionFactory;
     }
 
     /**
@@ -118,29 +92,56 @@ class Returned extends \Magento\Framework\App\Action\Action implements CsrfAware
     }
 
     /**
+     * Redirects to the success page, back to the checkout or to the cart depending on the payment status
+     *
+     * @return Redirect
+     */
+    public function execute(): Redirect
+    {
+        $order = $this->checkoutSession->getLastRealOrder();
+        if (!$order->getId()) {
+            return $this->handleErrorState($order);
+        }
+
+        $status = $this->getPaymentStatus($order);
+
+        if (in_array($status, self::STATUS_LIST_SUCCESS, true)) {
+            return $this->handleSuccessState();
+        }
+
+        if (in_array($status, self::STATUS_LIST_CANCEL, true)) {
+            return $this->handleCancelState($order);
+        }
+
+        // Intermediate status (CREATED, REDIRECTED, PENDING_PAYMENT, PENDING_COMPLETION, AUTHORIZATION_REQUESTED,
+        // CAPTURE_REQUESTED), unknown status or status not determinable (no webhook yet, API error):
+        // the payment may still succeed, so the order must not be cancelled here
+        return $this->handlePendingState();
+    }
+
+    /**
      * Returns the payment status of the latest received webhook for the order
      *
      * The webhook may arrive shortly after the customer returned, so the lookup is retried a few times
      *
-     * @param  Order $order
-     * @param  int   $retryCount
+     * @param Order $order
+     * @param int $retryCount
      * @return string|null
      */
-    protected function getStatusFromWebhook(Order $order, $retryCount = 0)
+    private function getStatusFromWebhook(Order $order, int $retryCount = 0): ?string
     {
-        /** @var \Payone\CommercePlatform\Model\ResourceModel\WebhookMessage\Collection $collection */
         $collection = $this->webhookMessageCollectionFactory->create();
         $collection->addFieldToFilter('payment_id', $order->getData('payone_cp_payment_id'))
             ->setOrder('date', 'DESC');
 
         if ($collection->getSize() > 0) {
-            $webhookMessage = $collection->getFirstItem();
-            return $webhookMessage->getStatus();
+            $status = $collection->getFirstItem()->getStatus();
+            return $status !== null ? (string)$status : null;
         }
 
-        if ($retryCount < self::RETRY_LIMIT) { // retry
+        if ($retryCount < self::RETRY_LIMIT) {
             usleep(self::RETRY_MILLISECONDS_SLEEP * 1000);
-            return $this->getStatusFromWebhook($order, ++$retryCount);
+            return $this->getStatusFromWebhook($order, $retryCount + 1);
         }
         return null;
     }
@@ -148,33 +149,30 @@ class Returned extends \Magento\Framework\App\Action\Action implements CsrfAware
     /**
      * Returns the payment status of the last event of the latest payment execution from GetCheckoutDetails
      *
-     * @param  Order $order
-     * @return string|null
+     * @param Order $order
+     * @return string|null null if the API call failed
      */
-    protected function getStatusFromAPI(Order $order)
+    private function getStatusFromApi(Order $order): ?string
     {
-        $getCheckoutDetails = $this->getCheckoutDetailsFactory->create();
-        $getCheckoutDetails->populateParameters($order);
-
-        $response = $getCheckoutDetails->sendRequest([
-            'commerceCaseId' => $order->getData('payone_cp_commerce_case_id'),
-            'checkoutId' => $order->getData('payone_cp_checkout_id'),
-        ]);
-
-        $status = null;
-        $paymentExecutions = $response->getResponse()['paymentExecutions'] ?? null;
-        if (!empty($paymentExecutions) && is_array($paymentExecutions)) {
-            $paymentExecution = end($paymentExecutions);
-            if (!empty($paymentExecution['events']) && is_array($paymentExecution['events'])) {
-                $events = $paymentExecution['events'];
-                $lastEvent = end($events);
-                if (!empty($lastEvent['paymentStatus'])) {
-                    $status = $lastEvent['paymentStatus'];
-                }
-            }
+        try {
+            $checkout = $this->commandPool->get('get_checkout_details')->execute(['order' => $order])->get();
+        } catch (CommandException $e) {
+            return null;
         }
 
-        return $status;
+        $paymentExecutions = $checkout['paymentExecutions'] ?? null;
+        if (empty($paymentExecutions) || !is_array($paymentExecutions)) {
+            return null;
+        }
+
+        $paymentExecution = end($paymentExecutions);
+        if (empty($paymentExecution['events']) || !is_array($paymentExecution['events'])) {
+            return null;
+        }
+
+        $events = $paymentExecution['events'];
+        $lastEvent = end($events);
+        return !empty($lastEvent['paymentStatus']) ? (string)$lastEvent['paymentStatus'] : null;
     }
 
     /**
@@ -183,11 +181,11 @@ class Returned extends \Magento\Framework\App\Action\Action implements CsrfAware
      * @param Order $order
      * @return string|null
      */
-    protected function getPaymentStatus(Order $order)
+    private function getPaymentStatus(Order $order): ?string
     {
         $status = $this->getStatusFromWebhook($order);
         if (empty($status)) {
-            $status = $this->getStatusFromAPI($order);
+            $status = $this->getStatusFromApi($order);
         }
         return $status;
     }
@@ -198,7 +196,7 @@ class Returned extends \Magento\Framework\App\Action\Action implements CsrfAware
      * @param Order $order
      * @return void
      */
-    protected function cancelOrderAndRestoreQuote(Order $order)
+    private function cancelOrderAndRestoreQuote(Order $order): void
     {
         if ($order->canCancel()) {
             $order->cancel();
@@ -210,10 +208,9 @@ class Returned extends \Magento\Framework\App\Action\Action implements CsrfAware
     /**
      * Redirects to the checkout success page
      *
-     * @param Order $order
-     * @return \Magento\Framework\Controller\Result\Redirect
+     * @return Redirect
      */
-    protected function handleSuccessState(Order $order)
+    private function handleSuccessState(): Redirect
     {
         return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success');
     }
@@ -223,10 +220,9 @@ class Returned extends \Magento\Framework\App\Action\Action implements CsrfAware
      *
      * The webhook observer authorizes or cancels the order
      *
-     * @param Order $order
-     * @return \Magento\Framework\Controller\Result\Redirect
+     * @return Redirect
      */
-    protected function handlePendingState(Order $order)
+    private function handlePendingState(): Redirect
     {
         $this->messageManager->addNoticeMessage(__('Your payment is still being processed. You will receive a confirmation as soon as the payment is completed.'));
         return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success');
@@ -236,9 +232,9 @@ class Returned extends \Magento\Framework\App\Action\Action implements CsrfAware
      * Cancels the order and redirects back to the payment step with a cancellation message
      *
      * @param Order $order
-     * @return \Magento\Framework\Controller\Result\Redirect
+     * @return Redirect
      */
-    protected function handleCancelState(Order $order)
+    private function handleCancelState(Order $order): Redirect
     {
         $this->cancelOrderAndRestoreQuote($order);
         // The checkout page does not render session messages (page.messages is removed in checkout_index_index.xml),
@@ -251,42 +247,12 @@ class Returned extends \Magento\Framework\App\Action\Action implements CsrfAware
      * Cancels the order and redirects to the cart with an error message
      *
      * @param Order $order
-     * @return \Magento\Framework\Controller\Result\Redirect
+     * @return Redirect
      */
-    protected function handleErrorState(Order $order)
+    private function handleErrorState(Order $order): Redirect
     {
         $this->cancelOrderAndRestoreQuote($order);
         $this->messageManager->addErrorMessage(__('An error occurred while processing your payment. Please try again.'));
         return $this->resultRedirectFactory->create()->setPath('checkout/cart');
-    }
-
-    /**
-     * Redirect to success page
-     *
-     * Do whatever processing is needed after successful return from payment-provider
-     *
-     * @return void
-     */
-    public function execute()
-    {
-        $order = $this->checkoutSession->getLastRealOrder();
-        if (!$order->getId()) {
-            return $this->handleErrorState($order);
-        }
-
-        $status = $this->getPaymentStatus($order);
-
-        if (in_array($status, self::STATUS_LIST_SUCCESS) === true) {
-            return $this->handleSuccessState($order);
-        }
-
-        if (in_array($status, self::STATUS_LIST_CANCEL) === true) {
-            return $this->handleCancelState($order);
-        }
-
-        // Intermediate status (CREATED, REDIRECTED, PENDING_PAYMENT, PENDING_COMPLETION, AUTHORIZATION_REQUESTED,
-        // CAPTURE_REQUESTED), unknown status or status not determinable (no webhook yet, API error):
-        // the payment may still succeed, so the order must not be cancelled here
-        return $this->handlePendingState($order);
     }
 }
