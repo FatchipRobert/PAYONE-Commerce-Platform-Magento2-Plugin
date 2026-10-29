@@ -1,5 +1,4 @@
 <?php
-
 /**
  * PAYONE Commerce Platform Magento 2 Connector
  *
@@ -18,31 +17,34 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Observer;
 
-use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Event\Observer;
-use Payone\CommercePlatform\Model\Method\BaseMethod;
+use Magento\Framework\Event\ObserverInterface;
+use Payone\CommercePlatform\Model\Payone;
 
 /**
- * Event class to make the invoice which is currently captured available to the capture request
- * The invoice is not saved yet during an online capture, so it can't be read from the order invoice collection
+ * Makes the invoice which is currently captured available to Gateway\Request\CaptureBuilder
+ *
+ * The invoice is not saved yet during an online capture, so it can't be read from the order invoice collection.
  */
 class OrderPaymentCapture implements ObserverInterface
 {
     public const PAYMENT_KEY_CAPTURE_INVOICE = 'payone_cp_capture_invoice';
 
     /**
-     * Executed in ProcessInvoiceOperation right before the capture method of the payment method is called
+     * Executed in ProcessInvoiceOperation right before the capture command of the payment method is executed
      *
-     * @param  Observer $observer
+     * @param Observer $observer
      * @return void
      */
-    public function execute(Observer $observer)
+    public function execute(Observer $observer): void
     {
         $payment = $observer->getPayment();
         $invoice = $observer->getInvoice();
-        if (empty($payment) || empty($invoice) || !$payment->getMethodInstance() instanceof BaseMethod) {
+        if (empty($payment) || empty($invoice) || !in_array($payment->getMethod(), Payone::METHODS, true)) {
             return;
         }
 

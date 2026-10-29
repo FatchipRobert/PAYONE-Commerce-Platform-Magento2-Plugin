@@ -22,7 +22,7 @@
             <payone_cp_creditcard>
                 <active>1</active>
                 <payment_action>authorize</payment_action>
-                <model>Payone\CommercePlatform\Model\Method\Creditcard</model>
+                <model>PayoneCPCreditcardFacade</model>
                 <payone_method_type>cardPaymentMethod</payone_method_type>
                 <payone_product_id>1</payone_product_id>
                 <automatic_capture>0</automatic_capture>
@@ -49,7 +49,7 @@
             <payone_cp_directdebit>
                 <active>1</active>
                 <payment_action>authorize</payment_action>
-                <model>Payone\CommercePlatform\Model\Method\DirectDebit</model>
+                <model>PayoneCPDirectDebitFacade</model>
                 <payone_method_type>sepaDirectDebitPaymentMethod</payone_method_type>
                 <payone_product_id>771</payone_product_id>
                 <automatic_capture>1</automatic_capture>
@@ -75,7 +75,7 @@
             <payone_cp_paypal>
                 <active>1</active>
                 <payment_action>authorize</payment_action>
-                <model>Payone\CommercePlatform\Model\Method\PayPal</model>
+                <model>PayoneCPPayPalFacade</model>
                 <payone_method_type>redirectPaymentMethod</payone_method_type>
                 <payone_product_id>840</payone_product_id>
                 <automatic_capture>0</automatic_capture>
@@ -102,7 +102,7 @@
             <payone_cp_googlepay>
                 <active>1</active>
                 <payment_action>authorize</payment_action>
-                <model>Payone\CommercePlatform\Model\Method\GooglePay</model>
+                <model>PayoneCPGooglePayFacade</model>
                 <payone_method_type>mobilePaymentMethod</payone_method_type>
                 <payone_product_id>320</payone_product_id>
                 <automatic_capture>0</automatic_capture>

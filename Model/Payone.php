@@ -34,13 +34,13 @@ abstract class Payone
     public const METHOD_PAYPAL = 'payone_cp_paypal';
     public const METHOD_GOOGLEPAY = 'payone_cp_googlepay';
 
-    /* METHOD TYPES */
-
-    public const PAYMENT_METHOD_TYPE_CARD = 'cardPaymentMethod';
-    public const PAYMENT_METHOD_TYPE_MOBILE = 'mobilePaymentMethod';
-    public const PAYMENT_METHOD_TYPE_REDIRECT = 'redirectPaymentMethod';
-    public const PAYMENT_METHOD_TYPE_SEPA = 'sepaDirectDebitPaymentMethod';
-    public const PAYMENT_METHOD_TYPE_FINANCING = 'financingPaymentMethod';
+    /* All PAYONE payment methods - check with in_array($code, Payone::METHODS, true) */
+    public const METHODS = [
+        self::METHOD_CREDITCARD,
+        self::METHOD_DIRECT_DEBIT,
+        self::METHOD_PAYPAL,
+        self::METHOD_GOOGLEPAY,
+    ];
 
     /* TRANSACTIONS */
 

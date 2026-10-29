@@ -20,113 +20,146 @@
     <preference for="Payone\CommercePlatform\Api\ClickToPayInterface" type="Payone\CommercePlatform\Service\V1\ClickToPay" />
     <preference for="Payone\CommercePlatform\Api\Data\ClickToPayResponseInterface" type="Payone\CommercePlatform\Service\V1\Data\ClickToPayResponse" />
 
-    <!-- START - PAYMENT CONFIG -->
-    <type name="Payone\CommercePlatform\Model\Method\BaseMethod">
+    <!-- START - PAYMENT METHODS -->
+    <!-- Base of all PAYONE payment methods: Magento's Adapter with the PAYONE commands. Never used directly. -->
+    <virtualType name="PayoneCPFacade" type="Magento\Payment\Model\Method\Adapter">
         <arguments>
-            <!-- A default code has to be set here - correct code is set in the constructor -->
-            <argument name="code" xsi:type="string">Payone\CommercePlatform\Model\Payone::METHOD_CREDITCARD</argument>
             <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Form</argument>
             <argument name="infoBlockType" xsi:type="string">Magento\Payment\Block\Info</argument>
             <argument name="commandPool" xsi:type="object">PayoneCPCommandPool</argument>
         </arguments>
-    </type>
+    </virtualType>
 
-    <!-- START - EVERY PAYMENT METHOD NEEDS ONE OF THESE BLOCKS -->
-    <!-- Creditcard Config Handler -->
-    <type name="Payone\CommercePlatform\Model\Method\Creditcard">
+    <!-- Every payment method needs these 4 blocks (facade = <model> in etc/config.xml, config from payment/<code>/*) -->
+    <!-- Credit card -->
+    <virtualType name="PayoneCPCreditcardFacade" type="PayoneCPFacade">
         <arguments>
-            <argument name="valueHandlerPool" xsi:type="object">PayoneCPValueHandlerPoolCreditcard</argument>
+            <argument name="code" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_CREDITCARD</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPCreditcardValueHandlerPool</argument>
         </arguments>
-    </type>
-    <virtualType name="PayoneCPValueHandlerPoolCreditcard" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+    </virtualType>
+    <virtualType name="PayoneCPCreditcardValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="default" xsi:type="string">PayoneCPConfigValueHandlerCreditcard</item>
+                <item name="default" xsi:type="string">PayoneCPCreditcardValueHandler</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="PayoneCPConfigValueHandlerCreditcard" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+    <virtualType name="PayoneCPCreditcardValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
-            <argument name="configInterface" xsi:type="object">PayoneCPCreditcardVaultPaymentConfigCreditcard</argument>
+            <argument name="configInterface" xsi:type="object">PayoneCPCreditcardConfig</argument>
         </arguments>
     </virtualType>
-    <virtualType name="PayoneCPCreditcardVaultPaymentConfigCreditcard" type="Magento\Payment\Gateway\Config\Config">
+    <virtualType name="PayoneCPCreditcardConfig" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
             <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_CREDITCARD</argument>
         </arguments>
     </virtualType>
-    <!-- END - EVERY PAYMENT METHOD NEEDS ONE OF THESE BLOCKS... -->
 
-    <!-- Direct Debit Config Handler -->
-    <type name="Payone\CommercePlatform\Model\Method\DirectDebit">
+    <!-- SEPA direct debit -->
+    <virtualType name="PayoneCPDirectDebitFacade" type="PayoneCPFacade">
         <arguments>
-            <argument name="valueHandlerPool" xsi:type="object">PayoneCPValueHandlerPoolDirectDebit</argument>
+            <argument name="code" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_DIRECT_DEBIT</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPDirectDebitValueHandlerPool</argument>
         </arguments>
-    </type>
-    <virtualType name="PayoneCPValueHandlerPoolDirectDebit" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+    </virtualType>
+    <virtualType name="PayoneCPDirectDebitValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="default" xsi:type="string">PayoneCPConfigValueHandlerDirectDebit</item>
+                <item name="default" xsi:type="string">PayoneCPDirectDebitValueHandler</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="PayoneCPConfigValueHandlerDirectDebit" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+    <virtualType name="PayoneCPDirectDebitValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
-            <argument name="configInterface" xsi:type="object">PayoneCPVaultPaymentConfigDirectDebit</argument>
+            <argument name="configInterface" xsi:type="object">PayoneCPDirectDebitConfig</argument>
         </arguments>
     </virtualType>
-    <virtualType name="PayoneCPVaultPaymentConfigDirectDebit" type="Magento\Payment\Gateway\Config\Config">
+    <virtualType name="PayoneCPDirectDebitConfig" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
             <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_DIRECT_DEBIT</argument>
         </arguments>
     </virtualType>
-    <!-- PayPal Config Handler -->
-    <type name="Payone\CommercePlatform\Model\Method\PayPal">
+
+    <!-- PayPal -->
+    <virtualType name="PayoneCPPayPalFacade" type="PayoneCPFacade">
         <arguments>
-            <argument name="valueHandlerPool" xsi:type="object">PayoneCPValueHandlerPoolPayPal</argument>
+            <argument name="code" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_PAYPAL</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPPayPalValueHandlerPool</argument>
         </arguments>
-    </type>
-    <virtualType name="PayoneCPValueHandlerPoolPayPal" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+    </virtualType>
+    <virtualType name="PayoneCPPayPalValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="default" xsi:type="string">PayoneCPConfigValueHandlerPayPal</item>
+                <item name="default" xsi:type="string">PayoneCPPayPalValueHandler</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="PayoneCPConfigValueHandlerPayPal" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+    <virtualType name="PayoneCPPayPalValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
-            <argument name="configInterface" xsi:type="object">PayoneCPVaultPaymentConfigPayPal</argument>
+            <argument name="configInterface" xsi:type="object">PayoneCPPayPalConfig</argument>
         </arguments>
     </virtualType>
-    <virtualType name="PayoneCPVaultPaymentConfigPayPal" type="Magento\Payment\Gateway\Config\Config">
+    <virtualType name="PayoneCPPayPalConfig" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
             <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_PAYPAL</argument>
         </arguments>
     </virtualType>
-    <!-- Google Pay Config Handler -->
-    <type name="Payone\CommercePlatform\Model\Method\GooglePay">
+
+    <!-- Google Pay -->
+    <virtualType name="PayoneCPGooglePayFacade" type="PayoneCPFacade">
         <arguments>
-            <argument name="valueHandlerPool" xsi:type="object">PayoneCPValueHandlerPoolGooglePay</argument>
+            <argument name="code" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_GOOGLEPAY</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPGooglePayValueHandlerPool</argument>
         </arguments>
-    </type>
-    <virtualType name="PayoneCPValueHandlerPoolGooglePay" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+    </virtualType>
+    <virtualType name="PayoneCPGooglePayValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="default" xsi:type="string">PayoneCPConfigValueHandlerGooglePay</item>
+                <item name="default" xsi:type="string">PayoneCPGooglePayValueHandler</item>
             </argument>
         </arguments>
     </virtualType>
-    <virtualType name="PayoneCPConfigValueHandlerGooglePay" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+    <virtualType name="PayoneCPGooglePayValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
         <arguments>
-            <argument name="configInterface" xsi:type="object">PayoneCPVaultPaymentConfigGooglePay</argument>
+            <argument name="configInterface" xsi:type="object">PayoneCPGooglePayConfig</argument>
         </arguments>
     </virtualType>
-    <virtualType name="PayoneCPVaultPaymentConfigGooglePay" type="Magento\Payment\Gateway\Config\Config">
+    <virtualType name="PayoneCPGooglePayConfig" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
             <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_GOOGLEPAY</argument>
         </arguments>
     </virtualType>
-    <!-- END - PAYMENT CONFIG -->
+
+    <!-- Checkout input → additional_information of the payment (events in etc/events.xml), PayPal has no input -->
+    <virtualType name="PayoneCPCreditcardDataAssignObserver" type="Payone\CommercePlatform\Observer\DataAssignObserver">
+        <arguments>
+            <argument name="additionalInformationKeys" xsi:type="array">
+                <item name="pseudocardpan" xsi:type="string">pseudocardpan</item>
+                <item name="cardholder" xsi:type="string">cardholder</item>
+                <item name="cardtype" xsi:type="string">cardtype</item>
+                <item name="cardinputmode" xsi:type="string">cardinputmode</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPDirectDebitDataAssignObserver" type="Payone\CommercePlatform\Observer\DataAssignObserver">
+        <arguments>
+            <argument name="additionalInformationKeys" xsi:type="array">
+                <item name="bank_country" xsi:type="string">bank_country</item>
+                <item name="accountholder" xsi:type="string">accountholder</item>
+                <item name="iban" xsi:type="string">iban</item>
+                <item name="bic" xsi:type="string">bic</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPGooglePayDataAssignObserver" type="Payone\CommercePlatform\Observer\DataAssignObserver">
+        <arguments>
+            <argument name="additionalInformationKeys" xsi:type="array">
+                <item name="payment_token" xsi:type="string">payment_token</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <!-- END - PAYMENT METHODS -->
 
     <!-- START - PAYMENT COMMANDS (executed by Magento\Payment\Model\Method\Adapter, only if can_<command> is set in config.xml) -->
     <virtualType name="PayoneCPCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">

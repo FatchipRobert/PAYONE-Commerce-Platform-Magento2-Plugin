@@ -80,8 +80,6 @@ class All implements ObserverInterface
             );
             $this->orderRepository->save($order);
         }
-
-        $order->getPayment()->getMethodInstance()->handleWebhookSpecific($order, $webhookMessage);
     }
 
     /**

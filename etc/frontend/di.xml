@@ -20,7 +20,10 @@
     <type name="Magento\Checkout\Model\CompositeConfigProvider">
         <arguments>
             <argument name="configProviders" xsi:type="array">
-                <item name="payone_cp_config_provider" xsi:type="object">Payone\CommercePlatform\Model\ConfigProvider</item>
+                <item name="payone_cp_config_provider" xsi:type="object">Payone\CommercePlatform\Model\Ui\ConfigProvider</item>
+                <item name="payone_cp_creditcard_config_provider" xsi:type="object">Payone\CommercePlatform\Model\Ui\CreditcardConfigProvider</item>
+                <item name="payone_cp_directdebit_config_provider" xsi:type="object">Payone\CommercePlatform\Model\Ui\DirectDebitConfigProvider</item>
+                <item name="payone_cp_googlepay_config_provider" xsi:type="object">Payone\CommercePlatform\Model\Ui\GooglePayConfigProvider</item>
             </argument>
         </arguments>
     </type>
