@@ -44,6 +44,9 @@ class PassthroughMessageMapper implements ErrorMessageMapperInterface
             '3d_SECURE_ERROR' => __(
                 'The payment was declined. Please check your card details or choose a different payment method.'
             ),
+            'INVALID_GOOGLE_PAY_TOKEN' => __(
+                'The payment with Google Pay could not be processed. Please try again or choose a different payment method.'
+            ),
             default => new Phrase($code),
         };
     }
