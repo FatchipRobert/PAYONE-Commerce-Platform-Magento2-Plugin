@@ -6,3 +6,4 @@
 "Your payment is still being processed. You will receive a confirmation as soon as the payment is completed.","Ihre Zahlung wird noch bearbeitet. Sie erhalten eine Bestätigung, sobald die Zahlung abgeschlossen ist."
 "Payment failed at PAYONE (status %1), order cancelled.","Zahlung bei PAYONE fehlgeschlagen (Status %1), Bestellung storniert."
 "The payment has been cancelled.","Die Zahlung wurde abgebrochen."
+"The payment was declined. Please check your card details or choose a different payment method.","Die Zahlung wurde abgelehnt. Bitte prüfen Sie Ihre Kartendaten oder wählen Sie eine andere Zahlungsart."

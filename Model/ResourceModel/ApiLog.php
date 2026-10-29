@@ -17,14 +17,27 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Model\ResourceModel;
 
-use Payone\CommercePlatform\Model\Api\Request\BaseRequest;
-use Payone\CommercePlatform\Model\Api\Response;
+use Magento\Framework\App\DeploymentConfig;
+use Magento\Framework\App\ResourceConnection\ConnectionFactory;
 use Magento\Framework\Config\ConfigOptionsListConstants;
+use Magento\Framework\DB\Adapter\AdapterInterface;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\Model\ResourceModel\Db\Context;
+use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
+use Payone\CommercePlatform\Gateway\SubjectReader;
 
-class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
+class ApiLog extends AbstractDb
 {
+    /**
+     * Values of the response column
+     */
+    public const STATUS_SUCCESS = 'SUCCESS';
+    public const STATUS_ERROR = 'ERROR';
+
     /**
      * Masking modes for $maskedFields
      */
@@ -38,7 +51,7 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      *
      * @var array
      */
-    protected $maskedFields = [
+    private array $maskedFields = [
         'iban' => self::MASK_PARTIAL,
         'paymentProcessingToken' => self::MASK_PARTIAL,
         'encryptedPaymentData' => self::MASK_FULL,
@@ -46,55 +59,82 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     ];
 
     /**
-     * @var \Payone\CommercePlatform\Gateway\Config\GeneralConfig
-     */
-    protected $generalConfig;
-
-    /**
-     * @var \Payone\CommercePlatform\Helper\Api
-     */
-    protected $apiHelper;
-
-    /**
-     * @var \Magento\Framework\App\DeploymentConfig
-     */
-    protected $deploymentConfig;
-
-    /**
-     * @var \Magento\Framework\App\ResourceConnection\ConnectionFactory
-     */
-    protected $connectionFactory;
-
-    /**
      * Separate connection for log entries written during an open transaction
      *
-     * @var \Magento\Framework\DB\Adapter\AdapterInterface|null
+     * @var AdapterInterface|null
      */
-    protected $logConnection = null;
+    private ?AdapterInterface $logConnection = null;
 
     /**
-     * Class constructor
-     *
-     * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
-     * @param \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig
-     * @param \Payone\CommercePlatform\Helper\Api $apiHelper
-     * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig
-     * @param \Magento\Framework\App\ResourceConnection\ConnectionFactory $connectionFactory
-     * @param string $connectionName
+     * @param Context $context
+     * @param GeneralConfig $generalConfig
+     * @param DeploymentConfig $deploymentConfig
+     * @param ConnectionFactory $connectionFactory
+     * @param SubjectReader $subjectReader
+     * @param string|null $connectionName
      */
     public function __construct(
-        \Magento\Framework\Model\ResourceModel\Db\Context $context,
-        \Payone\CommercePlatform\Gateway\Config\GeneralConfig $generalConfig,
-        \Payone\CommercePlatform\Helper\Api $apiHelper,
-        \Magento\Framework\App\DeploymentConfig $deploymentConfig,
-        \Magento\Framework\App\ResourceConnection\ConnectionFactory $connectionFactory,
-        $connectionName = null
+        Context $context,
+        private readonly GeneralConfig $generalConfig,
+        private readonly DeploymentConfig $deploymentConfig,
+        private readonly ConnectionFactory $connectionFactory,
+        private readonly SubjectReader $subjectReader,
+        ?string $connectionName = null
     ) {
         parent::__construct($context, $connectionName);
-        $this->generalConfig = $generalConfig;
-        $this->apiHelper = $apiHelper;
-        $this->deploymentConfig = $deploymentConfig;
-        $this->connectionFactory = $connectionFactory;
+    }
+
+    /**
+     * Initialize connection and table
+     *
+     * @return void
+     */
+    protected function _construct()
+    {
+        $this->_init('payone_cp_protocol_api', 'entity_id');
+    }
+
+    /**
+     * Save Api-log entry to database
+     *
+     * @param int|string|null $storeId
+     * @param string $requestName
+     * @param string|null $orderIncrementId
+     * @param string|null $paymentMethod
+     * @param string|null $requestRaw
+     * @param string $responseStatus one of the STATUS_* constants
+     * @param string|null $responseRaw
+     * @param array|null $responseBody decoded response, source of the PAYONE ids
+     * @return $this
+     */
+    public function addApiLogEntry(
+        int|string|null $storeId,
+        string $requestName,
+        ?string $orderIncrementId,
+        ?string $paymentMethod,
+        ?string $requestRaw,
+        string $responseStatus,
+        ?string $responseRaw = null,
+        ?array $responseBody = null
+    ): self {
+        $this->getLogConnection()->insert(
+            $this->getMainTable(),
+            [
+                'order_increment_id' => $orderIncrementId,
+                'store_id' => $storeId,
+                'payment_method' => $paymentMethod,
+                'merchant_id' => $this->generalConfig->getMerchantId($storeId),
+                'request' => $requestName,
+                'response' => $responseStatus,
+                'request_details' => $this->maskDetails($requestRaw),
+                'response_details' => $this->maskDetails($responseRaw),
+                'commerce_case_id' => $this->subjectReader->findValue($responseBody, 'commerceCaseId'),
+                'checkout_id' => $this->subjectReader->findValue($responseBody, 'checkoutId'),
+                'payment_id' => $this->subjectReader->findValue($responseBody, 'paymentId'),
+                'payment_execution_id' => $this->subjectReader->findValue($responseBody, 'paymentExecutionId'),
+            ]
+        );
+        return $this;
     }
 
     /**
@@ -103,9 +143,9 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      * If the call fails, that transaction is rolled back - including the log entry on the same connection.
      * The API call happened anyway, so the entry is written on a separate connection in that case.
      *
-     * @return \Magento\Framework\DB\Adapter\AdapterInterface
+     * @return AdapterInterface
      */
-    protected function getLogConnection()
+    private function getLogConnection(): AdapterInterface
     {
         $connection = $this->getConnection();
         if ($connection->getTransactionLevel() === 0) {
@@ -121,23 +161,13 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     }
 
     /**
-     * Initialize connection and table
-     *
-     * @return void
-     */
-    protected function _construct()
-    {
-        $this->_init('payone_cp_protocol_api', 'entity_id');
-    }
-
-    /**
      * Masks a single value with the given mode
      *
-     * @param  string $value
-     * @param  string $mode
+     * @param mixed $value
+     * @param string $mode
      * @return string
      */
-    protected function maskValue($value, $mode)
+    private function maskValue(mixed $value, string $mode): string
     {
         $value = (string)$value;
         if ($mode === self::MASK_PARTIAL && strlen($value) > 4) {
@@ -149,11 +179,11 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
     /**
      * Masks all configured fields in the given data on every level
      *
-     * @param  array $data
-     * @param  bool  $masked set to true when at least one value was masked
+     * @param array $data
+     * @param bool $masked set to true when at least one value was masked
      * @return array
      */
-    protected function maskFields(array $data, &$masked)
+    private function maskFields(array $data, bool &$masked): array
     {
         foreach ($data as $key => $value) {
             if (is_array($value)) {
@@ -171,10 +201,10 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
      *
      * Non-JSON content (e.g. exception messages) and JSON without sensitive fields is returned unchanged
      *
-     * @param  string|null $raw
+     * @param string|null $raw
      * @return string|null
      */
-    protected function maskDetails($raw)
+    private function maskDetails(?string $raw): ?string
     {
         if (empty($raw)) {
             return null;
@@ -191,42 +221,5 @@ class ApiLog extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb
             return $raw;
         }
         return json_encode($data);
-    }
-
-    /**
-     * Save Api-log entry to database
-     *
-     * @param  BaseRequest   $request
-     * @param  string|false  $requestRaw
-     * @param  string        $responseStatus
-     * @param  string|null   $responseRaw
-     * @param  Response|null $responseObject
-     * @return $this
-     */
-    public function addApiLogEntry(BaseRequest $request, $requestRaw, $responseStatus, $responseRaw = null, $responseObject = null)
-    {
-        $order = $request->getOrder();
-
-        $orderIncrementId = $order !== null ? $order->getIncrementId() : null;
-        $paymentMethod = $order !== null ? $order->getPayment()->getMethod() : null;
-
-        $this->getLogConnection()->insert(
-            $this->getMainTable(),
-            [
-                'order_increment_id' => $orderIncrementId,
-                'store_id' => $request->getStoreId(),
-                'payment_method' => $paymentMethod,
-                'merchant_id' => $this->generalConfig->getMerchantId($request->getStoreId()),
-                'request' => (new \ReflectionClass($request::class))->getShortName(),
-                'response' => $responseStatus,
-                'request_details' => $this->maskDetails($requestRaw),
-                'response_details' => $this->maskDetails($responseRaw),
-                'commerce_case_id' => $responseObject ? $responseObject->findData('commerceCaseId') : null,
-                'checkout_id' => $responseObject ? $responseObject->findData('checkoutId') : null,
-                'payment_id' => $responseObject ? $responseObject->findData('paymentId') : null,
-                'payment_execution_id' => $responseObject ? $responseObject->findData('paymentExecutionId') : null,
-            ]
-        );
-        return $this;
     }
 }

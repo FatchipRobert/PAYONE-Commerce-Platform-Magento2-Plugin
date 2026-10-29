@@ -435,7 +435,17 @@ abstract class BaseRequest
      */
     protected function handleLogging($requestRaw, $responseStatus, $responseRaw, $responseObject = null)
     {
-        $this->apiLog->addApiLogEntry($this, $requestRaw, $responseStatus, $responseRaw, $responseObject);
+        $order = $this->getOrder();
+        $this->apiLog->addApiLogEntry(
+            $this->getStoreId(),
+            (new \ReflectionClass(static::class))->getShortName(),
+            $order !== null ? (string)$order->getIncrementId() : null,
+            $order !== null ? (string)$order->getPayment()->getMethod() : null,
+            $requestRaw !== false ? $requestRaw : null,
+            $responseStatus,
+            $responseRaw,
+            $responseObject !== null ? $responseObject->getResponse() : null
+        );
     }
 
     /**
