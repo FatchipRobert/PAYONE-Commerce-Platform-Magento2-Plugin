@@ -17,38 +17,38 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Block\Adminhtml\Protocol\Api;
 
+use Magento\Backend\Block\Widget\Container;
+use Magento\Backend\Block\Widget\Context;
 use Payone\CommercePlatform\Model\ApiLog;
+use Payone\CommercePlatform\Model\ApiLogFactory;
 
-class View extends \Magento\Backend\Block\Widget\Container
+/**
+ * Detail view of an API-log entry
+ */
+class View extends Container
 {
     /**
      * Requested ApiLog-entry
      *
-     * @var \Payone\CommercePlatform\Model\ApiLog
+     * @var ApiLog|null
      */
-    protected $apiLog = null;
+    private ?ApiLog $apiLog = null;
 
     /**
-     * @var \Payone\CommercePlatform\Model\ApiLogFactory
-     */
-    protected $apiLogFactory;
-
-    /**
-     * Constructor
-     *
-     * @param \Magento\Backend\Block\Widget\Context        $context
-     * @param \Payone\CommercePlatform\Model\ApiLogFactory $apiLogFactory
-     * @param array                                        $data
+     * @param Context $context
+     * @param ApiLogFactory $apiLogFactory
+     * @param array $data
      */
     public function __construct(
-        \Magento\Backend\Block\Widget\Context $context,
-        \Payone\CommercePlatform\Model\ApiLogFactory $apiLogFactory,
+        Context $context,
+        private readonly ApiLogFactory $apiLogFactory,
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $this->apiLogFactory = $apiLogFactory;
     }
 
     /**
@@ -56,7 +56,7 @@ class View extends \Magento\Backend\Block\Widget\Container
      *
      * @return ApiLog
      */
-    public function getApiLogEntry()
+    public function getApiLogEntry(): ApiLog
     {
         if ($this->apiLog === null) {
             $apiLog = $this->apiLogFactory->create();
@@ -71,7 +71,7 @@ class View extends \Magento\Backend\Block\Widget\Container
      *
      * @return void
      */
-    protected function _construct()
+    protected function _construct(): void
     {
         $this->buttonList->add(
             'back',

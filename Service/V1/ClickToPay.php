@@ -61,7 +61,7 @@ class ClickToPay implements ClickToPayInterface
      * @param string $cartId
      * @return ClickToPayResponse
      */
-    public function getJwt($cartId)
+    public function getJwt(string $cartId): ClickToPayResponse
     {
         $quote = $this->cartRepository->getActive((int)$cartId);
 
@@ -78,10 +78,10 @@ class ClickToPay implements ClickToPayInterface
      * @param string $cartId
      * @return ClickToPayResponse
      */
-    public function getJwtGuest($cartId)
+    public function getJwtGuest(string $cartId): ClickToPayResponse
     {
         try {
-            $quoteId = $this->maskedQuoteIdToQuoteId->execute((string)$cartId);
+            $quoteId = $this->maskedQuoteIdToQuoteId->execute($cartId);
         } catch (NoSuchEntityException $e) {
             throw new NoSuchEntityException(__('Cart not found.'));
         }

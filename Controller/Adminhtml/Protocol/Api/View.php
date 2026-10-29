@@ -17,57 +17,32 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Controller\Adminhtml\Protocol\Api;
 
+use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Backend\Model\View\Result\ForwardFactory;
-use Magento\Framework\View\Result\PageFactory;
+use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\View\Result\Page;
+use Magento\Framework\View\Result\PageFactory;
 
 /**
  * Controller class for API-log details-page
  */
-class View extends \Magento\Backend\App\Action
+class View extends Action implements HttpGetActionInterface
 {
-    /**
-     * Result page
-     *
-     * @var \Magento\Framework\View\Result\PageFactory
-     */
-    protected $resultPageFactory;
+    public const ADMIN_RESOURCE = 'Payone_CommercePlatform::payone_cp_protocol_api';
 
     /**
-     * Result forward
-     *
-     * @var \Magento\Backend\Model\View\Result\ForwardFactory
-     */
-    protected $resultForwardFactory;
-
-    /**
-     * Constructor
-     *
-     * @param \Magento\Backend\App\Action\Context               $context
-     * @param \Magento\Backend\Model\View\Result\ForwardFactory $resultForwardFactory
-     * @param \Magento\Framework\View\Result\PageFactory        $resultPageFactory
+     * @param Context $context
+     * @param PageFactory $resultPageFactory
      */
     public function __construct(
         Context $context,
-        ForwardFactory $resultForwardFactory,
-        PageFactory $resultPageFactory
+        private readonly PageFactory $resultPageFactory,
     ) {
         parent::__construct($context);
-        $this->resultPageFactory = $resultPageFactory;
-        $this->resultForwardFactory = $resultForwardFactory;
-    }
-
-    /**
-     * Return if the user has the needed rights to view this page
-     *
-     * @return bool
-     */
-    protected function _isAllowed()
-    {
-        return $this->_authorization->isAllowed('Payone_CommercePlatform::payone_cp_protocol_api');
     }
 
     /**
@@ -75,15 +50,12 @@ class View extends \Magento\Backend\App\Action
      *
      * @return Page
      */
-    public function execute()
+    public function execute(): Page
     {
-        /** @var Page $resultPage */
         $resultPage = $this->resultPageFactory->create();
-        if ($this->_isAllowed()) {
-            $resultPage->setActiveMenu('Payone_CommercePlatform::payone_cp_protocol_api');
-            $resultPage->getConfig()->getTitle()->prepend(__('Protocol - API'));
-            $resultPage->getConfig()->getTitle()->prepend(sprintf("#%s", $this->getRequest()->getParam('id')));
-        }
+        $resultPage->setActiveMenu(self::ADMIN_RESOURCE);
+        $resultPage->getConfig()->getTitle()->prepend(__('Protocol - API'));
+        $resultPage->getConfig()->getTitle()->prepend(sprintf('#%s', $this->getRequest()->getParam('id')));
         return $resultPage;
     }
 }

@@ -51,7 +51,6 @@ class IpValidator
             return true;
         }
 
-        error_log(date("Y-m-d H:i:s - ").$ip.PHP_EOL, 3, BP."/access.log"); // leave here for a while to see the incoming IPs @TODO: REMOVE WHEN DONE!
         if (in_array($ip, $whitelist, true)) {
             return true;
         }

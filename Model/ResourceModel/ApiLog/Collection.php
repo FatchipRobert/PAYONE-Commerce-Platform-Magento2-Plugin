@@ -17,20 +17,23 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Model\ResourceModel\ApiLog;
 
-class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
+use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
+use Payone\CommercePlatform\Model\ApiLog;
+use Payone\CommercePlatform\Model\ResourceModel\ApiLog as ApiLogResource;
+
+class Collection extends AbstractCollection
 {
     /**
      * Initialize model and resource model
      *
      * @return void
      */
-    protected function _construct()
+    protected function _construct(): void
     {
-        $this->_init(
-            \Payone\CommercePlatform\Model\ApiLog::class,
-            \Payone\CommercePlatform\Model\ResourceModel\ApiLog::class
-        );
+        $this->_init(ApiLog::class, ApiLogResource::class);
     }
 }

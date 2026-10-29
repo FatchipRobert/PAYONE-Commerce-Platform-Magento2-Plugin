@@ -17,44 +17,41 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Controller\Onepage;
 
+use Magento\Checkout\Model\Session;
+use Magento\Framework\App\Action\HttpGetActionInterface;
+use Magento\Framework\Controller\Result\Redirect as RedirectResult;
+use Magento\Framework\Controller\Result\RedirectFactory;
+
 /**
- * Controller for redirect payment types
+ * Controller for redirect payment types (payone_cp/onepage/redirect)
  */
-class Redirect extends \Magento\Framework\App\Action\Action
+class Redirect implements HttpGetActionInterface
 {
     /**
-     * @var \Magento\Checkout\Model\Session
-     */
-    protected $checkoutSession;
-
-    /**
-     * Constructor
-     *
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param \Magento\Checkout\Model\Session       $checkoutSession
+     * @param Session $checkoutSession
+     * @param RedirectFactory $resultRedirectFactory
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Checkout\Model\Session $checkoutSession
+        private readonly Session $checkoutSession,
+        private readonly RedirectFactory $resultRedirectFactory,
     ) {
-        parent::__construct($context);
-        $this->checkoutSession = $checkoutSession;
     }
 
     /**
      * Redirect to payment-provider or to success page
      *
-     * @return void
+     * @return RedirectResult
      */
-    public function execute()
+    public function execute(): RedirectResult
     {
-        $payoneRedirectUrl = $this->checkoutSession->getPayoneRedirectUrl();
-        if (!empty($payoneRedirectUrl)) {
-            $this->getResponse()->setRedirect($payoneRedirectUrl);
-            return;
+        $payoneRedirectUrl = (string)$this->checkoutSession->getPayoneRedirectUrl();
+        if ($payoneRedirectUrl !== '') {
+            return $this->resultRedirectFactory->create()->setUrl($payoneRedirectUrl);
         }
-        $this->_redirect($this->_url->getUrl('checkout/onepage/success'));
+        return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success');
     }
 }

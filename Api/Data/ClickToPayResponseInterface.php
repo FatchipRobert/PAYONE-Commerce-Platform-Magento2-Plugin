@@ -18,6 +18,8 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Api\Data;
 
 interface ClickToPayResponseInterface
@@ -25,21 +27,21 @@ interface ClickToPayResponseInterface
     /**
      * Returns JSON web token
      *
-     * @return string
+     * @return string|null
      */
-    public function getJwt();
+    public function getJwt(): ?string;
 
     /**
      * Returns if the call was successful
      *
      * @return bool
      */
-    public function getSuccess();
+    public function getSuccess(): bool;
 
     /**
      * Returns errormessage
      *
-     * @return string
+     * @return string|null
      */
-    public function getErrormessage();
+    public function getErrormessage(): ?string;
 }

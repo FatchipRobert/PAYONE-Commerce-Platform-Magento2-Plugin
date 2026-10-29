@@ -17,21 +17,21 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Model\Source;
 
-use Magento\Framework\Option\ArrayInterface;
+use Magento\Framework\Data\OptionSourceInterface;
 
 /**
  * Source class for existing creditcard types
  */
-class CreditcardTypes implements ArrayInterface
+class CreditcardTypes implements OptionSourceInterface
 {
     /**
      * Creditcard types
-     *
-     * @var array
      */
-    protected static $types = [
+    private const TYPES = [
         'visa'              => ['name' => 'Visa',                  'cardtype' => 'V', 'cvc_length' => 3],
         'mastercard'        => ['name' => 'Mastercard',            'cardtype' => 'M', 'cvc_length' => 3],
         'americanexpress'   => ['name' => 'American Express',      'cardtype' => 'A', 'cvc_length' => 4],
@@ -43,9 +43,9 @@ class CreditcardTypes implements ArrayInterface
      *
      * @return array
      */
-    public function getCreditcardTypes()
+    public function getCreditcardTypes(): array
     {
-        return self::$types;
+        return self::TYPES;
     }
 
     /**
@@ -53,10 +53,10 @@ class CreditcardTypes implements ArrayInterface
      *
      * @return array
      */
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
         $options = [];
-        foreach (self::$types as $id => $type) {
+        foreach (self::TYPES as $id => $type) {
             $options[] = [
                 'value' => $id,
                 'label' => $type['name'],

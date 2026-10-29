@@ -17,6 +17,8 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Model\Api;
 
 class Curl extends \Magento\Framework\HTTP\Client\Curl
@@ -24,12 +26,12 @@ class Curl extends \Magento\Framework\HTTP\Client\Curl
     /**
      * Wrapper for the core makeRequest function, since makeRequest is protected
      *
-     * @param string       $method
-     * @param string       $uri
+     * @param string $method
+     * @param string $uri
      * @param array|string $params
      * @return void
      */
-    public function sendRequest($method, $uri, $params = [])
+    public function sendRequest(string $method, string $uri, array|string $params = []): void
     {
         $this->makeRequest($method, $uri, $params);
     }

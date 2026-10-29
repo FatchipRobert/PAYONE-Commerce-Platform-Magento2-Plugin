@@ -17,21 +17,23 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Model\Source;
 
-use Magento\Framework\Option\ArrayInterface;
+use Magento\Framework\Data\OptionSourceInterface;
 
 /**
  * Source class for existing Payone environments
  */
-class Environment implements ArrayInterface
+class Environment implements OptionSourceInterface
 {
     /**
      * Return existing operation modes
      *
      * @return array
      */
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
         return [
             [

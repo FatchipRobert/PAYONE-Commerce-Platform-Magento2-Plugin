@@ -17,6 +17,8 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 \Magento\Framework\Component\ComponentRegistrar::register(
     \Magento\Framework\Component\ComponentRegistrar::MODULE,
     'Payone_CommercePlatform',

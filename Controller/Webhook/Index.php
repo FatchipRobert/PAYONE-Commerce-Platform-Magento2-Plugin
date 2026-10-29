@@ -110,6 +110,7 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
 
         // Webhooks can be delivered multiple times (retries) - the event id is the idempotency key
         if ($this->webhookMessage->isEventProcessed((string)$webhookMessage['id'])) {
+            $this->logTiming('duplicate', $webhookMessage); // TODO: REMOVE temporary retry analysis (TODO.md)
             return $this->getResult(200, 'OK');
         }
 
@@ -129,7 +130,29 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
         }
 
         $this->webhookMessage->markProcessed($entityId);
+        $this->logTiming('processed', $webhookMessage); // TODO: REMOVE temporary retry analysis (TODO.md)
         return $this->getResult(200, 'OK');
+    }
+
+    /**
+     * TEMPORARY: logs every accepted webhook with the time since the request started
+     *
+     * To find out why PAYONE retries some webhooks after ~10 minutes although they were answered with 200 (TODO.md).
+     *
+     * @todo Remove when the retry analysis is done
+     * @param string $result "processed" or "duplicate"
+     * @param array $webhookMessage
+     * @return void
+     */
+    private function logTiming(string $result, array $webhookMessage): void
+    {
+        $requestStart = (float)$this->request->getServer('REQUEST_TIME_FLOAT');
+        $this->logger->info('PAYONE CP webhook '.$result, [
+            'eventId' => $webhookMessage['id'],
+            'type' => $webhookMessage['type'],
+            'ip' => $this->remoteIp->get(),
+            'durationMs' => $requestStart > 0 ? (int)round((microtime(true) - $requestStart) * 1000) : null,
+        ]);
     }
 
     /**

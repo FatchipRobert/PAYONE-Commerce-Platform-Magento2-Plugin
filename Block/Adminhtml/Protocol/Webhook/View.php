@@ -17,53 +17,51 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Block\Adminhtml\Protocol\Webhook;
 
-use Payone\CommercePlatform\Model\ApiLog;
+use Magento\Backend\Block\Widget\Container;
+use Magento\Backend\Block\Widget\Context;
+use Payone\CommercePlatform\Model\WebhookMessage;
+use Payone\CommercePlatform\Model\WebhookMessageFactory;
 
-class View extends \Magento\Backend\Block\Widget\Container
+/**
+ * Detail view of a webhook-log entry
+ */
+class View extends Container
 {
     /**
-     * Requested ApiLog-entry
+     * Requested webhook-log entry
      *
-     * @var \Payone\CommercePlatform\Model\WebhookMessage
+     * @var WebhookMessage|null
      */
-    protected $webhookMessage = null;
+    private ?WebhookMessage $webhookMessage = null;
 
     /**
-     * ApiLog factory
-     *
-     * @var \Payone\CommercePlatform\Model\WebhookMessageFactory
-     */
-    protected $webhookFactory;
-
-    /**
-     * Constructor
-     *
-     * @param \Magento\Backend\Block\Widget\Context                $context
-     * @param \Payone\CommercePlatform\Model\WebhookMessageFactory $webhookFactory
-     * @param array                                                $data
+     * @param Context $context
+     * @param WebhookMessageFactory $webhookFactory
+     * @param array $data
      */
     public function __construct(
-        \Magento\Backend\Block\Widget\Context $context,
-        \Payone\CommercePlatform\Model\WebhookMessageFactory $webhookFactory,
+        Context $context,
+        private readonly WebhookMessageFactory $webhookFactory,
         array $data = []
     ) {
         parent::__construct($context, $data);
-        $this->webhookFactory = $webhookFactory;
     }
 
     /**
-     * Returns the currently requested ApiLog-object
+     * Returns the currently requested webhook-log entry
      *
-     * @return ApiLog
+     * @return WebhookMessage
      */
-    public function getWebhookLogEntry()
+    public function getWebhookLogEntry(): WebhookMessage
     {
         if ($this->webhookMessage === null) {
-            $apiLog = $this->webhookFactory->create();
-            $apiLog->load($this->getRequest()->getParam('id'));
-            $this->webhookMessage = $apiLog;
+            $webhookMessage = $this->webhookFactory->create();
+            $webhookMessage->load($this->getRequest()->getParam('id'));
+            $this->webhookMessage = $webhookMessage;
         }
         return $this->webhookMessage;
     }
@@ -73,7 +71,7 @@ class View extends \Magento\Backend\Block\Widget\Container
      *
      * @return void
      */
-    protected function _construct()
+    protected function _construct(): void
     {
         $this->buttonList->add(
             'back',

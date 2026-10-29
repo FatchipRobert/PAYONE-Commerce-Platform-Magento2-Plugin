@@ -17,9 +17,12 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Model;
 
 use Magento\Framework\Model\AbstractModel;
+use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage as WebhookMessageResource;
 
 /**
  * WebhookMessage entity model
@@ -31,24 +34,23 @@ class WebhookMessage extends AbstractModel
      *
      * @return void
      */
-    protected function _construct()
+    protected function _construct(): void
     {
-        $this->_init(\Payone\CommercePlatform\Model\ResourceModel\WebhookMessage::class);
+        $this->_init(WebhookMessageResource::class);
     }
 
     /**
      * Formats the stored JSON for the admin detail view
      *
-     * @param  string|null $json
+     * @param string|null $json
      * @return string|false
      */
-    protected function getPrettyPrintJson($json)
+    private function getPrettyPrintJson(?string $json): string|false
     {
-        $formatted = json_encode(
-            json_decode($json, true),
+        return json_encode(
+            json_decode((string)$json, true),
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
         );
-        return $formatted;
     }
 
     /**
@@ -56,7 +58,7 @@ class WebhookMessage extends AbstractModel
      *
      * @return string|false
      */
-    public function getWebhookDetails()
+    public function getWebhookDetails(): string|false
     {
         return $this->getPrettyPrintJson($this->getData('message'));
     }

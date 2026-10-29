@@ -17,20 +17,23 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Model\ResourceModel\WebhookMessage;
 
-class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
+use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
+use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage as WebhookMessageResource;
+use Payone\CommercePlatform\Model\WebhookMessage;
+
+class Collection extends AbstractCollection
 {
     /**
      * Initialize model and resource model
      *
      * @return void
      */
-    protected function _construct()
+    protected function _construct(): void
     {
-        $this->_init(
-            \Payone\CommercePlatform\Model\WebhookMessage::class,
-            \Payone\CommercePlatform\Model\ResourceModel\WebhookMessage::class
-        );
+        $this->_init(WebhookMessage::class, WebhookMessageResource::class);
     }
 }

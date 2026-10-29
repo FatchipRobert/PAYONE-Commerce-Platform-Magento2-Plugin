@@ -18,23 +18,27 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Service\V1\Data;
 
+use Magento\Framework\Api\AbstractExtensibleObject;
 use Payone\CommercePlatform\Api\Data\ClickToPayResponseInterface;
 
 /**
- * Object for PayPal Express V2 response
+ * Response of the Click to Pay JWT endpoints
  */
-class ClickToPayResponse extends \Magento\Framework\Api\AbstractExtensibleObject implements ClickToPayResponseInterface
+class ClickToPayResponse extends AbstractExtensibleObject implements ClickToPayResponseInterface
 {
     /**
      * Returns JSON web token
      *
-     * @return string
+     * @return string|null
      */
-    public function getJwt()
+    public function getJwt(): ?string
     {
-        return $this->_get('jwt');
+        $jwt = $this->_get('jwt');
+        return $jwt !== null ? (string)$jwt : null;
     }
 
     /**
@@ -42,18 +46,19 @@ class ClickToPayResponse extends \Magento\Framework\Api\AbstractExtensibleObject
      *
      * @return bool
      */
-    public function getSuccess()
+    public function getSuccess(): bool
     {
-        return $this->_get('success');
+        return (bool)$this->_get('success');
     }
 
     /**
      * Returns errormessage
      *
-     * @return string
+     * @return string|null
      */
-    public function getErrormessage()
+    public function getErrormessage(): ?string
     {
-        return $this->_get('errormessage');
+        $message = $this->_get('errormessage');
+        return $message !== null ? (string)$message : null;
     }
 }

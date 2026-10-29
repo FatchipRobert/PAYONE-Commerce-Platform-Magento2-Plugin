@@ -89,7 +89,7 @@ class ApiLog extends AbstractDb
      *
      * @return void
      */
-    protected function _construct()
+    protected function _construct(): void
     {
         $this->_init('payone_cp_protocol_api', 'entity_id');
     }

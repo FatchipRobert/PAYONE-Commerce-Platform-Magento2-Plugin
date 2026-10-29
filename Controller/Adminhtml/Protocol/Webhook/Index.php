@@ -17,89 +17,44 @@
  * @link      https://www.payone.de
  */
 
+declare(strict_types=1);
+
 namespace Payone\CommercePlatform\Controller\Adminhtml\Protocol\Webhook;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\View\Result\PageFactory;
-use Magento\Backend\Model\View\Result\Page as BackendPage;
+use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\View\Result\Page;
+use Magento\Framework\View\Result\PageFactory;
 
 /**
  * Controller for admin Webhook-log grid
  */
-class Index extends Action
+class Index extends Action implements HttpGetActionInterface
 {
-    /**
-     * Page factory
-     *
-     * @var \Magento\Framework\View\Result\PageFactory
-     */
-    protected $resultPageFactory;
+    public const ADMIN_RESOURCE = 'Payone_CommercePlatform::payone_cp_protocol_webhook';
 
     /**
-     * @var \Magento\Backend\Model\View\Result\Page
-     */
-    protected $resultPage;
-
-    /**
-     * Constructor
-     *
-     * @param Context     $context
+     * @param Context $context
      * @param PageFactory $resultPageFactory
      */
-    public function __construct(Context $context, PageFactory $resultPageFactory)
-    {
+    public function __construct(
+        Context $context,
+        private readonly PageFactory $resultPageFactory,
+    ) {
         parent::__construct($context);
-        $this->resultPageFactory = $resultPageFactory;
-    }
-
-    /**
-     * Return if the user has the needed rights to view this page
-     *
-     * @return bool
-     */
-    protected function _isAllowed()
-    {
-        return $this->_authorization->isAllowed('Payone_CommercePlatform::payone_cp_protocol_webhook');
     }
 
     /**
      * Return result page
      *
-     * @return BackendPage|Page
+     * @return Page
      */
-    public function execute()
+    public function execute(): Page
     {
-        if ($this->_isAllowed()) {
-            $this->setPageData();
-        }
-        return $this->getResultPage();
-    }
-
-    /**
-     * Instantiate result page object
-     *
-     * @return BackendPage|Page
-     */
-    public function getResultPage()
-    {
-        if ($this->resultPage === null) {
-            $this->resultPage = $this->resultPageFactory->create();
-        }
-        return $this->resultPage;
-    }
-
-    /**
-     * Set page data
-     *
-     * @return $this
-     */
-    protected function setPageData()
-    {
-        $resultPage = $this->getResultPage();
-        $resultPage->setActiveMenu('Payone_CommercePlatform::payone_cp_protocol_webhook');
-        $resultPage->getConfig()->getTitle()->set((__('Protocol - Webhook')));
-        return $this;
+        $resultPage = $this->resultPageFactory->create();
+        $resultPage->setActiveMenu(self::ADMIN_RESOURCE);
+        $resultPage->getConfig()->getTitle()->set(__('Protocol - Webhook'));
+        return $resultPage;
     }
 }
