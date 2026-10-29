@@ -22,7 +22,6 @@ declare(strict_types=1);
 namespace Payone\CommercePlatform\Gateway\Request\PaymentMethod;
 
 use Magento\Payment\Gateway\Request\BuilderInterface;
-use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
 use Payone\CommercePlatform\Gateway\Request\ReturnUrl;
 use Payone\CommercePlatform\Gateway\SubjectReader;
 
@@ -33,12 +32,10 @@ class PayPalBuilder implements BuilderInterface
 {
     /**
      * @param SubjectReader $subjectReader
-     * @param GeneralConfig $generalConfig
      * @param ReturnUrl $returnUrl
      */
     public function __construct(
         private readonly SubjectReader $subjectReader,
-        private readonly GeneralConfig $generalConfig,
         private readonly ReturnUrl $returnUrl,
     ) {
     }
@@ -53,11 +50,7 @@ class PayPalBuilder implements BuilderInterface
     {
         $payment = $this->subjectReader->readPayment($buildSubject)->getPayment();
         $order = $payment->getOrder();
-        $isAutomaticCapture = (bool)$this->generalConfig->getPaymentValue(
-            $payment->getMethod(),
-            'automatic_capture',
-            $order->getStoreId()
-        );
+        $isAutomaticCapture = (bool)$payment->getMethodInstance()->getConfigData('automatic_capture', $order->getStoreId());
 
         return [
             'requiresApproval' => !$isAutomaticCapture,

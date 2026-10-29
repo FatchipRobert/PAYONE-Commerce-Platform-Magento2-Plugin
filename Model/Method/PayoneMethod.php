@@ -32,11 +32,6 @@ abstract class PayoneMethod extends BaseMethod
     protected $assignKeys;
 
     /**
-     * @var bool
-     */
-    protected $isAutomaticCaptureMethod = false;
-
-    /**
      * Hook for extension by the real payment method classes
      *
      * @return array
@@ -122,20 +117,6 @@ abstract class PayoneMethod extends BaseMethod
             return null;
         }
         return $store->getCode();
-    }
-
-    /**
-     * Checks if the payment is captured directly (SALE) instead of being authorized only
-     *
-     * @param string $storeCode
-     * @return bool
-     */
-    public function isAutomaticCapture($storeCode = null)
-    {
-        if ($this->isAutomaticCaptureMethod === true) {
-            return true;
-        }
-        return (bool)$this->getPaymentConfigParam('automatic_capture');
     }
 
     /**

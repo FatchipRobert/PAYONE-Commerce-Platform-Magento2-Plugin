@@ -25,6 +25,7 @@
                 <model>Payone\CommercePlatform\Model\Method\Creditcard</model>
                 <payone_method_type>cardPaymentMethod</payone_method_type>
                 <payone_product_id>1</payone_product_id>
+                <automatic_capture>0</automatic_capture>
                 <can_initialize>1</can_initialize>
                 <title>PAYONE Credit Card</title>
                 <allowspecific>0</allowspecific>
@@ -51,6 +52,7 @@
                 <model>Payone\CommercePlatform\Model\Method\DirectDebit</model>
                 <payone_method_type>sepaDirectDebitPaymentMethod</payone_method_type>
                 <payone_product_id>771</payone_product_id>
+                <automatic_capture>1</automatic_capture>
                 <title>PAYONE Direct Debit</title>
                 <allowspecific>0</allowspecific>
                 <group>payone_cp</group>
@@ -76,6 +78,7 @@
                 <model>Payone\CommercePlatform\Model\Method\PayPal</model>
                 <payone_method_type>redirectPaymentMethod</payone_method_type>
                 <payone_product_id>840</payone_product_id>
+                <automatic_capture>0</automatic_capture>
                 <can_initialize>1</can_initialize>
                 <title>PAYONE PayPal</title>
                 <allowspecific>0</allowspecific>
@@ -102,6 +105,7 @@
                 <model>Payone\CommercePlatform\Model\Method\GooglePay</model>
                 <payone_method_type>mobilePaymentMethod</payone_method_type>
                 <payone_product_id>320</payone_product_id>
+                <automatic_capture>0</automatic_capture>
                 <can_initialize>1</can_initialize>
                 <title>PAYONE Google Pay</title>
                 <allowspecific>0</allowspecific>

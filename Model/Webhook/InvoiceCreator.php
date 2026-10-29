@@ -53,7 +53,8 @@ class InvoiceCreator
     public function createInvoice(Order $order): void
     {
         $payment = $order->getPayment();
-        if ($payment->getMethodInstance()->isAutomaticCapture() !== true || $order->getInvoiceCollection()->count() > 0) {
+        $isAutomaticCapture = (bool)$payment->getMethodInstance()->getConfigData('automatic_capture', $order->getStoreId());
+        if (!$isAutomaticCapture || $order->getInvoiceCollection()->count() > 0) {
             return;
         }
 

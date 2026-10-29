@@ -31,11 +31,6 @@ class DirectDebit extends DirectPaymentMethod
     protected $methodCode = Payone::METHOD_DIRECT_DEBIT;
 
     /**
-     * @var bool
-     */
-    protected $isAutomaticCaptureMethod = true;
-
-    /**
      * @var \Payone\CommercePlatform\Model\Country
      */
     protected $country;
