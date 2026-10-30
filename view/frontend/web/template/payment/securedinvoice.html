@@ -36,46 +36,11 @@
 
         <form action="#" method="post" data-bind="attr: {id: getCode() + '_form'}">
             <fieldset data-bind="attr: {class: 'fieldset payment items ' + getCode()}">
-                <div class="field required">
-                    <label data-bind="attr: {for: getCode() + '_dateofbirth'}" class="label">
-                        <span><!-- ko i18n: 'Date of birth'--><!-- /ko --></span>
-                    </label>
-                    <div class="control">
-                        <input type="date" name="payment[dateofbirth]" class="input-text" style="width:auto;"
-                               data-bind="attr: {
-                                    id: getCode() + '_dateofbirth',
-                                    max: getMaxDateOfBirth(),
-                                    'data-container': getCode() + '-dateofbirth'},
-                              value: dateOfBirth">
-                    </div>
-                </div>
-
-                <!-- ko if: requestTelephone() -->
-                <div class="field required">
-                    <label data-bind="attr: {for: getCode() + '_telephone'}" class="label">
-                        <span><!-- ko i18n: 'Phone Number'--><!-- /ko --></span>
-                    </label>
-                    <div class="control">
-                        <input type="tel" name="payment[telephone]" class="input-text"
-                               data-bind="attr: {
-                                    autocomplete: 'tel',
-                                    id: getCode() + '_telephone',
-                                    'data-container': getCode() + '-telephone'},
-                              value: telephone,
-                              valueUpdate: 'keyup'">
-                    </div>
-                </div>
-                <!--/ko-->
+                <!-- ko template: 'Payone_CommercePlatform/payment/bnpl-customer-fields' --><!-- /ko -->
             </fieldset>
         </form>
 
-        <p data-bind="html: getInstructions()"></p>
-        <p class="payone-cp-legal-text" data-bind="html: getLegalText()"></p>
-        <!-- ko if: isAddressDifferent() -->
-        <div class="message warning">
-            <span><!-- ko i18n: 'This payment method is only available if the billing and shipping address are identical.'--><!-- /ko --></span>
-        </div>
-        <!--/ko-->
+        <!-- ko template: 'Payone_CommercePlatform/payment/bnpl-notices' --><!-- /ko -->
         <div class="checkout-agreements-block">
             <!-- ko foreach: $parent.getRegion('before-place-order') -->
             <!-- ko template: getTemplate() --><!-- /ko -->
@@ -88,8 +53,8 @@
                         data-bind="
                         click: placeOrder,
                         attr: {title: $t('Place Order')},
-                        enable: (getCode() == isChecked() && !isAddressDifferent()),
-                        css: {disabled: !isPlaceOrderActionAllowed() || isAddressDifferent()}
+                        enable: (getCode() == isChecked() && !isPlaceOrderBlocked()),
+                        css: {disabled: !isPlaceOrderActionAllowed() || isPlaceOrderBlocked()}
                         "
                         disabled>
                     <span data-bind="i18n: 'Place Order'"></span>

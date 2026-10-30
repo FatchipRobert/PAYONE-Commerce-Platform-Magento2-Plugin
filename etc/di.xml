@@ -161,6 +161,7 @@
         <arguments>
             <argument name="validators" xsi:type="array">
                 <item name="country" xsi:type="string">PayoneCPSecuredInvoiceCountryValidator</item>
+                <item name="currency" xsi:type="string">PayoneCPBnplCurrencyValidator</item>
                 <item name="availability" xsi:type="string">Payone\CommercePlatform\Gateway\Validator\BnplAvailabilityValidator</item>
                 <item name="global" xsi:type="string">Payone\CommercePlatform\Gateway\Validator\BnplCustomerDataValidator</item>
             </argument>
@@ -169,6 +170,59 @@
     <virtualType name="PayoneCPSecuredInvoiceCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
         <arguments>
             <argument name="config" xsi:type="object">PayoneCPSecuredInvoiceConfig</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- PAYONE Secured Direct Debit: like Secured Invoice, but without payment instructions and B2B -->
+    <virtualType name="PayoneCPSecuredDirectDebitFacade" type="PayoneCPFacade">
+        <arguments>
+            <argument name="code" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_SECURED_DIRECT_DEBIT</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPSecuredDirectDebitValueHandlerPool</argument>
+            <argument name="validatorPool" xsi:type="object">PayoneCPSecuredDirectDebitValidatorPool</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredDirectDebitValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PayoneCPSecuredDirectDebitValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredDirectDebitValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PayoneCPSecuredDirectDebitConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredDirectDebitConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_SECURED_DIRECT_DEBIT</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredDirectDebitValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">PayoneCPSecuredDirectDebitCountryValidator</item>
+                <item name="currency" xsi:type="string">PayoneCPBnplCurrencyValidator</item>
+                <item name="availability" xsi:type="string">PayoneCPBnplB2CAvailabilityValidator</item>
+                <item name="global" xsi:type="string">Payone\CommercePlatform\Gateway\Validator\BnplCustomerDataValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredDirectDebitCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">PayoneCPSecuredDirectDebitConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPBnplB2CAvailabilityValidator" type="Payone\CommercePlatform\Gateway\Validator\BnplAvailabilityValidator">
+        <arguments>
+            <argument name="b2bAllowed" xsi:type="boolean">false</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPBnplCurrencyValidator" type="Payone\CommercePlatform\Gateway\Validator\CurrencyValidator">
+        <arguments>
+            <argument name="allowedCurrencies" xsi:type="array">
+                <item name="EUR" xsi:type="string">EUR</item>
+            </argument>
         </arguments>
     </virtualType>
 
@@ -206,6 +260,17 @@
                 <item name="dateofbirth" xsi:type="string">dateofbirth</item>
                 <item name="telephone" xsi:type="string">telephone</item>
                 <item name="device_token" xsi:type="string">device_token</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredDirectDebitDataAssignObserver" type="Payone\CommercePlatform\Observer\DataAssignObserver">
+        <arguments>
+            <argument name="additionalInformationKeys" xsi:type="array">
+                <item name="dateofbirth" xsi:type="string">dateofbirth</item>
+                <item name="telephone" xsi:type="string">telephone</item>
+                <item name="device_token" xsi:type="string">device_token</item>
+                <item name="accountholder" xsi:type="string">accountholder</item>
+                <item name="iban" xsi:type="string">iban</item>
             </argument>
         </arguments>
     </virtualType>
@@ -293,6 +358,7 @@
                 <item name="payone_cp_paypal" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\PayPalBuilder</item>
                 <item name="payone_cp_googlepay" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\GooglePayBuilder</item>
                 <item name="payone_cp_securedinvoice" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\SecuredInvoiceBuilder</item>
+                <item name="payone_cp_secureddirectdebit" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\SecuredDirectDebitBuilder</item>
             </argument>
         </arguments>
     </type>

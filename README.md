@@ -6,7 +6,7 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 *	SEPA Direct Debit
 *	PayPal
 *	Google Pay
-*	PAYONE Secured Invoice (Buy Now Pay Later, Germany and Austria, EUR) – must be activated for your PAYONE merchant account
+*	PAYONE Secured Invoice and PAYONE Secured Direct Debit (Buy Now Pay Later, Germany and Austria, EUR) – must be activated for your PAYONE merchant account
 
 ## Important functions for Magento 2
 *	Seamless integration of Magento's OnePage Checkout
@@ -36,7 +36,7 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 ## Configuration
 *	**General settings:** *Stores → Configuration → Payone Commerce Platform → General* (or *PAYONE → Configuration → General* in the admin menu). Enter your Merchant ID, API Key and API Secret and choose the API environment (test or live).
 *	**Payment methods:** *Stores → Configuration → Payone Commerce Platform → Payment* – activate and configure each payment method.
-*	**PAYONE Secured Invoice:** only offered for billing addresses in Germany and Austria, orders in EUR and identical billing and shipping address. The customer enters the date of birth (and the phone number if the address has none) in the checkout; a device fingerprint script of PAYONE's risk partner Payla (`d.payla.io`) is loaded when the method is selected. The bank account, due date and payment reference for the customer's transfer are returned by PAYONE when the payment is captured and are shown in the payment information of the order, in the invoice email and on the invoice PDF.
+*	**PAYONE Secured Invoice / Secured Direct Debit:** only offered for billing addresses in Germany and Austria and orders in EUR; billing and shipping address must be identical (otherwise the checkout shows a hint and the order cannot be placed). The customer enters the date of birth (and the phone number if the address has none) in the checkout, for Secured Direct Debit also account holder and IBAN; a device fingerprint script of PAYONE's risk partner Payla (`d.payla.io`) is loaded when the method is selected. Secured Direct Debit is not available for companies (billing address with company). For Secured Invoice, the bank account, due date and payment reference for the customer's transfer are returned by PAYONE when the payment is captured and are shown in the payment information of the order, in the invoice email and on the invoice PDF.
 *	**Webhooks:** Configure the following webhook URL for your merchant account in the PAYONE Commerce Platform:
 	`https://<your-shop-domain>/payone_cp/webhook`
 	Webhooks are only accepted with a valid signature of your API key. Additionally, the IP addresses PAYONE sends webhooks from can be restricted with the setting *Valid PAYONE IPs*.

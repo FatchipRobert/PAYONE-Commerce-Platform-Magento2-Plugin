@@ -38,5 +38,8 @@
         <method name="payone_cp_securedinvoice">
             <allow_multiple_address>0</allow_multiple_address>
         </method>
+        <method name="payone_cp_secureddirectdebit">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
     </methods>
 </payment>

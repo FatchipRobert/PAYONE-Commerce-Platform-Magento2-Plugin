@@ -1,0 +1,48 @@
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<!-- Customer data of the PAYONE Buy Now Pay Later methods (bnpl-base.js), included in the fieldset of the method form -->
+<div class="field required">
+    <label data-bind="attr: {for: getCode() + '_dateofbirth'}" class="label">
+        <span><!-- ko i18n: 'Date of birth'--><!-- /ko --></span>
+    </label>
+    <div class="control">
+        <input type="date" name="payment[dateofbirth]" class="input-text" style="width:auto;"
+               data-bind="attr: {
+                    id: getCode() + '_dateofbirth',
+                    max: getMaxDateOfBirth(),
+                    'data-container': getCode() + '-dateofbirth'},
+              value: dateOfBirth">
+    </div>
+</div>
+
+<!-- ko if: requestTelephone() -->
+<div class="field required">
+    <label data-bind="attr: {for: getCode() + '_telephone'}" class="label">
+        <span><!-- ko i18n: 'Phone Number'--><!-- /ko --></span>
+    </label>
+    <div class="control">
+        <input type="tel" name="payment[telephone]" class="input-text"
+               data-bind="attr: {
+                    autocomplete: 'tel',
+                    id: getCode() + '_telephone',
+                    'data-container': getCode() + '-telephone'},
+              value: telephone,
+              valueUpdate: 'keyup'">
+    </div>
+</div>
+<!--/ko-->

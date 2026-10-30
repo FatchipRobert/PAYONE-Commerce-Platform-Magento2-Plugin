@@ -32,14 +32,16 @@ use Payone\CommercePlatform\Gateway\SubjectReader;
 /**
  * Availability of the PAYONE Buy Now Pay Later methods ("availability" validator of the facade)
  *
- * PAYONE only accepts EUR and a shipping address identical to the billing address.
- * The countries (DE, AT) are restricted by allowspecific/specificcountry in etc/config.xml.
- * Called by Adapter::isAvailable() for the method list and again when the order is placed.
+ * PAYONE only accepts a shipping address identical to the billing address, B2B (company in the billing address)
+ * only for Secured Invoice ($b2bAllowed, set per method in etc/di.xml).
+ * Countries (DE, AT) and currency (EUR) are restricted by the "country" and "currency" validators.
+ *
+ * Adapter::isAvailable() only runs it when the payment has an info instance - not for the method list of the checkout
+ * (MethodList sets it afterwards), only when the order is placed. Intended: both conditions can still change in the
+ * payment step (billing address form), the checkout JS (bnpl-base.js) shows a warning and blocks the order button.
  */
 class BnplAvailabilityValidator extends AbstractValidator
 {
-    private const CURRENCY = 'EUR';
-
     /**
      * Address fields which must be identical in billing and shipping address
      */
@@ -48,10 +50,12 @@ class BnplAvailabilityValidator extends AbstractValidator
     /**
      * @param ResultInterfaceFactory $resultFactory
      * @param SubjectReader $subjectReader
+     * @param bool $b2bAllowed whether billing addresses with a company are accepted
      */
     public function __construct(
         ResultInterfaceFactory $resultFactory,
         private readonly SubjectReader $subjectReader,
+        private readonly bool $b2bAllowed = true,
     ) {
         parent::__construct($resultFactory);
     }
@@ -70,7 +74,10 @@ class BnplAvailabilityValidator extends AbstractValidator
         }
 
         $quote = $payment->getQuote();
-        return $this->createResult($quote->getQuoteCurrencyCode() === self::CURRENCY && $this->hasSameAddresses($quote));
+        return $this->createResult(
+            $this->hasSameAddresses($quote)
+            && ($this->b2bAllowed || trim((string)$quote->getBillingAddress()->getCompany()) === '')
+        );
     }
 
     /**

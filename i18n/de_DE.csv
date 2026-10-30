@@ -21,3 +21,7 @@
 "Due date","Fälligkeitsdatum"
 "By placing this order, I agree to the <a href=""%1"" target=""_blank"" rel=""noopener"">supplementary payment terms</a> and the performance of a risk assessment for the selected payment method. I am aware of the <a href=""%2"" target=""_blank"" rel=""noopener"">supplementary data protection notice</a>.","Mit Abschluss dieser Bestellung erkläre ich mich mit den <a href=""%1"" target=""_blank"" rel=""noopener"">ergänzenden Zahlungsbedingungen</a> und der Durchführung einer Risikoprüfung für die ausgewählte Zahlungsart einverstanden. Den <a href=""%2"" target=""_blank"" rel=""noopener"">ergänzenden Datenschutzhinweis</a> habe ich zur Kenntnis genommen."
 "This payment method is currently not available. Please choose a different payment method.","Diese Zahlungsart ist derzeit nicht verfügbar. Bitte wählen Sie eine andere Zahlungsart."
+"PAYONE Secured Direct Debit","PAYONE Gesicherte Lastschrift"
+"This payment method is not available for orders of companies.","Diese Zahlungsart ist für Bestellungen von Firmen nicht verfügbar."
+"Please enter a valid IBAN.","Bitte geben Sie eine gültige IBAN ein."
+"Please enter a valid account holder.","Bitte geben Sie einen gültigen Kontoinhaber ein."

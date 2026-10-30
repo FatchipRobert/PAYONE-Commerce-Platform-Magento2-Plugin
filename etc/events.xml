@@ -30,6 +30,9 @@
     <event name="payment_method_assign_data_payone_cp_securedinvoice">
         <observer name="payone_cp_securedinvoice_data_assign" instance="PayoneCPSecuredInvoiceDataAssignObserver" />
     </event>
+    <event name="payment_method_assign_data_payone_cp_secureddirectdebit">
+        <observer name="payone_cp_secureddirectdebit_data_assign" instance="PayoneCPSecuredDirectDebitDataAssignObserver" />
+    </event>
     <event name="sales_order_payment_capture">
         <observer name="payone_cp_order_payment_capture" instance="Payone\CommercePlatform\Observer\OrderPaymentCapture" />
     </event>

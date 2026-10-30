@@ -27,16 +27,16 @@ use Magento\Framework\DataObject\IdentityGeneratorInterface;
 use Magento\Framework\Escaper;
 use Magento\Payment\Helper\Data as PaymentHelper;
 use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
-use Payone\CommercePlatform\Model\Payone;
 
 /**
- * Checkout config of PAYONE Secured Invoice: Payla device fingerprint and links of the legal text
+ * Checkout config of a PAYONE Buy Now Pay Later method: Payla device fingerprint and links of the legal text
  *
+ * One virtualType per method in etc/frontend/di.xml ($methodCode).
  * The device token "<Payla partner id>_<merchant id>_<session id>" is created once per checkout session.
  * The checkout JS loads the Payla fingerprint script with it and sends it back with the payment data
  * (paymentMethodSpecificInput.customerDevice.deviceToken).
  */
-class SecuredInvoiceConfigProvider implements ConfigProviderInterface
+class BnplConfigProvider implements ConfigProviderInterface
 {
     private const SESSION_KEY_DEVICE_SESSION_ID = 'payone_cp_device_session_id';
 
@@ -46,6 +46,7 @@ class SecuredInvoiceConfigProvider implements ConfigProviderInterface
      * @param Session $checkoutSession
      * @param IdentityGeneratorInterface $identityGenerator
      * @param Escaper $escaper
+     * @param string $methodCode
      */
     public function __construct(
         private readonly PaymentHelper $paymentHelper,
@@ -53,17 +54,18 @@ class SecuredInvoiceConfigProvider implements ConfigProviderInterface
         private readonly Session $checkoutSession,
         private readonly IdentityGeneratorInterface $identityGenerator,
         private readonly Escaper $escaper,
+        private readonly string $methodCode,
     ) {
     }
 
     /**
-     * Returns window.checkoutConfig.payment.payone_cp.payone_cp_securedinvoice
+     * Returns window.checkoutConfig.payment.payone_cp.<method code>
      *
      * @return array
      */
     public function getConfig(): array
     {
-        $code = Payone::METHOD_SECURED_INVOICE;
+        $code = $this->methodCode;
         if (!$this->paymentHelper->getMethodInstance($code)->isAvailable()) {
             return [];
         }

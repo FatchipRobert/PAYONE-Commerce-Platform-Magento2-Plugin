@@ -51,8 +51,8 @@ class PassthroughMessageMapper implements ErrorMessageMapperInterface
             ResponseValidator::PAYMENT_REJECTED => __(
                 'The payment was declined. Please choose a different payment method.'
             ),
-            // Payment product not activated for the PAYONE account
-            'PAYMENT_METHOD_NOT_ALLOWED' => __(
+            // Payment product not activated / not completely configured for the PAYONE account
+            'PAYMENT_METHOD_NOT_ALLOWED', 'PAYMENT_PRODUCT_CONFIGURATION_ERROR' => __(
                 'This payment method is currently not available. Please choose a different payment method.'
             ),
             default => new Phrase($code),
