@@ -165,6 +165,7 @@
             <include path="Payone_CommercePlatform::system/payone_cp_directdebit.xml"/>
             <include path="Payone_CommercePlatform::system/payone_cp_paypal.xml"/>
             <include path="Payone_CommercePlatform::system/payone_cp_googlepay.xml"/>
+            <include path="Payone_CommercePlatform::system/payone_cp_securedinvoice.xml"/>
         </section>
     </system>
 </config>

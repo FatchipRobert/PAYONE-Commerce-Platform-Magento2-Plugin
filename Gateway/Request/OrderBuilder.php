@@ -25,6 +25,7 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
 use Payone\CommercePlatform\Gateway\MerchantReference;
 use Payone\CommercePlatform\Gateway\SubjectReader;
+use Payone\CommercePlatform\Model\Payone;
 use Payone\CommercePlatform\Model\RemoteIp;
 
 /**
@@ -34,6 +35,11 @@ use Payone\CommercePlatform\Model\RemoteIp;
  */
 class OrderBuilder implements BuilderInterface
 {
+    /**
+     * additional_information key of the device token from the checkout (PAYONE Buy Now Pay Later)
+     */
+    public const KEY_DEVICE_TOKEN = 'device_token';
+
     /**
      * @param SubjectReader $subjectReader
      * @param MerchantReference $merchantReference
@@ -56,7 +62,10 @@ class OrderBuilder implements BuilderInterface
      */
     public function build(array $buildSubject): array
     {
-        $order = $this->subjectReader->readPayment($buildSubject)->getPayment()->getOrder();
+        $payment = $this->subjectReader->readPayment($buildSubject)->getPayment();
+        $order = $payment->getOrder();
+        $isFinancing = $payment->getMethodInstance()->getConfigData('payone_method_type', $order->getStoreId())
+            === Payone::METHOD_TYPE_FINANCING;
 
         $orderRequest = [
             'orderType' => 'FULL',
@@ -68,8 +77,13 @@ class OrderBuilder implements BuilderInterface
             ],
         ];
 
-        if ($this->generalConfig->isTransmitIp($order->getStoreId())) {
+        // Buy Now Pay Later always needs the IP and the token of the Payla device fingerprint from the checkout
+        if ($isFinancing || $this->generalConfig->isTransmitIp($order->getStoreId())) {
             $orderRequest['paymentMethodSpecificInput']['customerDevice']['ipAddress'] = $this->remoteIp->get();
+        }
+        if ($isFinancing && !empty($payment->getAdditionalInformation(self::KEY_DEVICE_TOKEN))) {
+            $orderRequest['paymentMethodSpecificInput']['customerDevice']['deviceToken']
+                = $payment->getAdditionalInformation(self::KEY_DEVICE_TOKEN);
         }
 
         return ['body' => ['checkout' => ['orderRequest' => $orderRequest]]];

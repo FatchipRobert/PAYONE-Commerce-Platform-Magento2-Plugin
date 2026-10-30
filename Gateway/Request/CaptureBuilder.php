@@ -27,6 +27,7 @@ use Magento\Sales\Model\Order\Payment;
 use Payone\CommercePlatform\Gateway\AmountConverter;
 use Payone\CommercePlatform\Gateway\MerchantReference;
 use Payone\CommercePlatform\Gateway\SubjectReader;
+use Payone\CommercePlatform\Model\Payone;
 use Payone\CommercePlatform\Observer\OrderPaymentCapture;
 
 /**
@@ -34,6 +35,11 @@ use Payone\CommercePlatform\Observer\OrderPaymentCapture;
  */
 class CaptureBuilder implements BuilderInterface
 {
+    /**
+     * Reason for a final capture below the authorized amount (mandatory for Buy Now Pay Later)
+     */
+    public const CANCELLATION_REASON_FINAL_PARTIAL = 'ORDER_SHIPPED_IN_FULL';
+
     /**
      * @param SubjectReader $subjectReader
      * @param AmountConverter $amountConverter
@@ -60,21 +66,30 @@ class CaptureBuilder implements BuilderInterface
         $payment = $this->subjectReader->readPayment($buildSubject)->getPayment();
         $amount = $this->subjectReader->readAmount($buildSubject);
         $invoice = $this->getCaptureInvoice($payment);
+        $order = $payment->getOrder();
+        // Final when this capture covers the remaining amount due of the order. The invoice is not paid yet
+        // at this point (Invoice::pay() is called after the capture), so the total due still contains it
+        $isFinal = (bool)$payment->isCaptureFinal($amount);
 
-        return [
-            'body' => [
-                'amount' => $this->amountConverter->toMinorUnits($amount),
-                // Final when this capture covers the remaining amount due of the order. The invoice is not paid yet
-                // at this point (Invoice::pay() is called after the capture), so the total due still contains it
-                'isFinal' => (bool)$payment->isCaptureFinal($amount),
-                'references' => [
-                    'merchantReference' => $this->merchantReference->getForCapture($payment->getOrder(), $invoice),
-                ],
-                'delivery' => [
-                    'items' => $this->lineItemsBuilder->build($invoice),
-                ],
+        $body = [
+            'amount' => $this->amountConverter->toMinorUnits($amount),
+            'isFinal' => $isFinal,
+            'references' => [
+                'merchantReference' => $this->merchantReference->getForCapture($order, $invoice),
+            ],
+            'delivery' => [
+                'items' => $this->lineItemsBuilder->build($invoice),
             ],
         ];
+
+        // Buy Now Pay Later needs a reason when the last of several partial captures closes the payment
+        $isFinancing = $payment->getMethodInstance()->getConfigData('payone_method_type', $order->getStoreId())
+            === Payone::METHOD_TYPE_FINANCING;
+        if ($isFinancing && $isFinal && $amount < (float)$order->getBaseGrandTotal()) {
+            $body['cancellationReason'] = self::CANCELLATION_REASON_FINAL_PARTIAL;
+        }
+
+        return ['body' => $body];
     }
 
     /**

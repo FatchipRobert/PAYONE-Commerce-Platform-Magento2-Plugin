@@ -22,6 +22,13 @@
             <values>
                 <value id="payone_cp_ccv2_script" type="host">*.tokenization.secure.payone.com</value>
                 <value id="payone_cp_googlepay_script" type="host">pay.google.com</value>
+                <value id="payone_cp_payla_script" type="host">d.payla.io</value>
+            </values>
+        </policy>
+        <policy id="style-src">
+            <values>
+                <value id="payone_cp_payla_css" type="host">d.payla.io</value>
+                <value id="payone_cp_payla_css2" type="host">dr.payla.io</value>
             </values>
         </policy>
         <policy id="frame-src">

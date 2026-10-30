@@ -35,6 +35,12 @@ use Payone\CommercePlatform\Gateway\SubjectReader;
 class ResponseValidator extends AbstractValidator
 {
     private const UNKNOWN_ERROR = 'An unknown error occurred.';
+    private const STATUS_REJECTED = 'REJECTED';
+
+    /**
+     * Error message for a rejected payment without PAYONE error (translated by PassthroughMessageMapper)
+     */
+    public const PAYMENT_REJECTED = 'PAYMENT_REJECTED';
 
     /**
      * @param ResultInterfaceFactory $resultFactory
@@ -98,6 +104,11 @@ class ResponseValidator extends AbstractValidator
         $errorResponse = $this->subjectReader->findValue($body, 'errorResponse');
         if (is_array($errorResponse) && !empty($errorResponse['errors'])) {
             return (array)$errorResponse['errors'];
+        }
+
+        // A declined payment without errorResponse (e.g. risk check of Buy Now Pay Later) must not create an order
+        if (($body['checkout']['paymentResponse']['payment']['status'] ?? null) === self::STATUS_REJECTED) {
+            return [self::PAYMENT_REJECTED];
         }
 
         return [];

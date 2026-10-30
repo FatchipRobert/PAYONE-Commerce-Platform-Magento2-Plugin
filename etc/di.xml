@@ -131,6 +131,47 @@
         </arguments>
     </virtualType>
 
+    <!-- PAYONE Secured Invoice: additionally shows the payment instructions and is only available for DE/AT, EUR and identical addresses -->
+    <virtualType name="PayoneCPSecuredInvoiceFacade" type="PayoneCPFacade">
+        <arguments>
+            <argument name="code" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_SECURED_INVOICE</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPSecuredInvoiceValueHandlerPool</argument>
+            <argument name="validatorPool" xsi:type="object">PayoneCPSecuredInvoiceValidatorPool</argument>
+            <argument name="infoBlockType" xsi:type="string">Payone\CommercePlatform\Block\Info\PaymentInstructions</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredInvoiceValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PayoneCPSecuredInvoiceValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredInvoiceValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PayoneCPSecuredInvoiceConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredInvoiceConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_SECURED_INVOICE</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredInvoiceValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">PayoneCPSecuredInvoiceCountryValidator</item>
+                <item name="availability" xsi:type="string">Payone\CommercePlatform\Gateway\Validator\BnplAvailabilityValidator</item>
+                <item name="global" xsi:type="string">Payone\CommercePlatform\Gateway\Validator\BnplCustomerDataValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredInvoiceCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">PayoneCPSecuredInvoiceConfig</argument>
+        </arguments>
+    </virtualType>
+
     <!-- Checkout input → additional_information of the payment (events in etc/events.xml), PayPal has no input -->
     <virtualType name="PayoneCPCreditcardDataAssignObserver" type="Payone\CommercePlatform\Observer\DataAssignObserver">
         <arguments>
@@ -156,6 +197,15 @@
         <arguments>
             <argument name="additionalInformationKeys" xsi:type="array">
                 <item name="payment_token" xsi:type="string">payment_token</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPSecuredInvoiceDataAssignObserver" type="Payone\CommercePlatform\Observer\DataAssignObserver">
+        <arguments>
+            <argument name="additionalInformationKeys" xsi:type="array">
+                <item name="dateofbirth" xsi:type="string">dateofbirth</item>
+                <item name="telephone" xsi:type="string">telephone</item>
+                <item name="device_token" xsi:type="string">device_token</item>
             </argument>
         </arguments>
     </virtualType>
@@ -220,6 +270,7 @@
             <argument name="handlers" xsi:type="array">
                 <item name="payment_ids" xsi:type="string">Payone\CommercePlatform\Gateway\Response\PaymentIdsHandler</item>
                 <item name="redirect_url" xsi:type="string">Payone\CommercePlatform\Gateway\Response\RedirectUrlHandler</item>
+                <item name="payment_instructions" xsi:type="string">Payone\CommercePlatform\Gateway\Response\PaymentInstructionsHandler</item>
             </argument>
         </arguments>
     </virtualType>
@@ -241,6 +292,7 @@
                 <item name="payone_cp_directdebit" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\DirectDebitBuilder</item>
                 <item name="payone_cp_paypal" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\PayPalBuilder</item>
                 <item name="payone_cp_googlepay" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\GooglePayBuilder</item>
+                <item name="payone_cp_securedinvoice" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\SecuredInvoiceBuilder</item>
             </argument>
         </arguments>
     </type>
@@ -249,7 +301,15 @@
         <arguments>
             <argument name="requestBuilder" xsi:type="object">PayoneCPCaptureRequestBuilder</argument>
             <argument name="transferFactory" xsi:type="object">PayoneCPCaptureTransferFactory</argument>
-            <argument name="handler" xsi:type="object">Payone\CommercePlatform\Gateway\Response\TransactionIdHandler</argument>
+            <argument name="handler" xsi:type="object">PayoneCPCaptureHandler</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPCaptureHandler" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="transaction_id" xsi:type="string">Payone\CommercePlatform\Gateway\Response\TransactionIdHandler</item>
+                <item name="payment_instructions" xsi:type="string">Payone\CommercePlatform\Gateway\Response\PaymentInstructionsHandler</item>
+            </argument>
         </arguments>
     </virtualType>
     <virtualType name="PayoneCPCaptureRequestBuilder" type="Magento\Payment\Gateway\Request\BuilderComposite">

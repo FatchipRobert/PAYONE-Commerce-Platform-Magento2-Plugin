@@ -35,6 +35,7 @@ abstract class Payone
     public const METHOD_DIRECT_DEBIT = 'payone_cp_directdebit';
     public const METHOD_PAYPAL = 'payone_cp_paypal';
     public const METHOD_GOOGLEPAY = 'payone_cp_googlepay';
+    public const METHOD_SECURED_INVOICE = 'payone_cp_securedinvoice';
 
     /* All PAYONE payment methods - check with in_array($code, Payone::METHODS, true) */
     public const METHODS = [
@@ -42,7 +43,11 @@ abstract class Payone
         self::METHOD_DIRECT_DEBIT,
         self::METHOD_PAYPAL,
         self::METHOD_GOOGLEPAY,
+        self::METHOD_SECURED_INVOICE,
     ];
+
+    /* PAYONE Buy Now Pay Later methods (config value payone_method_type): need cancellationReason, device token, IP */
+    public const METHOD_TYPE_FINANCING = 'financingPaymentMethod';
 
     /* TRANSACTIONS */
 

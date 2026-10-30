@@ -41,6 +41,10 @@ define(
             {
                 type: 'payone_cp_googlepay',
                 component: 'Payone_CommercePlatform/js/view/payment/method-renderer/googlepay-cp-method'
+            },
+            {
+                type: 'payone_cp_securedinvoice',
+                component: 'Payone_CommercePlatform/js/view/payment/method-renderer/securedinvoice-cp-method'
             }
         );
         // Message from the return of a redirect payment (e.g. cancelled payment) - shown in the checkout message area

@@ -30,6 +30,12 @@ use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
 class CustomerMapper
 {
     /**
+     * additional_information keys of checkout input which completes the customer data (PAYONE Buy Now Pay Later)
+     */
+    public const KEY_DATE_OF_BIRTH = 'dateofbirth';
+    public const KEY_TELEPHONE = 'telephone';
+
+    /**
      * @param AddressMapper $addressMapper
      * @param GeneralConfig $generalConfig
      */
@@ -67,11 +73,15 @@ class CustomerMapper
         if (!empty($billingAddress->getCompany())) {
             $customer['companyInformation']['name'] = $billingAddress->getCompany();
         }
-        if (!empty($billingAddress->getTelephone())) {
-            $customer['contactDetails']['phoneNumber'] = $billingAddress->getTelephone();
+        // Checkout input (date of birth, missing phone number) takes precedence over the account / address data
+        $payment = $order->getPayment();
+        $telephone = $payment->getAdditionalInformation(self::KEY_TELEPHONE) ?: $billingAddress->getTelephone();
+        if (!empty($telephone)) {
+            $customer['contactDetails']['phoneNumber'] = $telephone;
         }
-        if (!empty($order->getCustomerDob()) && $order->getCustomerDob() != '0000-00-00 00:00:00') {
-            $customer['personalInformation']['dateOfBirth'] = date('Ymd', strtotime($order->getCustomerDob()));
+        $dateOfBirth = $payment->getAdditionalInformation(self::KEY_DATE_OF_BIRTH) ?: $order->getCustomerDob();
+        if (!empty($dateOfBirth) && $dateOfBirth != '0000-00-00 00:00:00') {
+            $customer['personalInformation']['dateOfBirth'] = date('Ymd', strtotime((string)$dateOfBirth));
         }
         if (!empty($order->getCustomerGender())) {
             $customer['personalInformation']['gender'] = $this->getGender((string)$order->getCustomerGender());

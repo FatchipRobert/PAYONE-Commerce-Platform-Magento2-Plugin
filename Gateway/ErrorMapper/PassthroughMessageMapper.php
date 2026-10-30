@@ -23,6 +23,7 @@ namespace Payone\CommercePlatform\Gateway\ErrorMapper;
 
 use Magento\Framework\Phrase;
 use Magento\Payment\Gateway\ErrorMapper\ErrorMessageMapperInterface;
+use Payone\CommercePlatform\Gateway\Validator\ResponseValidator;
 
 /**
  * Passes the PAYONE error message through to the customer/admin
@@ -46,6 +47,13 @@ class PassthroughMessageMapper implements ErrorMessageMapperInterface
             ),
             'INVALID_GOOGLE_PAY_TOKEN' => __(
                 'The payment with Google Pay could not be processed. Please try again or choose a different payment method.'
+            ),
+            ResponseValidator::PAYMENT_REJECTED => __(
+                'The payment was declined. Please choose a different payment method.'
+            ),
+            // Payment product not activated for the PAYONE account
+            'PAYMENT_METHOD_NOT_ALLOWED' => __(
+                'This payment method is currently not available. Please choose a different payment method.'
             ),
             default => new Phrase($code),
         };

@@ -1,0 +1,100 @@
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <div class="payment-method-title field choice">
+        <input type="radio"
+               name="payment[method]"
+               class="radio"
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()">
+        <label data-bind="attr: {'for': getCode()}" class="label"><span data-bind="text: getTitle()"></span></label>
+    </div>
+
+    <div class="payment-method-content">
+        <!-- ko foreach: getRegion('messages') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+        <div class="payment-method-billing-address">
+            <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+
+        <form action="#" method="post" data-bind="attr: {id: getCode() + '_form'}">
+            <fieldset data-bind="attr: {class: 'fieldset payment items ' + getCode()}">
+                <div class="field required">
+                    <label data-bind="attr: {for: getCode() + '_dateofbirth'}" class="label">
+                        <span><!-- ko i18n: 'Date of birth'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input type="date" name="payment[dateofbirth]" class="input-text" style="width:auto;"
+                               data-bind="attr: {
+                                    id: getCode() + '_dateofbirth',
+                                    max: getMaxDateOfBirth(),
+                                    'data-container': getCode() + '-dateofbirth'},
+                              value: dateOfBirth">
+                    </div>
+                </div>
+
+                <!-- ko if: requestTelephone() -->
+                <div class="field required">
+                    <label data-bind="attr: {for: getCode() + '_telephone'}" class="label">
+                        <span><!-- ko i18n: 'Phone Number'--><!-- /ko --></span>
+                    </label>
+                    <div class="control">
+                        <input type="tel" name="payment[telephone]" class="input-text"
+                               data-bind="attr: {
+                                    autocomplete: 'tel',
+                                    id: getCode() + '_telephone',
+                                    'data-container': getCode() + '-telephone'},
+                              value: telephone,
+                              valueUpdate: 'keyup'">
+                    </div>
+                </div>
+                <!--/ko-->
+            </fieldset>
+        </form>
+
+        <p data-bind="html: getInstructions()"></p>
+        <p class="payone-cp-legal-text" data-bind="html: getLegalText()"></p>
+        <!-- ko if: isAddressDifferent() -->
+        <div class="message warning">
+            <span><!-- ko i18n: 'This payment method is only available if the billing and shipping address are identical.'--><!-- /ko --></span>
+        </div>
+        <!--/ko-->
+        <div class="checkout-agreements-block">
+            <!-- ko foreach: $parent.getRegion('before-place-order') -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button class="action primary checkout"
+                        type="submit"
+                        data-bind="
+                        click: placeOrder,
+                        attr: {title: $t('Place Order')},
+                        enable: (getCode() == isChecked() && !isAddressDifferent()),
+                        css: {disabled: !isPlaceOrderActionAllowed() || isAddressDifferent()}
+                        "
+                        disabled>
+                    <span data-bind="i18n: 'Place Order'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
