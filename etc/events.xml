@@ -27,6 +27,9 @@
     <event name="payment_method_assign_data_payone_cp_googlepay">
         <observer name="payone_cp_googlepay_data_assign" instance="PayoneCPGooglePayDataAssignObserver" />
     </event>
+    <event name="payment_method_assign_data_payone_cp_applepay">
+        <observer name="payone_cp_applepay_data_assign" instance="PayoneCPApplePayDataAssignObserver" />
+    </event>
     <event name="payment_method_assign_data_payone_cp_securedinvoice">
         <observer name="payone_cp_securedinvoice_data_assign" instance="PayoneCPSecuredInvoiceDataAssignObserver" />
     </event>

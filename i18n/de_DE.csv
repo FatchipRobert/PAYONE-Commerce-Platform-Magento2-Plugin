@@ -25,3 +25,8 @@
 "This payment method is not available for orders of companies.","Diese Zahlungsart ist für Bestellungen von Firmen nicht verfügbar."
 "Please enter a valid IBAN.","Bitte geben Sie eine gültige IBAN ein."
 "Please enter a valid account holder.","Bitte geben Sie einen gültigen Kontoinhaber ein."
+"Apple Pay is currently not available.","Apple Pay ist derzeit nicht verfügbar."
+"Apple Pay is not configured completely.","Apple Pay ist nicht vollständig konfiguriert."
+"Invalid Apple Pay validation URL.","Ungültige Apple-Pay-Validierungs-URL."
+"The Apple Pay payment data is missing. Please try again.","Die Apple-Pay-Zahlungsdaten fehlen. Bitte versuchen Sie es erneut."
+"The payment with Apple Pay could not be processed. Please try again or choose a different payment method.","Die Zahlung mit Apple Pay konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart."

@@ -35,6 +35,7 @@ abstract class Payone
     public const METHOD_DIRECT_DEBIT = 'payone_cp_directdebit';
     public const METHOD_PAYPAL = 'payone_cp_paypal';
     public const METHOD_GOOGLEPAY = 'payone_cp_googlepay';
+    public const METHOD_APPLEPAY = 'payone_cp_applepay';
     public const METHOD_SECURED_INVOICE = 'payone_cp_securedinvoice';
     public const METHOD_SECURED_DIRECT_DEBIT = 'payone_cp_secureddirectdebit';
 
@@ -44,6 +45,7 @@ abstract class Payone
         self::METHOD_DIRECT_DEBIT,
         self::METHOD_PAYPAL,
         self::METHOD_GOOGLEPAY,
+        self::METHOD_APPLEPAY,
         self::METHOD_SECURED_INVOICE,
         self::METHOD_SECURED_DIRECT_DEBIT,
     ];

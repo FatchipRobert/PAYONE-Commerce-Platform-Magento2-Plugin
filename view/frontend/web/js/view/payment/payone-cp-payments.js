@@ -43,6 +43,10 @@ define(
                 component: 'Payone_CommercePlatform/js/view/payment/method-renderer/googlepay-cp-method'
             },
             {
+                type: 'payone_cp_applepay',
+                component: 'Payone_CommercePlatform/js/view/payment/method-renderer/applepay-cp-method'
+            },
+            {
                 type: 'payone_cp_securedinvoice',
                 component: 'Payone_CommercePlatform/js/view/payment/method-renderer/securedinvoice-cp-method'
             },

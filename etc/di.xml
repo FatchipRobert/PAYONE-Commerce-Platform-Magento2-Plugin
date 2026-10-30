@@ -19,6 +19,8 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Payone\CommercePlatform\Api\ClickToPayInterface" type="Payone\CommercePlatform\Service\V1\ClickToPay" />
     <preference for="Payone\CommercePlatform\Api\Data\ClickToPayResponseInterface" type="Payone\CommercePlatform\Service\V1\Data\ClickToPayResponse" />
+    <preference for="Payone\CommercePlatform\Api\ApplePayInterface" type="Payone\CommercePlatform\Service\V1\ApplePay" />
+    <preference for="Payone\CommercePlatform\Api\Data\ApplePayResponseInterface" type="Payone\CommercePlatform\Service\V1\Data\ApplePayResponse" />
 
     <!-- START - PAYMENT METHODS -->
     <!-- Base of all PAYONE payment methods: Magento's Adapter with the PAYONE commands. Never used directly. -->
@@ -128,6 +130,31 @@
     <virtualType name="PayoneCPGooglePayConfig" type="Magento\Payment\Gateway\Config\Config">
         <arguments>
             <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_GOOGLEPAY</argument>
+        </arguments>
+    </virtualType>
+
+    <!-- Apple Pay -->
+    <virtualType name="PayoneCPApplePayFacade" type="PayoneCPFacade">
+        <arguments>
+            <argument name="code" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_APPLEPAY</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PayoneCPApplePayValueHandlerPool</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPApplePayValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PayoneCPApplePayValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPApplePayValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PayoneCPApplePayConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPApplePayConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_APPLEPAY</argument>
         </arguments>
     </virtualType>
 
@@ -254,6 +281,13 @@
             </argument>
         </arguments>
     </virtualType>
+    <virtualType name="PayoneCPApplePayDataAssignObserver" type="Payone\CommercePlatform\Observer\DataAssignObserver">
+        <arguments>
+            <argument name="additionalInformationKeys" xsi:type="array">
+                <item name="payment_token" xsi:type="string">payment_token</item>
+            </argument>
+        </arguments>
+    </virtualType>
     <virtualType name="PayoneCPSecuredInvoiceDataAssignObserver" type="Payone\CommercePlatform\Observer\DataAssignObserver">
         <arguments>
             <argument name="additionalInformationKeys" xsi:type="array">
@@ -357,6 +391,7 @@
                 <item name="payone_cp_directdebit" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\DirectDebitBuilder</item>
                 <item name="payone_cp_paypal" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\PayPalBuilder</item>
                 <item name="payone_cp_googlepay" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\GooglePayBuilder</item>
+                <item name="payone_cp_applepay" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\ApplePayBuilder</item>
                 <item name="payone_cp_securedinvoice" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\SecuredInvoiceBuilder</item>
                 <item name="payone_cp_secureddirectdebit" xsi:type="object">Payone\CommercePlatform\Gateway\Request\PaymentMethod\SecuredDirectDebitBuilder</item>
             </argument>
@@ -510,9 +545,23 @@
         <arguments>
             <argument name="sensitive" xsi:type="array">
                 <item name="payone_cp_general/global/api_secret" xsi:type="string">1</item>
+                <item name="payone_cp_payment/payone_cp_applepay/certificate_file" xsi:type="string">1</item>
+                <item name="payone_cp_payment/payone_cp_applepay/private_key_file" xsi:type="string">1</item>
+                <item name="payone_cp_payment/payone_cp_applepay/private_key_password" xsi:type="string">1</item>
             </argument>
         </arguments>
     </type>
+    <!-- Apple Pay certificate / private key upload: stored encrypted in the config value -->
+    <virtualType name="PayoneCPApplePayCertificateFileBackend" type="Payone\CommercePlatform\Model\Config\Backend\EncryptedFile">
+        <arguments>
+            <argument name="fileType" xsi:type="const">Payone\CommercePlatform\Model\Config\Backend\EncryptedFile::TYPE_CERTIFICATE</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PayoneCPApplePayPrivateKeyFileBackend" type="Payone\CommercePlatform\Model\Config\Backend\EncryptedFile">
+        <arguments>
+            <argument name="fileType" xsi:type="const">Payone\CommercePlatform\Model\Config\Backend\EncryptedFile::TYPE_PRIVATE_KEY</argument>
+        </arguments>
+    </virtualType>
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>
             <argument name="collections" xsi:type="array">

@@ -24,6 +24,7 @@
                 <item name="payone_cp_creditcard_config_provider" xsi:type="object">Payone\CommercePlatform\Model\Ui\CreditcardConfigProvider</item>
                 <item name="payone_cp_directdebit_config_provider" xsi:type="object">Payone\CommercePlatform\Model\Ui\DirectDebitConfigProvider</item>
                 <item name="payone_cp_googlepay_config_provider" xsi:type="object">Payone\CommercePlatform\Model\Ui\GooglePayConfigProvider</item>
+                <item name="payone_cp_applepay_config_provider" xsi:type="object">Payone\CommercePlatform\Model\Ui\ApplePayConfigProvider</item>
                 <item name="payone_cp_securedinvoice_config_provider" xsi:type="object">PayoneCPSecuredInvoiceConfigProvider</item>
                 <item name="payone_cp_secureddirectdebit_config_provider" xsi:type="object">PayoneCPSecuredDirectDebitConfigProvider</item>
             </argument>

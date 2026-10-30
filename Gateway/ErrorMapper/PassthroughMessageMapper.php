@@ -48,6 +48,9 @@ class PassthroughMessageMapper implements ErrorMessageMapperInterface
             'INVALID_GOOGLE_PAY_TOKEN' => __(
                 'The payment with Google Pay could not be processed. Please try again or choose a different payment method.'
             ),
+            'TOKEN_DECRYPT_ERROR' => __(
+                'The payment with Apple Pay could not be processed. Please try again or choose a different payment method.'
+            ),
             ResponseValidator::PAYMENT_REJECTED => __(
                 'The payment was declined. Please choose a different payment method.'
             ),

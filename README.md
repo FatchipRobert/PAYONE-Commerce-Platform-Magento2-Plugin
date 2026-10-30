@@ -6,6 +6,7 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 *	SEPA Direct Debit
 *	PayPal
 *	Google Pay
+*	Apple Pay
 *	PAYONE Secured Invoice and PAYONE Secured Direct Debit (Buy Now Pay Later, Germany and Austria, EUR) – must be activated for your PAYONE merchant account
 
 ## Important functions for Magento 2
@@ -37,6 +38,12 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 *	**General settings:** *Stores → Configuration → Payone Commerce Platform → General* (or *PAYONE → Configuration → General* in the admin menu). Enter your Merchant ID, API Key and API Secret and choose the API environment (test or live).
 *	**Payment methods:** *Stores → Configuration → Payone Commerce Platform → Payment* – activate and configure each payment method.
 *	**PAYONE Secured Invoice / Secured Direct Debit:** only offered for billing addresses in Germany and Austria and orders in EUR; billing and shipping address must be identical (otherwise the checkout shows a hint and the order cannot be placed). The customer enters the date of birth (and the phone number if the address has none) in the checkout, for Secured Direct Debit also account holder and IBAN; a device fingerprint script of PAYONE's risk partner Payla (`d.payla.io`) is loaded when the method is selected. Secured Direct Debit is not available for companies (billing address with company). For Secured Invoice, the bank account, due date and payment reference for the customer's transfer are returned by PAYONE when the payment is captured and are shown in the payment information of the order, in the invoice email and on the invoice PDF.
+*	**Apple Pay:** requires your own Apple Developer account (see the [PAYONE Apple Pay setup guide](https://docs.commerce.payone.com/docs/payment-methods/apple-pay/apple-setup)):
+	1. Create a Merchant ID and an Apple Pay Merchant Identity Certificate in the Apple Developer account. Enter the Merchant ID and upload the certificate file (e.g. `merchant_id.cer`, DER or PEM) and its private key file (PEM, with password if encrypted) in the Apple Pay settings – the shop uses them for the merchant validation of the Apple Pay session. The files are stored encrypted in the configuration.
+	2. Register the domain of the shop for the Merchant ID. Apple's domain association file must be reachable at `https://<your-shop-domain>/.well-known/apple-developer-merchantid-domain-association.txt` (place it in the web server's document root).
+	3. Create the Apple Pay Payment Processing Certificate with the certificate signing request you receive from PAYONE customer service – PAYONE decrypts the payment data with it.
+
+	Apple Pay is offered in Safari and, through Apple's Apple Pay JS SDK, also in other browsers (payment via QR code with an iPhone). The customer confirms the payment in the Apple Pay sheet, then the order is placed with the addresses of the checkout; a 3-D Secure redirect may follow.
 *	**Webhooks:** Configure the following webhook URL for your merchant account in the PAYONE Commerce Platform:
 	`https://<your-shop-domain>/payone_cp/webhook`
 	Webhooks are only accepted with a valid signature of your API key. Additionally, the IP addresses PAYONE sends webhooks from can be restricted with the setting *Valid PAYONE IPs*.

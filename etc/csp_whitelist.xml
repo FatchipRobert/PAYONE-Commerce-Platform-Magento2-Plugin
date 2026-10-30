@@ -20,6 +20,7 @@
     <policies>
         <policy id="script-src">
             <values>
+                <value id="payone_cp_applepay_script" type="host">applepay.cdn-apple.com</value>
                 <value id="payone_cp_ccv2_script" type="host">*.tokenization.secure.payone.com</value>
                 <value id="payone_cp_googlepay_script" type="host">pay.google.com</value>
                 <value id="payone_cp_payla_script" type="host">d.payla.io</value>
@@ -27,18 +28,21 @@
         </policy>
         <policy id="style-src">
             <values>
+                <value id="payone_cp_applepay_css" type="host">applepay.cdn-apple.com</value>
                 <value id="payone_cp_payla_css" type="host">d.payla.io</value>
                 <value id="payone_cp_payla_css2" type="host">dr.payla.io</value>
             </values>
         </policy>
         <policy id="frame-src">
             <values>
+                <value id="payone_cp_applepay_frame" type="host">applepay.cdn-apple.com</value>
                 <value id="payone_cp_ccv2_script" type="host">*.tokenization.secure.payone.com</value>
                 <value id="payone_cp_googlepay_frame" type="host">pay.google.com</value>
             </values>
         </policy>
         <policy id="connect-src">
             <values>
+                <value id="payone_cp_applepay_connect" type="host">*.apple.com</value>
                 <value id="payone_cp_ccv2_connect" type="host">*.tokenization.secure.payone.com</value>
                 <value id="payone_cp_googlepay_connect" type="host">pay.google.com</value>
                 <value id="payone_cp_googlepay_connect_google" type="host">google.com</value>
@@ -47,6 +51,7 @@
         </policy>
         <policy id="img-src">
             <values>
+                <value id="payone_cp_applepay_img" type="host">applepay.cdn-apple.com</value>
                 <value id="payone_cp_googlepay_img" type="host">www.gstatic.com</value>
             </values>
         </policy>
