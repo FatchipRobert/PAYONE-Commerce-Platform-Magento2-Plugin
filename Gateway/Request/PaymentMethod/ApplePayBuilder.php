@@ -73,6 +73,8 @@ class ApplePayBuilder implements BuilderInterface
                 ],
             ],
             'productSpecificInput' => [
+                // Own Apple Developer account and certificates; MASS_ENABLEMENT (PAYONE certificate) is not supported yet
+                'integrationType' => 'MERCHANT_CERTIFICATE',
                 'network' => strtoupper((string)($token['paymentMethod']['network'] ?? '')),
                 'token' => [
                     'version' => strtoupper((string)($paymentData['version'] ?? '')), // Apple: EC_v1, PAYONE enum: EC_V1

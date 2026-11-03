@@ -27,6 +27,9 @@ use Payone\CommercePlatform\Gateway\SubjectReader;
 
 /**
  * Google Pay specific input (mobile payment method): encrypted token from the Google Pay JS, 3DS return URL
+ *
+ * encryptedPaymentData is the complete token JSON of Google (paymentMethodData.tokenizationData.token) base64 encoded
+ * (PCP docs) - the raw JSON is rejected with INVALID_GOOGLE_PAY_TOKEN.
  */
 class GooglePayBuilder implements BuilderInterface
 {
@@ -53,7 +56,7 @@ class GooglePayBuilder implements BuilderInterface
         $isAutomaticCapture = (bool)$payment->getMethodInstance()->getConfigData('automatic_capture', $order->getStoreId());
 
         return [
-            'encryptedPaymentData' => $payment->getAdditionalInformation('payment_token'),
+            'encryptedPaymentData' => base64_encode((string)$payment->getAdditionalInformation('payment_token')),
             'authorizationMode' => $isAutomaticCapture ? 'SALE' : 'PRE_AUTHORIZATION',
             'threeDSecure' => [
                 'redirectionData' => [

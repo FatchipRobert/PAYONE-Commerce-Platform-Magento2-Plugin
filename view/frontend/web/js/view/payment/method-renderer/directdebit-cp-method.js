@@ -45,7 +45,7 @@ define(
                 let parentReturn = this._super();
                 if (this.accountholder() == '') {
                     let billingAddress = quote.billingAddress();
-                    this.accountholder(billingAddress.firstname + " " + billingAddress.lastname);
+                    this.accountholder((billingAddress.firstname + " " + billingAddress.lastname).substring(0, 50)); // PAYONE: max. 50 characters
                 }
                 return parentReturn;
             },

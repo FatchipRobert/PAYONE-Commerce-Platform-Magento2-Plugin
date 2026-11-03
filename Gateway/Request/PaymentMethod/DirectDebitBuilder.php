@@ -70,7 +70,7 @@ class DirectDebitBuilder implements BuilderInterface
 
         $bankAccount = [
             'iban' => $payment->getAdditionalInformation('iban'),
-            'accountHolder' => $payment->getAdditionalInformation('accountholder'),
+            'accountHolder' => mb_substr((string)$payment->getAdditionalInformation('accountholder'), 0, 50), // max. 50
         ];
         if ($this->generalConfig->getPaymentValue($payment->getMethod(), 'request_bic', $order->getStoreId())) {
             $bankAccount['bic'] = $payment->getAdditionalInformation('bic');

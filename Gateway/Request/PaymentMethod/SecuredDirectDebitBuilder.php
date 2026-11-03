@@ -56,7 +56,7 @@ class SecuredDirectDebitBuilder implements BuilderInterface
             'productSpecificInput' => [
                 'bankAccountInformation' => [
                     'iban' => $payment->getAdditionalInformation('iban'),
-                    'accountHolder' => $payment->getAdditionalInformation('accountholder'),
+                    'accountHolder' => mb_substr((string)$payment->getAdditionalInformation('accountholder'), 0, 50), // max. 50
                 ],
             ],
         ];
