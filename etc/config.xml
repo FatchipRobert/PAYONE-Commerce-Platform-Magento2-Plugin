@@ -105,12 +105,11 @@
                 <model>PayoneCPWeroFacade</model>
                 <payone_method_type>redirectPaymentMethod</payone_method_type>
                 <payone_product_id>900</payone_product_id>
-                <automatic_capture>0</automatic_capture>
-                <capture_trigger>shipping</capture_trigger>
+                <automatic_capture>1</automatic_capture>
                 <can_initialize>1</can_initialize>
                 <title>PAYONE Wero</title>
                 <allowspecific>1</allowspecific>
-                <specificcountry>DE,FR,BE,LU,NL</specificcountry>
+                <specificcountry>DE,BE</specificcountry>
                 <group>payone_cp</group>
                 <is_gateway>1</is_gateway>
                 <can_use_checkout>1</can_use_checkout>

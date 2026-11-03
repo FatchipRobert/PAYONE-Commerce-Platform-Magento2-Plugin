@@ -58,6 +58,10 @@ class PassthroughMessageMapper implements ErrorMessageMapperInterface
             'PAYMENT_METHOD_NOT_ALLOWED', 'PAYMENT_PRODUCT_CONFIGURATION_ERROR' => __(
                 'This payment method is currently not available. Please choose a different payment method.'
             ),
+            // Rejected by the payment platform behind PAYONE, e.g. every Wero refund on the pre-prod account (2026-11)
+            'INVALID_REQUEST_ORDER' => __(
+                'PAYONE could not execute this action for the payment (INVALID_REQUEST_ORDER). Please try again later or contact PAYONE support.'
+            ),
             default => new Phrase($code),
         };
     }

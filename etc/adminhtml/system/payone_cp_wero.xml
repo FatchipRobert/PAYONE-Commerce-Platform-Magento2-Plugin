@@ -28,20 +28,6 @@
             <label>Title</label>
             <config_path>payment/payone_cp_wero/title</config_path>
         </field>
-        <field id="automatic_capture" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Automatic capture</label>
-            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-            <config_path>payment/payone_cp_wero/automatic_capture</config_path>
-        </field>
-        <field id="capture_trigger" translate="label,comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Capture trigger</label>
-            <comment><![CDATA[Shown to the customer in the Wero app: when the reserved amount will be captured (invoice creation).]]></comment>
-            <source_model>Payone\CommercePlatform\Model\Source\WeroCaptureTrigger</source_model>
-            <config_path>payment/payone_cp_wero/capture_trigger</config_path>
-            <depends>
-                <field id="automatic_capture">0</field>
-            </depends>
-        </field>
         <field id="instructions" translate="label" type="textarea" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Instructions</label>
             <config_path>payment/payone_cp_wero/instructions</config_path>

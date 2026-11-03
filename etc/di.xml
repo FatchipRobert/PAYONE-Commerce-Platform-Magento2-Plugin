@@ -108,7 +108,7 @@
         </arguments>
     </virtualType>
 
-    <!-- Wero: redirect method like PayPal, only for EUR and the Wero countries (specificcountry in config.xml) -->
+    <!-- Wero: redirect method like PayPal (Direct Sale only), only for EUR and the Wero countries (specificcountry in config.xml) -->
     <virtualType name="PayoneCPWeroFacade" type="PayoneCPFacade">
         <arguments>
             <argument name="code" xsi:type="const">Payone\CommercePlatform\Model\Payone::METHOD_WERO</argument>

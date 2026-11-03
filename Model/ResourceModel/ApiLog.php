@@ -138,6 +138,25 @@ class ApiLog extends AbstractDb
     }
 
     /**
+     * Checks if a successful API call with the given request name (e.g. Capture) was logged for the order
+     *
+     * @param string $orderIncrementId
+     * @param string $requestName
+     * @return bool
+     */
+    public function hasSuccessfulRequest(string $orderIncrementId, string $requestName): bool
+    {
+        $connection = $this->getConnection();
+        $select = $connection->select()
+            ->from($this->getMainTable(), ['entity_id'])
+            ->where('order_increment_id = ?', $orderIncrementId)
+            ->where('request = ?', $requestName)
+            ->where('response = ?', self::STATUS_SUCCESS)
+            ->limit(1);
+        return (bool)$connection->fetchOne($select);
+    }
+
+    /**
      * Returns the connection for writing log entries
      * API calls from the admin (capture, refund) run inside the transaction of the invoice/creditmemo save.
      * If the call fails, that transaction is rolled back - including the log entry on the same connection.

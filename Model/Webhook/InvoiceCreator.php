@@ -25,6 +25,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Payone\CommercePlatform\Model\Payone;
+use Payone\CommercePlatform\Model\ResourceModel\ApiLog;
 
 /**
  * Creates the invoice for automatically captured payments (payment.captured webhook)
@@ -34,18 +35,22 @@ class InvoiceCreator
     /**
      * @param OrderRepositoryInterface $orderRepository
      * @param InvoiceSender $invoiceSender
+     * @param ApiLog $apiLog
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly InvoiceSender $invoiceSender,
+        private readonly ApiLog $apiLog,
     ) {
     }
 
     /**
-     * Registers the automatic capture (SALE) reported by the payment.captured webhook
+     * Registers the capture (SALE) reported by the payment.captured webhook
      *
      * Magento creates a paid invoice and a capture transaction below the authorization and closes the authorization.
-     * Does nothing for methods without automatic capture or if the order already has an invoice.
+     * Done for methods with automatic capture and for captures the shop did not request - Wero e.g. executes a SALE
+     * although the request had requiresApproval = true. Does nothing if the order already has an invoice or the shop
+     * captured itself (the webhook of an admin capture may arrive before the invoice is saved).
      *
      * @param Order $order
      * @return void
@@ -53,8 +58,11 @@ class InvoiceCreator
     public function createInvoice(Order $order): void
     {
         $payment = $order->getPayment();
+        if ($order->getInvoiceCollection()->count() > 0) {
+            return;
+        }
         $isAutomaticCapture = (bool)$payment->getMethodInstance()->getConfigData('automatic_capture', $order->getStoreId());
-        if (!$isAutomaticCapture || $order->getInvoiceCollection()->count() > 0) {
+        if (!$isAutomaticCapture && $this->apiLog->hasSuccessfulRequest((string)$order->getIncrementId(), 'Capture')) {
             return;
         }
 

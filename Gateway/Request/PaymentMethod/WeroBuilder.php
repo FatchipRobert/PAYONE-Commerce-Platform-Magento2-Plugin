@@ -24,10 +24,13 @@ namespace Payone\CommercePlatform\Gateway\Request\PaymentMethod;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Payone\CommercePlatform\Gateway\Request\ReturnUrl;
 use Payone\CommercePlatform\Gateway\SubjectReader;
-use Payone\CommercePlatform\Model\Source\WeroCaptureTrigger;
 
 /**
  * Wero specific input (redirect payment method, product 900)
+ *
+ * PAYONE only supports Direct Sale for Wero (requiresApproval = false, automatic_capture fixed to 1 in config.xml).
+ * With requiresApproval = true PAYONE captures anyway, but refunds of such payments fail (INVALID_REQUEST_ORDER).
+ * paymentProduct900SpecificInput.captureTrigger is only used for requiresApproval = true, so it is not sent.
  */
 class WeroBuilder implements BuilderInterface
 {
@@ -44,32 +47,19 @@ class WeroBuilder implements BuilderInterface
     /**
      * Builds the method specific content
      *
-     * Without automatic capture the payment is only authorized; Wero then shows the customer when the amount
-     * will be captured (captureTrigger).
-     *
      * @param array $buildSubject
      * @return array
      */
     public function build(array $buildSubject): array
     {
-        $payment = $this->subjectReader->readPayment($buildSubject)->getPayment();
-        $order = $payment->getOrder();
-        $method = $payment->getMethodInstance();
-        $isAutomaticCapture = (bool)$method->getConfigData('automatic_capture', $order->getStoreId());
+        $order = $this->subjectReader->readPayment($buildSubject)->getPayment()->getOrder();
 
-        $input = [
-            'requiresApproval' => !$isAutomaticCapture,
+        return [
+            'requiresApproval' => false,
             'tokenize' => false,
             'redirectionData' => [
                 'returnUrl' => $this->returnUrl->get($order),
             ],
         ];
-        if (!$isAutomaticCapture) {
-            $captureTrigger = (string)$method->getConfigData('capture_trigger', $order->getStoreId());
-            $input['productSpecificInput'] = [
-                'captureTrigger' => $captureTrigger !== '' ? $captureTrigger : WeroCaptureTrigger::SHIPPING,
-            ];
-        }
-        return $input;
     }
 }
