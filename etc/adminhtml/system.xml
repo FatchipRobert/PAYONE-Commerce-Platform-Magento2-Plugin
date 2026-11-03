@@ -168,6 +168,7 @@
             <include path="Payone_CommercePlatform::system/payone_cp_applepay.xml"/>
             <include path="Payone_CommercePlatform::system/payone_cp_securedinvoice.xml"/>
             <include path="Payone_CommercePlatform::system/payone_cp_secureddirectdebit.xml"/>
+            <include path="Payone_CommercePlatform::system/payone_cp_wero.xml"/>
         </section>
     </system>
 </config>

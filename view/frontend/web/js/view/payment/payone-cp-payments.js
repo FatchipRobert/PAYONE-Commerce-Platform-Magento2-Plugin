@@ -39,6 +39,10 @@ define(
                 component: 'Payone_CommercePlatform/js/view/payment/method-renderer/paypal-cp-method'
             },
             {
+                type: 'payone_cp_wero',
+                component: 'Payone_CommercePlatform/js/view/payment/method-renderer/wero-cp-method'
+            },
+            {
                 type: 'payone_cp_googlepay',
                 component: 'Payone_CommercePlatform/js/view/payment/method-renderer/googlepay-cp-method'
             },

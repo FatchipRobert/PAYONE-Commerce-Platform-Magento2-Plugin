@@ -99,6 +99,35 @@
                 <can_review_payment>0</can_review_payment>
                 <can_deny_payment>0</can_deny_payment>
             </payone_cp_paypal>
+            <payone_cp_wero>
+                <active>0</active>
+                <payment_action>authorize</payment_action>
+                <model>PayoneCPWeroFacade</model>
+                <payone_method_type>redirectPaymentMethod</payone_method_type>
+                <payone_product_id>900</payone_product_id>
+                <automatic_capture>0</automatic_capture>
+                <capture_trigger>shipping</capture_trigger>
+                <can_initialize>1</can_initialize>
+                <title>PAYONE Wero</title>
+                <allowspecific>1</allowspecific>
+                <specificcountry>DE,FR,BE,LU,NL</specificcountry>
+                <group>payone_cp</group>
+                <is_gateway>1</is_gateway>
+                <can_use_checkout>1</can_use_checkout>
+                <can_authorize>1</can_authorize>
+                <can_capture>1</can_capture>
+                <can_capture_partial>1</can_capture_partial>
+                <can_authorize_vault>0</can_authorize_vault>
+                <can_capture_vault>0</can_capture_vault>
+                <can_use_internal>0</can_use_internal>
+                <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+                <can_refund>1</can_refund>
+                <can_void>1</can_void>
+                <can_cancel>1</can_cancel>
+                <can_edit>0</can_edit>
+                <can_review_payment>0</can_review_payment>
+                <can_deny_payment>0</can_deny_payment>
+            </payone_cp_wero>
             <payone_cp_googlepay>
                 <active>1</active>
                 <payment_action>authorize</payment_action>

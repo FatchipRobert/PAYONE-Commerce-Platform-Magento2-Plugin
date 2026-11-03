@@ -58,6 +58,13 @@ class Returned implements HttpGetActionInterface, HttpPostActionInterface, CsrfA
     public const RETRY_MILLISECONDS_SLEEP = 100; // 1/10th second
 
     /**
+     * Max. time to wait for a final status webhook if the status is still intermediate - e.g. Wero sends
+     * CAPTURE_REQUESTED and the REJECTED of a cancelled payment only ~1 s after the customer returned
+     */
+    public const FINAL_STATUS_WAIT_MILLISECONDS = 3000;
+    public const FINAL_STATUS_POLL_MILLISECONDS = 250;
+
+    /**
      * @param Session $checkoutSession
      * @param OrderRepositoryInterface $orderRepository
      * @param ManagerInterface $messageManager
@@ -132,7 +139,8 @@ class Returned implements HttpGetActionInterface, HttpPostActionInterface, CsrfA
     {
         $collection = $this->webhookMessageCollectionFactory->create();
         $collection->addFieldToFilter('payment_id', $order->getData('payone_cp_payment_id'))
-            ->setOrder('date', 'DESC');
+            ->setOrder('date', 'DESC')
+            ->setOrder('entity_id', 'DESC'); // webhooks within the same second
 
         if ($collection->getSize() > 0) {
             $status = $collection->getFirstItem()->getStatus();
@@ -178,16 +186,44 @@ class Returned implements HttpGetActionInterface, HttpPostActionInterface, CsrfA
     /**
      * Determines the payment status - from the received webhooks first, from the API as fallback
      *
+     * An intermediate status is checked against the API and then waited on for a short time, because the final
+     * webhook may arrive right after the customer returned
+     *
      * @param Order $order
      * @return string|null
      */
     private function getPaymentStatus(Order $order): ?string
     {
         $status = $this->getStatusFromWebhook($order);
-        if (empty($status)) {
-            $status = $this->getStatusFromApi($order);
+        if ($this->isFinalStatus($status)) {
+            return $status;
         }
-        return $status;
+
+        $apiStatus = $this->getStatusFromApi($order);
+        if ($this->isFinalStatus($apiStatus)) {
+            return $apiStatus;
+        }
+
+        for ($waited = 0; $waited < self::FINAL_STATUS_WAIT_MILLISECONDS; $waited += self::FINAL_STATUS_POLL_MILLISECONDS) {
+            usleep(self::FINAL_STATUS_POLL_MILLISECONDS * 1000);
+            $webhookStatus = $this->getStatusFromWebhook($order, self::RETRY_LIMIT); // single lookup, no retries
+            if ($this->isFinalStatus($webhookStatus)) {
+                return $webhookStatus;
+            }
+            $status = $webhookStatus ?? $status;
+        }
+        return $status ?? $apiStatus;
+    }
+
+    /**
+     * Checks if the status decides the order (success or cancel)
+     *
+     * @param string|null $status
+     * @return bool
+     */
+    private function isFinalStatus(?string $status): bool
+    {
+        return in_array($status, self::STATUS_LIST_SUCCESS, true) || in_array($status, self::STATUS_LIST_CANCEL, true);
     }
 
     /**
