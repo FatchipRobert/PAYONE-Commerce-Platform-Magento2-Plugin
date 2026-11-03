@@ -37,7 +37,7 @@ class CreditcardBuilder implements BuilderInterface
         'VISA' => 1,
         'AMERICAN_EXPRESS' => 2,
         'MASTERCARD' => 3,
-        'DINERS' => 123,
+        'DINERS' => 132,
     ];
 
     /**

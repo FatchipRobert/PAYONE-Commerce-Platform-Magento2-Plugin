@@ -35,6 +35,7 @@ class MerchantReference
     public const PREFIX_ORDER = 'od';
     public const PREFIX_CAPTURE = 'cp';
     public const PREFIX_REFUND = 'rf';
+    public const PREFIX_MANDATE = 'md'; // SEPA mandate reference
 
     /**
      * @param GeneralConfig $generalConfig
