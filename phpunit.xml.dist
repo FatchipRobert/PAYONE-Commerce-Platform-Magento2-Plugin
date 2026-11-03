@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Unit tests of the module. Run from the Magento root (module in app/code/Payone/CommercePlatform):
+ *   vendor/bin/phpunit -c app/code/Payone/CommercePlatform/phpunit.xml.dist
+ * With coverage (Xdebug): set XDEBUG_MODE=coverage and add the option coverage-text (or coverage-html dir)
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="../../../../vendor/phpunit/phpunit/phpunit.xsd"
+         colors="true"
+         columns="max"
+         bootstrap="../../../../dev/tests/unit/framework/bootstrap.php"
+         cacheDirectory="../../../../dev/tests/unit/tmp/payone_cp_phpunit_cache"
+         failOnWarning="true"
+         failOnRisky="true">
+    <testsuites>
+        <testsuite name="Payone_CommercePlatform">
+            <directory>Test/Unit</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">.</directory>
+        </include>
+        <exclude>
+            <directory>Test</directory>
+            <file>registration.php</file>
+        </exclude>
+    </source>
+    <php>
+        <ini name="memory_limit" value="-1"/>
+        <ini name="date.timezone" value="Europe/Berlin"/>
+    </php>
+</phpunit>

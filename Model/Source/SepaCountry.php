@@ -49,6 +49,9 @@ class SepaCountry implements OptionSourceInterface
     /**
      * Return existing SEPA countries sorted alphabetically
      *
+     * The Unicode root collation sorts letters with diacritics with their base letter
+     * (e.g. "Österreich" under O), ksort() would put them after Z.
+     *
      * @return array
      */
     public function toOptionArray(): array
@@ -63,7 +66,7 @@ class SepaCountry implements OptionSourceInterface
                 ];
             }
         }
-        ksort($options);
+        uksort($options, [new \Collator('root'), 'compare']);
         return $options;
     }
 }
