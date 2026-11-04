@@ -44,6 +44,12 @@
             <label>Sort Order</label>
             <config_path>payment/payone_cp_directdebit/sort_order</config_path>
         </field>
+        <field id="creditor_id" translate="label comment" type="text" sortOrder="103" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Creditor Id</label>
+            <comment>SEPA creditor identifier of the mandate, e.g. DE98ZZZ09999999999</comment>
+            <validate>required-entry</validate>
+            <backend_model>Payone\CommercePlatform\Model\Config\Backend\CreditorId</backend_model>
+        </field>
         <field id="request_bic" translate="label" type="select" sortOrder="105" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>Request BIC</label>
             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

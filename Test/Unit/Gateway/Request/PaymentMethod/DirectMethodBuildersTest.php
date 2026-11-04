@@ -43,7 +43,11 @@ class DirectMethodBuildersTest extends TestCase
         $generalConfig = $this->createStub(GeneralConfig::class);
         $generalConfig->method('getRefPrefix')->willReturn($refPrefix);
         $generalConfig->method('getPaymentValue')->willReturnCallback(
-            static fn ($code, $field) => $code === 'payone_cp_directdebit' && $field === 'request_bic' && $requestBic ? '1' : null
+            static fn ($code, $field) => $code !== 'payone_cp_directdebit' ? null : match ($field) {
+                'request_bic' => $requestBic ? '1' : '0',
+                'creditor_id' => 'DE98ZZZ09999999999',
+                default => null,
+            }
         );
         $timezone = $this->createStub(TimezoneInterface::class);
         $timezone->method('date')->willReturn(new \DateTime('2026-11-03 23:30:00'));

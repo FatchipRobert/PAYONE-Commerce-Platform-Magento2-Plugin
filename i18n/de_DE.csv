@@ -32,3 +32,4 @@
 "The payment with Apple Pay could not be processed. Please try again or choose a different payment method.","Die Zahlung mit Apple Pay konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart."
 "PAYONE Wero","PAYONE Wero"
 "PAYONE could not execute this action for the payment (INVALID_REQUEST_ORDER). Please try again later or contact PAYONE support.","PAYONE konnte diese Aktion für die Zahlung nicht ausführen (INVALID_REQUEST_ORDER). Bitte versuchen Sie es später erneut oder wenden Sie sich an den PAYONE-Support."
+"The creditor identifier ""%1"" is invalid (format e.g. DE98ZZZ09999999999).","Die Gläubiger-ID ""%1"" ist ungültig (Format z. B. DE98ZZZ09999999999)."

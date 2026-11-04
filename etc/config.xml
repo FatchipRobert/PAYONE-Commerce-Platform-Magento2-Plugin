@@ -267,6 +267,7 @@
                 <mode>live</mode>
             </payone_cp_creditcard>
             <payone_cp_directdebit>
+                <creditor_id>DE98ZZZ09999999999</creditor_id>
                 <request_bic>0</request_bic>
                 <sepa_country>DE</sepa_country>
             </payone_cp_directdebit>

@@ -33,7 +33,7 @@ use Payone\CommercePlatform\Gateway\SubjectReader;
  *
  * PAYONE has no mandate management yet - a new UNIQUE mandate is sent with every payment. recurrenceType,
  * uniqueMandateReference, dateOfSignature and creditorId are mandatory "to ensure compatibility with the planned
- * introduction of mandate management" (PCP docs).
+ * introduction of mandate management" (PCP docs). creditorId is the SEPA creditor identifier from the config.
  */
 class DirectDebitBuilder implements BuilderInterface
 {
@@ -83,7 +83,11 @@ class DirectDebitBuilder implements BuilderInterface
                     'bankAccountIban' => $bankAccount,
                     // The customer "signs" the mandate by placing the order (not saved yet, so no created_at)
                     'dateOfSignature' => $this->timezone->date(null, null, true)->format('Ymd'),
-                    'creditorId' => 'DE98ZZZ09999999999', ///@TODO: KLÄREN!!! Parameter von Playground übernommen
+                    'creditorId' => (string)$this->generalConfig->getPaymentValue(
+                        $payment->getMethod(),
+                        'creditor_id',
+                        $order->getStoreId()
+                    ),
                     'uniqueMandateReference' => $this->getMandateReference($order),
                 ],
             ],
