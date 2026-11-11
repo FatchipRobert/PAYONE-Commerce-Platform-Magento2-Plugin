@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace Payone\CommercePlatform\Model\PayInStore;
 
+use Magento\Framework\App\Area;
 use Magento\Framework\Phrase;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Payment\Gateway\Command\CommandException;
@@ -28,6 +29,7 @@ use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Store\Model\App\Emulation;
 use Payone\CommercePlatform\Observer\PayInStore\DeleteCheckout;
 
 /**
@@ -63,12 +65,14 @@ class OrderStatusUpdater
      * @param OrderRepositoryInterface $orderRepository
      * @param InvoiceSender $invoiceSender
      * @param DateTime $dateTime
+     * @param Emulation $emulation
      */
     public function __construct(
         private readonly CommandPoolInterface $commandPool,
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly InvoiceSender $invoiceSender,
         private readonly DateTime $dateTime,
+        private readonly Emulation $emulation,
     ) {
     }
 
@@ -155,8 +159,27 @@ class OrderStatusUpdater
         }
 
         $order->cancel();
-        $order->addCommentToStatusHistory($comment);
+        $order->addCommentToStatusHistory($this->translate($comment, (int)$order->getStoreId()));
         $this->orderRepository->save($order);
+    }
+
+    /**
+     * Renders the comment in the language of the store - the cron runs without store locale
+     *
+     * Only around the rendering: the invoice mail emulates the store itself and emulations cannot be nested.
+     *
+     * @param Phrase $comment
+     * @param int $storeId
+     * @return string
+     */
+    private function translate(Phrase $comment, int $storeId): string
+    {
+        $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
+        try {
+            return (string)$comment;
+        } finally {
+            $this->emulation->stopEnvironmentEmulation();
+        }
     }
 
     /**

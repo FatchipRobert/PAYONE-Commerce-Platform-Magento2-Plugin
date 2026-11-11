@@ -242,7 +242,7 @@
                 <order_status>pending</order_status>
                 <can_initialize>1</can_initialize>
                 <cancel_after_days>0</cancel_after_days>
-                <title>Bezahlung bei Abholung</title>
+                <title>PAYONE Pay in Store</title>
                 <allowspecific>0</allowspecific>
                 <group>payone_cp</group>
                 <is_gateway>0</is_gateway>

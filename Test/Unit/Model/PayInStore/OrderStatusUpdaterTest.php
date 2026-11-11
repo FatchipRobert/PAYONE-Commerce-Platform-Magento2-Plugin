@@ -21,6 +21,9 @@ declare(strict_types=1);
 
 namespace Payone\CommercePlatform\Test\Unit\Model\PayInStore;
 
+use Magento\Framework\App\Area;
+use Magento\Framework\Phrase;
+use Magento\Framework\Phrase\RendererInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\TestFramework\Unit\Helper\MockCreationTrait;
 use Magento\Payment\Gateway\Command\CommandException;
@@ -32,6 +35,7 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment;
+use Magento\Store\Model\App\Emulation;
 use Payone\CommercePlatform\Model\PayInStore\OrderStatusUpdater;
 use Payone\CommercePlatform\Observer\PayInStore\DeleteCheckout;
 use Payone\CommercePlatform\Test\Unit\Helper\OrderMockTrait;
@@ -58,6 +62,10 @@ class OrderStatusUpdaterTest extends TestCase
      * @var array
      */
     private array $commandSubjects = [];
+    /**
+     * @var array
+     */
+    private array $emulationCalls = [];
 
     private function createUpdater(ArrayResult|\Exception $checkoutDetails): OrderStatusUpdater
     {
@@ -78,7 +86,28 @@ class OrderStatusUpdaterTest extends TestCase
         $dateTime = $this->createStub(DateTime::class);
         $dateTime->method('gmtTimestamp')->willReturn(strtotime(self::NOW.' UTC'));
 
-        return new OrderStatusUpdater($commandPool, $this->orderRepository, $this->invoiceSender, $dateTime);
+        // the emulated store "translates" with a "de: " prefix, outside of it phrases stay untranslated
+        $originalRenderer = Phrase::getRenderer();
+        $storeRenderer = $this->createStub(RendererInterface::class);
+        $storeRenderer->method('render')->willReturnCallback(
+            static fn (array $source, array $arguments) => 'de: '.str_replace('%1', (string)($arguments[0] ?? ''), end($source))
+        );
+        $emulation = $this->createStub(Emulation::class);
+        $emulation->method('startEnvironmentEmulation')->willReturnCallback(
+            function ($storeId, $area, $force) use ($storeRenderer) {
+                $this->emulationCalls[] = ['start', $storeId, $area, $force];
+                Phrase::setRenderer($storeRenderer);
+            }
+        );
+        $emulation->method('stopEnvironmentEmulation')->willReturnCallback(
+            function () use ($originalRenderer, $emulation) {
+                $this->emulationCalls[] = ['stop'];
+                Phrase::setRenderer($originalRenderer);
+                return $emulation;
+            }
+        );
+
+        return new OrderStatusUpdater($commandPool, $this->orderRepository, $this->invoiceSender, $dateTime, $emulation);
     }
 
     private static function checkoutDetails(string $paymentStatus, int $collectedAmount = 0): ArrayResult
@@ -167,13 +196,17 @@ class OrderStatusUpdaterTest extends TestCase
         $order->method('canCancel')->willReturn(true);
         $order->expects($this->once())->method('cancel');
         $order->expects($this->once())->method('addCommentToStatusHistory')->with($this->callback(
-            static fn ($comment) => (string)$comment === 'No payment received in store within 3 days, order cancelled.'
+            static fn ($comment) => $comment === 'de: No payment received in store within 3 days, order cancelled.'
         ));
         $payment->expects($this->never())->method('registerCaptureNotification');
         $this->orderRepository->expects($this->once())->method('save')->with($order);
         $this->invoiceSender->expects($this->never())->method('send');
 
         $updater->update($order);
+
+        // only the comment is rendered in the emulated store
+        $this->assertSame([['start', 1, Area::AREA_FRONTEND, true], ['stop']], $this->emulationCalls);
+        $this->assertSame('No payment', (string)__('No payment'));
     }
 
     public function testCheckoutDeletedInStoreCancelsOrderWithoutDeleteCall(): void
@@ -191,7 +224,7 @@ class OrderStatusUpdaterTest extends TestCase
             return $order;
         });
         $order->expects($this->once())->method('addCommentToStatusHistory')->with($this->callback(
-            static fn ($comment) => (string)$comment === 'Checkout was cancelled in store, order cancelled.'
+            static fn ($comment) => $comment === 'de: Checkout was cancelled in store, order cancelled.'
         ));
         $payment->expects($this->never())->method('registerCaptureNotification');
         $this->orderRepository->expects($this->once())->method('save')->with($order);
