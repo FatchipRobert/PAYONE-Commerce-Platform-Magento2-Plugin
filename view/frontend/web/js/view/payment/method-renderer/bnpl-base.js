@@ -62,7 +62,8 @@ define(
 
             /**
              * Loads the Payla device fingerprint snippet once per page (mandatory for PAYONE Buy Now Pay Later)
-             * The device token was created by the BnplConfigProvider and is sent with the payment data
+             * The device token was created by the method class (BuyNowPayLater::getFrontendConfig()) and is sent with
+             * the payment data
              */
             loadFingerprintScript: function () {
                 if (window.payoneCpPaylaLoaded === true || this.getFrontendConfigParam('deviceToken') === '') {

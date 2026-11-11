@@ -26,6 +26,7 @@ use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Address;
 use Magento\Sales\Model\Order\Payment;
+use Payone\CommercePlatform\Model\Method\PayoneMethod;
 use PHPUnit\Framework\MockObject\Stub;
 
 /**
@@ -75,7 +76,7 @@ trait OrderMockTrait
      *
      * @param Order $order
      * @param array $additionalInformation
-     * @param array $configData config values of the payment method (payone_method_type, automatic_capture, ...)
+     * @param array $configData config values of the payment method (automatic_capture, ...)
      * @param string $methodCode
      * @param string[] $methods additional methods to stub
      * @return Payment&Stub
@@ -87,11 +88,34 @@ trait OrderMockTrait
         string $methodCode = 'payone_cp_creditcard',
         array $methods = []
     ): Payment {
+        return $this->createPaymentWithMethod(
+            $order,
+            $this->createMethodInstance($configData, $methodCode),
+            $additionalInformation,
+            $methods
+        );
+    }
+
+    /**
+     * Payment of the order with the given payment method instance, e.g. a stub with requiresCancellationReason()
+     *
+     * @param Order $order
+     * @param MethodInterface $method
+     * @param array $additionalInformation
+     * @param string[] $methods additional methods to stub
+     * @return Payment&Stub
+     */
+    protected function createPaymentWithMethod(
+        Order $order,
+        MethodInterface $method,
+        array $additionalInformation = [],
+        array $methods = []
+    ): Payment {
         $payment = $this->createPartialStub(Payment::class, array_merge(['getOrder', 'getMethodInstance'], $methods));
-        $payment->setData('method', $methodCode);
+        $payment->setData('method', $method->getCode());
         $payment->setData('additional_information', $additionalInformation);
         $payment->method('getOrder')->willReturn($order);
-        $payment->method('getMethodInstance')->willReturn($this->createMethodInstance($configData, $methodCode));
+        $payment->method('getMethodInstance')->willReturn($method);
         if ($order instanceof Stub) {
             $order->method('getPayment')->willReturn($payment);
         }
@@ -99,17 +123,20 @@ trait OrderMockTrait
     }
 
     /**
+     * PAYONE payment method stub: config values via getConfigData(), isAutomaticCapture() from automatic_capture
+     *
      * @param array $configData
      * @param string $methodCode
-     * @return MethodInterface&Stub
+     * @return PayoneMethod&Stub
      */
-    protected function createMethodInstance(array $configData = [], string $methodCode = 'payone_cp_creditcard'): MethodInterface
+    protected function createMethodInstance(array $configData = [], string $methodCode = 'payone_cp_creditcard'): PayoneMethod
     {
-        $method = $this->createStub(MethodInterface::class);
+        $method = $this->createStub(PayoneMethod::class);
         $method->method('getCode')->willReturn($methodCode);
         $method->method('getConfigData')->willReturnCallback(
             static fn (string $field) => $configData[$field] ?? null
         );
+        $method->method('isAutomaticCapture')->willReturn((bool)($configData['automatic_capture'] ?? false));
         return $method;
     }
 

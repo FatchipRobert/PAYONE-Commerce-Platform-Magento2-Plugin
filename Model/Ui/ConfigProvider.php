@@ -26,12 +26,14 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\Escaper;
 use Magento\Payment\Helper\Data as PaymentHelper;
 use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
+use Payone\CommercePlatform\Model\Method\PayoneMethod;
 use Payone\CommercePlatform\Model\Payone;
 
 /**
- * Checkout config shared by all PAYONE methods: window.checkoutConfig.payment.payone_cp.* and the instructions
+ * Checkout config of the PAYONE methods: window.checkoutConfig.payment.payone_cp.* and the instructions
  *
- * The method specific values (payone_cp.<method code>) come from the ConfigProviders of the methods.
+ * The method specific values (payone_cp.<method code>) come from the available methods themselves
+ * (PayoneMethod::getFrontendConfig()).
  */
 class ConfigProvider implements ConfigProviderInterface
 {
@@ -67,10 +69,16 @@ class ConfigProvider implements ConfigProviderInterface
 
         foreach (Payone::METHODS as $methodCode) {
             $method = $this->paymentHelper->getMethodInstance($methodCode);
-            if ($method->isAvailable()) {
-                $config['payment']['instructions'][$methodCode] = nl2br(
-                    $this->escaper->escapeHtml((string)$method->getConfigData('instructions'))
-                );
+            if (!$method->isAvailable()) {
+                continue;
+            }
+
+            $config['payment']['instructions'][$methodCode] = nl2br(
+                $this->escaper->escapeHtml((string)$method->getConfigData('instructions'))
+            );
+            $methodConfig = $method instanceof PayoneMethod ? $method->getFrontendConfig() : [];
+            if (!empty($methodConfig)) {
+                $config['payment']['payone_cp'][$methodCode] = $methodConfig;
             }
         }
 

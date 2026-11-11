@@ -36,8 +36,8 @@ use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Store\Model\App\Emulation;
+use Payone\CommercePlatform\Model\Method\PayInStore;
 use Payone\CommercePlatform\Model\PayInStore\OrderStatusUpdater;
-use Payone\CommercePlatform\Observer\PayInStore\DeleteCheckout;
 use Payone\CommercePlatform\Test\Unit\Helper\OrderMockTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -220,7 +220,7 @@ class OrderStatusUpdaterTest extends TestCase
         $order->method('canCancel')->willReturn(true);
         $order->expects($this->once())->method('cancel')->willReturnCallback(function () use ($payment, $order) {
             // the flag must be set before Order::cancel() dispatches sales_order_payment_cancel
-            $this->assertTrue($payment->getData(DeleteCheckout::FLAG_CHECKOUT_DELETED));
+            $this->assertTrue($payment->getData(PayInStore::FLAG_CHECKOUT_DELETED));
             return $order;
         });
         $order->expects($this->once())->method('addCommentToStatusHistory')->with($this->callback(

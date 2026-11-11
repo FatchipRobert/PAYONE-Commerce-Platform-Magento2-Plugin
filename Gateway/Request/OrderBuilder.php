@@ -25,7 +25,7 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
 use Payone\CommercePlatform\Gateway\MerchantReference;
 use Payone\CommercePlatform\Gateway\SubjectReader;
-use Payone\CommercePlatform\Model\Payone;
+use Payone\CommercePlatform\Model\Method\PayoneMethod;
 use Payone\CommercePlatform\Model\RemoteIp;
 
 /**
@@ -64,8 +64,8 @@ class OrderBuilder implements BuilderInterface
     {
         $payment = $this->subjectReader->readPayment($buildSubject)->getPayment();
         $order = $payment->getOrder();
-        $isFinancing = $payment->getMethodInstance()->getConfigData('payone_method_type', $order->getStoreId())
-            === Payone::METHOD_TYPE_FINANCING;
+        $method = $payment->getMethodInstance();
+        $requiresDevice = $method instanceof PayoneMethod && $method->requiresCustomerDevice();
 
         $orderRequest = [
             'orderType' => 'FULL',
@@ -77,11 +77,11 @@ class OrderBuilder implements BuilderInterface
             ],
         ];
 
-        // Buy Now Pay Later always needs the IP and the token of the Payla device fingerprint from the checkout
-        if ($isFinancing || $this->generalConfig->isTransmitIp($order->getStoreId())) {
+        // e.g. Buy Now Pay Later: always the IP and the token of the Payla device fingerprint from the checkout
+        if ($requiresDevice || $this->generalConfig->isTransmitIp($order->getStoreId())) {
             $orderRequest['paymentMethodSpecificInput']['customerDevice']['ipAddress'] = $this->remoteIp->get();
         }
-        if ($isFinancing && !empty($payment->getAdditionalInformation(self::KEY_DEVICE_TOKEN))) {
+        if ($requiresDevice && !empty($payment->getAdditionalInformation(self::KEY_DEVICE_TOKEN))) {
             $orderRequest['paymentMethodSpecificInput']['customerDevice']['deviceToken']
                 = $payment->getAdditionalInformation(self::KEY_DEVICE_TOKEN);
         }

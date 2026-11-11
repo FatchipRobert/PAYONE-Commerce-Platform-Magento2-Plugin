@@ -22,9 +22,7 @@
             <payone_cp_creditcard>
                 <active>1</active>
                 <payment_action>authorize</payment_action>
-                <model>PayoneCPCreditcardFacade</model>
-                <payone_method_type>cardPaymentMethod</payone_method_type>
-                <payone_product_id>1</payone_product_id>
+                <model>Payone\CommercePlatform\Model\Method\Creditcard</model>
                 <automatic_capture>0</automatic_capture>
                 <can_initialize>1</can_initialize>
                 <title>PAYONE Credit Card</title>
@@ -49,10 +47,7 @@
             <payone_cp_directdebit>
                 <active>1</active>
                 <payment_action>authorize</payment_action>
-                <model>PayoneCPDirectDebitFacade</model>
-                <payone_method_type>sepaDirectDebitPaymentMethod</payone_method_type>
-                <payone_product_id>771</payone_product_id>
-                <automatic_capture>1</automatic_capture>
+                <model>Payone\CommercePlatform\Model\Method\DirectDebit</model>
                 <title>PAYONE Direct Debit</title>
                 <allowspecific>0</allowspecific>
                 <group>payone_cp</group>
@@ -75,9 +70,7 @@
             <payone_cp_paypal>
                 <active>1</active>
                 <payment_action>authorize</payment_action>
-                <model>PayoneCPPayPalFacade</model>
-                <payone_method_type>redirectPaymentMethod</payone_method_type>
-                <payone_product_id>840</payone_product_id>
+                <model>Payone\CommercePlatform\Model\Method\PayPal</model>
                 <automatic_capture>0</automatic_capture>
                 <can_initialize>1</can_initialize>
                 <title>PAYONE PayPal</title>
@@ -102,10 +95,7 @@
             <payone_cp_wero>
                 <active>0</active>
                 <payment_action>authorize</payment_action>
-                <model>PayoneCPWeroFacade</model>
-                <payone_method_type>redirectPaymentMethod</payone_method_type>
-                <payone_product_id>900</payone_product_id>
-                <automatic_capture>1</automatic_capture>
+                <model>Payone\CommercePlatform\Model\Method\Wero</model>
                 <can_initialize>1</can_initialize>
                 <title>PAYONE Wero</title>
                 <allowspecific>1</allowspecific>
@@ -130,9 +120,7 @@
             <payone_cp_googlepay>
                 <active>1</active>
                 <payment_action>authorize</payment_action>
-                <model>PayoneCPGooglePayFacade</model>
-                <payone_method_type>mobilePaymentMethod</payone_method_type>
-                <payone_product_id>320</payone_product_id>
+                <model>Payone\CommercePlatform\Model\Method\GooglePay</model>
                 <automatic_capture>0</automatic_capture>
                 <can_initialize>1</can_initialize>
                 <title>PAYONE Google Pay</title>
@@ -157,9 +145,7 @@
             <payone_cp_applepay>
                 <active>0</active>
                 <payment_action>authorize</payment_action>
-                <model>PayoneCPApplePayFacade</model>
-                <payone_method_type>mobilePaymentMethod</payone_method_type>
-                <payone_product_id>302</payone_product_id>
+                <model>Payone\CommercePlatform\Model\Method\ApplePay</model>
                 <automatic_capture>0</automatic_capture>
                 <can_initialize>1</can_initialize>
                 <title>PAYONE Apple Pay</title>
@@ -184,9 +170,7 @@
             <payone_cp_securedinvoice>
                 <active>0</active>
                 <payment_action>authorize</payment_action>
-                <model>PayoneCPSecuredInvoiceFacade</model>
-                <payone_method_type>financingPaymentMethod</payone_method_type>
-                <payone_product_id>3390</payone_product_id>
+                <model>Payone\CommercePlatform\Model\Method\SecuredInvoice</model>
                 <automatic_capture>0</automatic_capture>
                 <title>PAYONE Secured Invoice</title>
                 <allowspecific>1</allowspecific>
@@ -211,9 +195,7 @@
             <payone_cp_secureddirectdebit>
                 <active>0</active>
                 <payment_action>authorize</payment_action>
-                <model>PayoneCPSecuredDirectDebitFacade</model>
-                <payone_method_type>financingPaymentMethod</payone_method_type>
-                <payone_product_id>3392</payone_product_id>
+                <model>Payone\CommercePlatform\Model\Method\SecuredDirectDebit</model>
                 <automatic_capture>0</automatic_capture>
                 <title>PAYONE Secured Direct Debit</title>
                 <allowspecific>1</allowspecific>
@@ -238,7 +220,7 @@
             <payone_cp_payinstore>
                 <active>0</active>
                 <payment_action>authorize</payment_action>
-                <model>PayoneCPPayInStoreFacade</model>
+                <model>Payone\CommercePlatform\Model\Method\PayInStore</model>
                 <order_status>pending</order_status>
                 <can_initialize>1</can_initialize>
                 <cancel_after_days>0</cancel_after_days>

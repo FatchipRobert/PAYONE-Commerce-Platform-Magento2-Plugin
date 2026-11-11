@@ -27,7 +27,7 @@ use Magento\Sales\Model\Order\Payment;
 use Payone\CommercePlatform\Gateway\AmountConverter;
 use Payone\CommercePlatform\Gateway\MerchantReference;
 use Payone\CommercePlatform\Gateway\SubjectReader;
-use Payone\CommercePlatform\Model\Payone;
+use Payone\CommercePlatform\Model\Method\PayoneMethod;
 use Payone\CommercePlatform\Observer\OrderPaymentCapture;
 
 /**
@@ -36,7 +36,7 @@ use Payone\CommercePlatform\Observer\OrderPaymentCapture;
 class CaptureBuilder implements BuilderInterface
 {
     /**
-     * Reason for a final capture below the authorized amount (mandatory for Buy Now Pay Later)
+     * Reason for a final capture below the authorized amount (PayoneMethod::requiresCancellationReason())
      */
     public const CANCELLATION_REASON_FINAL_PARTIAL = 'ORDER_SHIPPED_IN_FULL';
 
@@ -82,10 +82,10 @@ class CaptureBuilder implements BuilderInterface
             ],
         ];
 
-        // Buy Now Pay Later needs a reason when the last of several partial captures closes the payment
-        $isFinancing = $payment->getMethodInstance()->getConfigData('payone_method_type', $order->getStoreId())
-            === Payone::METHOD_TYPE_FINANCING;
-        if ($isFinancing && $isFinal && $amount < (float)$order->getBaseGrandTotal()) {
+        // e.g. Buy Now Pay Later: a reason is needed when the last of several partial captures closes the payment
+        $method = $payment->getMethodInstance();
+        $requiresReason = $method instanceof PayoneMethod && $method->requiresCancellationReason();
+        if ($requiresReason && $isFinal && $amount < (float)$order->getBaseGrandTotal()) {
             $body['cancellationReason'] = self::CANCELLATION_REASON_FINAL_PARTIAL;
         }
 

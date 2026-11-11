@@ -24,6 +24,7 @@ namespace Payone\CommercePlatform\Model\Webhook;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Payone\CommercePlatform\Model\Method\PayoneMethod;
 use Payone\CommercePlatform\Model\Payone;
 use Payone\CommercePlatform\Model\ResourceModel\ApiLog;
 
@@ -61,7 +62,8 @@ class InvoiceCreator
         if ($order->getInvoiceCollection()->count() > 0) {
             return;
         }
-        $isAutomaticCapture = (bool)$payment->getMethodInstance()->getConfigData('automatic_capture', $order->getStoreId());
+        $method = $payment->getMethodInstance();
+        $isAutomaticCapture = $method instanceof PayoneMethod && $method->isAutomaticCapture($order->getStoreId());
         if (!$isAutomaticCapture && $this->apiLog->hasSuccessfulRequest((string)$order->getIncrementId(), 'Capture')) {
             return;
         }

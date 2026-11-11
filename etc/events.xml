@@ -17,30 +17,8 @@
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
-    <!-- Checkout input → payment additional_information (keys in the PayoneCP<Method>DataAssignObserver virtualTypes in di.xml) -->
-    <event name="payment_method_assign_data_payone_cp_creditcard">
-        <observer name="payone_cp_creditcard_data_assign" instance="PayoneCPCreditcardDataAssignObserver" />
-    </event>
-    <event name="payment_method_assign_data_payone_cp_directdebit">
-        <observer name="payone_cp_directdebit_data_assign" instance="PayoneCPDirectDebitDataAssignObserver" />
-    </event>
-    <event name="payment_method_assign_data_payone_cp_googlepay">
-        <observer name="payone_cp_googlepay_data_assign" instance="PayoneCPGooglePayDataAssignObserver" />
-    </event>
-    <event name="payment_method_assign_data_payone_cp_applepay">
-        <observer name="payone_cp_applepay_data_assign" instance="PayoneCPApplePayDataAssignObserver" />
-    </event>
-    <event name="payment_method_assign_data_payone_cp_securedinvoice">
-        <observer name="payone_cp_securedinvoice_data_assign" instance="PayoneCPSecuredInvoiceDataAssignObserver" />
-    </event>
-    <event name="payment_method_assign_data_payone_cp_secureddirectdebit">
-        <observer name="payone_cp_secureddirectdebit_data_assign" instance="PayoneCPSecuredDirectDebitDataAssignObserver" />
-    </event>
-    <event name="payment_method_is_active">
-        <observer name="payone_cp_payinstore_shipping_method" instance="Payone\CommercePlatform\Observer\PayInStore\ShippingMethodAvailability" />
-    </event>
     <event name="sales_order_payment_cancel">
-        <observer name="payone_cp_payinstore_delete_checkout" instance="Payone\CommercePlatform\Observer\PayInStore\DeleteCheckout" />
+        <observer name="payone_cp_order_payment_cancel" instance="Payone\CommercePlatform\Observer\OrderPaymentCancel" />
     </event>
     <event name="sales_order_payment_capture">
         <observer name="payone_cp_order_payment_capture" instance="Payone\CommercePlatform\Observer\OrderPaymentCapture" />

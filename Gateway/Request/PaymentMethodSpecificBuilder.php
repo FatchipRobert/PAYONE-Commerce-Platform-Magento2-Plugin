@@ -22,16 +22,17 @@ declare(strict_types=1);
 namespace Payone\CommercePlatform\Gateway\Request;
 
 use Magento\Payment\Gateway\Request\BuilderInterface;
+use Magento\Sales\Model\Order\Payment;
 use Payone\CommercePlatform\Gateway\SubjectReader;
+use Payone\CommercePlatform\Model\Method\PayoneMethod;
 
 /**
  * "checkout.orderRequest.paymentMethodSpecificInput.<type>SpecificInput" of POST /commerce-cases
  *
- * Delegates the content to the builder of the payment method (di.xml argument "builders": method code => builder)
- * and wraps it:
- * - key from the config value payone_method_type, e.g. "redirectPaymentMethod" → "redirectPaymentMethodSpecificInput"
- * - paymentProductId from the config value payone_product_id, unless the method builder sets it (credit card type)
- * - the method builder's "productSpecificInput" becomes "paymentProduct<id>SpecificInput"
+ * The content comes from the payment method (PayoneMethod::getSpecificInput()) and is wrapped:
+ * - key from the method type, e.g. "redirectPaymentMethod" → "redirectPaymentMethodSpecificInput"
+ * - paymentProductId of the method, unless its input sets one (credit card type)
+ * - the method's "productSpecificInput" becomes "paymentProduct<id>SpecificInput"
  */
 class PaymentMethodSpecificBuilder implements BuilderInterface
 {
@@ -39,11 +40,9 @@ class PaymentMethodSpecificBuilder implements BuilderInterface
 
     /**
      * @param SubjectReader $subjectReader
-     * @param BuilderInterface[] $builders payment method code => builder of the method specific content
      */
     public function __construct(
         private readonly SubjectReader $subjectReader,
-        private readonly array $builders = [],
     ) {
     }
 
@@ -55,24 +54,22 @@ class PaymentMethodSpecificBuilder implements BuilderInterface
      */
     public function build(array $buildSubject): array
     {
+        /** @var Payment $payment */
         $payment = $this->subjectReader->readPayment($buildSubject)->getPayment();
         $method = $payment->getMethodInstance();
-        $storeId = (int)$payment->getOrder()->getStoreId();
-
-        $builder = $this->builders[$method->getCode()] ?? null;
-        if (!$builder instanceof BuilderInterface) {
-            throw new \LogicException('No PaymentMethodSpecificBuilder configured for '.$method->getCode());
+        if (!$method instanceof PayoneMethod) {
+            throw new \LogicException('Payment method '.$method->getCode().' is no PAYONE payment method');
         }
 
-        $input = $builder->build($buildSubject);
-        $input['paymentProductId'] ??= (int)$method->getConfigData('payone_product_id', $storeId);
+        $input = $method->getSpecificInput($payment);
+        $input['paymentProductId'] ??= $method->getPayoneProductId();
 
         if (isset($input[self::PRODUCT_SPECIFIC_INPUT])) {
             $input['paymentProduct'.$input['paymentProductId'].'SpecificInput'] = $input[self::PRODUCT_SPECIFIC_INPUT];
             unset($input[self::PRODUCT_SPECIFIC_INPUT]);
         }
 
-        $key = $method->getConfigData('payone_method_type', $storeId).'SpecificInput';
+        $key = $method->getPayoneMethodType().'SpecificInput';
         return ['body' => ['checkout' => ['orderRequest' => ['paymentMethodSpecificInput' => [$key => $input]]]]];
     }
 }

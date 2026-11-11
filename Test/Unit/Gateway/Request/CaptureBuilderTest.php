@@ -28,7 +28,6 @@ use Payone\CommercePlatform\Gateway\MerchantReference;
 use Payone\CommercePlatform\Gateway\Request\CaptureBuilder;
 use Payone\CommercePlatform\Gateway\Request\LineItemsBuilder;
 use Payone\CommercePlatform\Gateway\SubjectReader;
-use Payone\CommercePlatform\Model\Payone;
 use Payone\CommercePlatform\Observer\OrderPaymentCapture;
 use Payone\CommercePlatform\Test\Unit\Helper\OrderMockTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -51,10 +50,12 @@ class CaptureBuilderTest extends TestCase
         return new CaptureBuilder(new SubjectReader(), new AmountConverter(), $merchantReference, $lineItemsBuilder);
     }
 
-    private function buildBody(float $amount, bool $isFinal, ?string $methodType, bool $invoiceFromObserver): array
+    private function buildBody(float $amount, bool $isFinal, bool $requiresReason, bool $invoiceFromObserver): array
     {
         $order = $this->createOrder(['base_grand_total' => '100.0000']);
-        $payment = $this->createPayment($order, [], ['payone_method_type' => $methodType], 'payone_cp_x', ['isCaptureFinal']);
+        $method = $this->createMethodInstance();
+        $method->method('requiresCancellationReason')->willReturn($requiresReason);
+        $payment = $this->createPaymentWithMethod($order, $method, [], ['isCaptureFinal']);
         $payment->method('isCaptureFinal')->willReturn($isFinal);
 
         $invoice = $this->createPartialStub(Invoice::class, []);
@@ -79,12 +80,12 @@ class CaptureBuilderTest extends TestCase
             'isFinal' => false,
             'references' => ['merchantReference' => 'cp100-2'],
             'delivery' => ['items' => [['invoice items']]],
-        ], $this->buildBody(40.5, false, 'redirectPaymentMethod', true));
+        ], $this->buildBody(40.5, false, false, true));
     }
 
     public function testInvoiceFallsBackToLastInvoiceOfOrder(): void
     {
-        $body = $this->buildBody(100.0, true, 'redirectPaymentMethod', false);
+        $body = $this->buildBody(100.0, true, false, false);
 
         $this->assertTrue($body['isFinal']);
         $this->assertSame([['invoice items']], $body['delivery']['items']);
@@ -94,10 +95,10 @@ class CaptureBuilderTest extends TestCase
     public static function cancellationReasonProvider(): array
     {
         return [
-            'BNPL final partial capture' => [60.0, true, Payone::METHOD_TYPE_FINANCING, true],
-            'BNPL full capture' => [100.0, true, Payone::METHOD_TYPE_FINANCING, false],
-            'BNPL non-final partial capture' => [60.0, false, Payone::METHOD_TYPE_FINANCING, false],
-            'other method final partial capture' => [60.0, true, 'cardPaymentMethod', false],
+            'BNPL final partial capture' => [60.0, true, true, true],
+            'BNPL full capture' => [100.0, true, true, false],
+            'BNPL non-final partial capture' => [60.0, false, true, false],
+            'other method final partial capture' => [60.0, true, false, false],
         ];
     }
 
@@ -105,10 +106,10 @@ class CaptureBuilderTest extends TestCase
     public function testCancellationReasonOnlyForFinalPartialCaptureOfBnpl(
         float $amount,
         bool $isFinal,
-        string $methodType,
+        bool $requiresReason,
         bool $expectReason
     ): void {
-        $body = $this->buildBody($amount, $isFinal, $methodType, true);
+        $body = $this->buildBody($amount, $isFinal, $requiresReason, true);
 
         if ($expectReason) {
             $this->assertSame(CaptureBuilder::CANCELLATION_REASON_FINAL_PARTIAL, $body['cancellationReason']);

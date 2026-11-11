@@ -54,9 +54,6 @@ abstract class Payone
         self::METHOD_PAY_IN_STORE,
     ];
 
-    /* PAYONE Buy Now Pay Later methods (config value payone_method_type): need cancellationReason, device token, IP */
-    public const METHOD_TYPE_FINANCING = 'financingPaymentMethod';
-
     /* TRANSACTIONS */
 
     /* Suffix of the Magento capture transaction id for automatic captures (SALE event at PAYONE, no separate capture id) */

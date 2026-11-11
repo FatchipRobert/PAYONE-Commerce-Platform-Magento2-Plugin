@@ -21,11 +21,11 @@ declare(strict_types=1);
 
 namespace Payone\CommercePlatform\Test\Unit\Gateway\Request;
 
+use Magento\Payment\Model\MethodInterface;
 use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
 use Payone\CommercePlatform\Gateway\MerchantReference;
 use Payone\CommercePlatform\Gateway\Request\OrderBuilder;
 use Payone\CommercePlatform\Gateway\SubjectReader;
-use Payone\CommercePlatform\Model\Payone;
 use Payone\CommercePlatform\Model\RemoteIp;
 use Payone\CommercePlatform\Test\Unit\Helper\OrderMockTrait;
 use PHPUnit\Framework\TestCase;
@@ -34,10 +34,12 @@ class OrderBuilderTest extends TestCase
 {
     use OrderMockTrait;
 
-    private function build(?string $methodType, bool $transmitIp, array $additionalInformation = []): array
+    private function build(bool $requiresCustomerDevice, bool $transmitIp, array $additionalInformation = []): array
     {
         $order = $this->createOrder(['increment_id' => '000000100']);
-        $payment = $this->createPayment($order, $additionalInformation, ['payone_method_type' => $methodType]);
+        $method = $this->createMethodInstance();
+        $method->method('requiresCustomerDevice')->willReturn($requiresCustomerDevice);
+        $payment = $this->createPaymentWithMethod($order, $method, $additionalInformation);
 
         $generalConfig = $this->createStub(GeneralConfig::class);
         $generalConfig->method('getRefPrefix')->willReturn('');
@@ -55,31 +57,51 @@ class OrderBuilderTest extends TestCase
             'orderType' => 'FULL',
             'orderReferences' => ['merchantReference' => 'od000000100'],
             'paymentMethodSpecificInput' => ['paymentChannel' => 'ECOMMERCE'],
-        ], $this->build('cardPaymentMethod', false, [OrderBuilder::KEY_DEVICE_TOKEN => 'ignored']));
+        ], $this->build(false, false, [OrderBuilder::KEY_DEVICE_TOKEN => 'ignored']));
     }
 
     public function testIpIsTransmittedWhenConfigured(): void
     {
         $this->assertSame(
             ['ipAddress' => '203.0.113.5'],
-            $this->build('cardPaymentMethod', true)['paymentMethodSpecificInput']['customerDevice']
+            $this->build(false, true)['paymentMethodSpecificInput']['customerDevice']
         );
     }
 
-    public function testBnplAlwaysSendsIpAndDeviceToken(): void
+    public function testMethodRequiringCustomerDeviceAlwaysSendsIpAndDeviceToken(): void
     {
         $this->assertSame(
             ['ipAddress' => '203.0.113.5', 'deviceToken' => 'partner_merchant_uuid'],
-            $this->build(Payone::METHOD_TYPE_FINANCING, false, [OrderBuilder::KEY_DEVICE_TOKEN => 'partner_merchant_uuid'])
+            $this->build(true, false, [OrderBuilder::KEY_DEVICE_TOKEN => 'partner_merchant_uuid'])
                 ['paymentMethodSpecificInput']['customerDevice']
         );
     }
 
-    public function testBnplWithoutDeviceToken(): void
+    public function testMethodRequiringCustomerDeviceWithoutDeviceToken(): void
     {
         $this->assertSame(
             ['ipAddress' => '203.0.113.5'],
-            $this->build(Payone::METHOD_TYPE_FINANCING, false)['paymentMethodSpecificInput']['customerDevice']
+            $this->build(true, false)['paymentMethodSpecificInput']['customerDevice']
         );
+    }
+
+    public function testOtherPaymentMethodsNeverSendTheDevice(): void
+    {
+        $order = $this->createOrder();
+        $payment = $this->createPaymentWithMethod(
+            $order,
+            $this->createStub(MethodInterface::class),
+            [OrderBuilder::KEY_DEVICE_TOKEN => 'ignored']
+        );
+        $generalConfig = $this->createStub(GeneralConfig::class);
+        $builder = new OrderBuilder(
+            new SubjectReader(),
+            new MerchantReference($generalConfig),
+            $generalConfig,
+            $this->createStub(RemoteIp::class)
+        );
+
+        $orderRequest = $builder->build(['payment' => $this->createPaymentDataObject($payment)])['body']['checkout']['orderRequest'];
+        $this->assertArrayNotHasKey('customerDevice', $orderRequest['paymentMethodSpecificInput']);
     }
 }

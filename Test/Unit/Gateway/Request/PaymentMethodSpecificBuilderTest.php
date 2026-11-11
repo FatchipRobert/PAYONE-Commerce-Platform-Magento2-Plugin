@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 namespace Payone\CommercePlatform\Test\Unit\Gateway\Request;
 
-use Magento\Payment\Gateway\Request\BuilderInterface;
+use Magento\Payment\Model\MethodInterface;
 use Payone\CommercePlatform\Gateway\Request\PaymentMethodSpecificBuilder;
 use Payone\CommercePlatform\Gateway\SubjectReader;
 use Payone\CommercePlatform\Test\Unit\Helper\OrderMockTrait;
@@ -31,23 +31,19 @@ class PaymentMethodSpecificBuilderTest extends TestCase
 {
     use OrderMockTrait;
 
-    private function build(array $methodInput, string $methodCode = 'payone_cp_paypal'): array
+    private function build(array $methodInput): array
     {
         $order = $this->createOrder();
-        $payment = $this->createPayment(
-            $order,
-            [],
-            ['payone_method_type' => 'redirectPaymentMethod', 'payone_product_id' => '840'],
-            $methodCode
+        $method = $this->createMethodInstance([], 'payone_cp_paypal');
+        $method->method('getPayoneMethodType')->willReturn('redirectPaymentMethod');
+        $method->method('getPayoneProductId')->willReturn(840);
+        $payment = $this->createPaymentWithMethod($order, $method);
+        $method->method('getSpecificInput')->willReturnCallback(
+            static fn ($inputPayment) => $inputPayment === $payment ? $methodInput : []
         );
-        $methodBuilder = $this->createStub(BuilderInterface::class);
-        $methodBuilder->method('build')->willReturn($methodInput);
 
-        $builder = new PaymentMethodSpecificBuilder(new SubjectReader(), [
-            'payone_cp_paypal' => $methodBuilder,
-            'payone_cp_broken' => 'not a builder',
-        ]);
-        return $builder->build(['payment' => $this->createPaymentDataObject($payment)]);
+        return (new PaymentMethodSpecificBuilder(new SubjectReader()))
+            ->build(['payment' => $this->createPaymentDataObject($payment)]);
     }
 
     public function testMethodInputIsWrappedAndProductSpecificInputRenamed(): void
@@ -63,7 +59,7 @@ class PaymentMethodSpecificBuilderTest extends TestCase
         ]]]]], $result);
     }
 
-    public function testProductIdOfTheMethodBuilderTakesPrecedence(): void
+    public function testProductIdOfTheMethodInputTakesPrecedence(): void
     {
         $input = $this->build(['paymentProductId' => 3, 'productSpecificInput' => ['x' => 1]])
             ['body']['checkout']['orderRequest']['paymentMethodSpecificInput']['redirectPaymentMethodSpecificInput'];
@@ -71,10 +67,14 @@ class PaymentMethodSpecificBuilderTest extends TestCase
         $this->assertSame(['paymentProductId' => 3, 'paymentProduct3SpecificInput' => ['x' => 1]], $input);
     }
 
-    public function testThrowsWithoutBuilderForTheMethod(): void
+    public function testThrowsForOtherPaymentMethods(): void
     {
+        $method = $this->createStub(MethodInterface::class);
+        $method->method('getCode')->willReturn('checkmo');
+        $payment = $this->createPaymentWithMethod($this->createOrder(), $method);
+
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('No PaymentMethodSpecificBuilder configured for payone_cp_broken');
-        $this->build([], 'payone_cp_broken');
+        $this->expectExceptionMessage('Payment method checkmo is no PAYONE payment method');
+        (new PaymentMethodSpecificBuilder(new SubjectReader()))->build(['payment' => $this->createPaymentDataObject($payment)]);
     }
 }

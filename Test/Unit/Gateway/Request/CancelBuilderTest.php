@@ -24,7 +24,6 @@ namespace Payone\CommercePlatform\Test\Unit\Gateway\Request;
 use Payone\CommercePlatform\Gateway\AmountConverter;
 use Payone\CommercePlatform\Gateway\Request\CancelBuilder;
 use Payone\CommercePlatform\Gateway\SubjectReader;
-use Payone\CommercePlatform\Model\Payone;
 use Payone\CommercePlatform\Test\Unit\Helper\OrderMockTrait;
 use PHPUnit\Framework\TestCase;
 
@@ -32,10 +31,12 @@ class CancelBuilderTest extends TestCase
 {
     use OrderMockTrait;
 
-    private function build(?string $methodType): array
+    private function build(bool $requiresReason): array
     {
         $order = $this->createOrder(['base_grand_total' => '100.0000', 'base_total_paid' => '30.0000']);
-        $payment = $this->createPayment($order, [], ['payone_method_type' => $methodType]);
+        $method = $this->createMethodInstance();
+        $method->method('requiresCancellationReason')->willReturn($requiresReason);
+        $payment = $this->createPaymentWithMethod($order, $method);
 
         return (new CancelBuilder(new SubjectReader(), new AmountConverter()))
             ->build(['payment' => $this->createPaymentDataObject($payment)]);
@@ -43,14 +44,14 @@ class CancelBuilderTest extends TestCase
 
     public function testCancelsTheAmountNotCapturedYet(): void
     {
-        $this->assertSame(['body' => ['amount' => 7000]], $this->build('redirectPaymentMethod'));
+        $this->assertSame(['body' => ['amount' => 7000]], $this->build(false));
     }
 
     public function testBnplNeedsCancellationReason(): void
     {
         $this->assertSame(
             ['body' => ['amount' => 7000, 'cancellationReason' => CancelBuilder::CANCELLATION_REASON]],
-            $this->build(Payone::METHOD_TYPE_FINANCING)
+            $this->build(true)
         );
     }
 }

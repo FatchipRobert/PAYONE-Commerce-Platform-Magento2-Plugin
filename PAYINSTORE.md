@@ -14,7 +14,7 @@
 
 - Zahlart `payone_cp_payinstore` (`Payone::METHOD_PAY_IN_STORE`, in `Payone::METHODS`), Offline-Zahlart:
   - `etc/config.xml`: `can_initialize` 1, alle anderen `can_*` 0 (Rechnung/Storno/Gutschrift nur offline), `order_status` pending, `is_gateway` 0, `cancel_after_days` 0, Titel „Bezahlung bei Abholung“, standardmäßig inaktiv.
-  - `etc/di.xml`: Facade mit eigenem `PayoneCPPayInStoreCommandPool` (nur `initialize`) → `PayoneCPPayInStoreInitializeCommand`: Builder `context` + `commerce_case` + `PayoneCPCheckoutWithoutOrderBuilder` (`CheckoutBuilder` mit neuem Parameter `autoExecuteOrder` = false), TransferFactory `POST /commerce-cases` mit Protokollname `CreateCommerceCase`, Handler `Gateway/Response/CheckoutIdsHandler` (speichert Commerce-Case- und Checkout-ID).
+  - `Model/Method/PayInStore` (seit dem Umbau auf Zahlart-Klassen, vorher Facade-virtualType) mit eigenem `PayoneCPPayInStoreCommandPool` (nur `initialize`) → `PayoneCPPayInStoreInitializeCommand`: Builder `context` + `commerce_case` + `PayoneCPCheckoutWithoutOrderBuilder` (`CheckoutBuilder` mit neuem Parameter `autoExecuteOrder` = false), TransferFactory `POST /commerce-cases` mit Protokollname `CreateCommerceCase`, Handler `Gateway/Response/CheckoutIdsHandler` (speichert Commerce-Case- und Checkout-ID).
   - Bestellung bleibt `new`/`pending`, Bestellmail geht normal raus.
 - `Cron/CheckPayInStoreOrders` (`etc/crontab.xml`, alle 15 Min.): alle Bestellungen mit State `new`, Checkout-ID und Zahlart Pay in Store → `Model/PayInStore/OrderStatusUpdater::update()`; Fehler einer Bestellung werden geloggt, die übrigen laufen weiter.
 - `OrderStatusUpdater`: `get_checkout_details` → `statusOutput.paymentStatus`
@@ -97,9 +97,9 @@ Folgerungen:
 
 ## Umgesetzt am 10.11.2026
 
-- **Nur bei In-Store Pickup**: `Observer/PayInStore/ShippingMethodAvailability` (`payment_method_is_active`) – Zahlart nur bei Versandart `instore_pickup` (greift auch beim Setzen der Zahlart am Quote).
-- **Storno löscht den Checkout**: `Observer/PayInStore/DeleteCheckout` (`sales_order_payment_cancel`) → Service-Command `delete_checkout` (`DELETE`, Protokollname `DeleteCheckout`). Gilt für Admin-Storno und Cron-Storno nach X Tagen. Ist der Checkout nicht mehr `OPEN` (Zahlung erfasst), lehnt PAYONE mit 409 ab und die Bestellung wird nicht storniert (Admin sieht die PAYONE-Meldung). `ResponseValidator` akzeptiert dafür HTTP 204 ohne Body.
-- **Storno im Laden**: Cron erkennt `checkoutStatus` `DELETED` → Bestellung storniert (Kommentar „Checkout wurde im Laden storniert…“), ohne zweiten `DELETE` (Flag `DeleteCheckout::FLAG_CHECKOUT_DELETED` am Payment).
+- **Nur bei In-Store Pickup**: `PayInStore::isAvailable()` – Zahlart nur bei Versandart `instore_pickup` (greift auch beim Setzen der Zahlart am Quote).
+- **Storno löscht den Checkout**: `PayInStore::onCancel()` (aufgerufen von `Observer/OrderPaymentCancel` auf `sales_order_payment_cancel`) → Service-Command `delete_checkout` (`DELETE`, Protokollname `DeleteCheckout`). Gilt für Admin-Storno und Cron-Storno nach X Tagen. Ist der Checkout nicht mehr `OPEN` (Zahlung erfasst), lehnt PAYONE mit 409 ab und die Bestellung wird nicht storniert (Admin sieht die PAYONE-Meldung). `ResponseValidator` akzeptiert dafür HTTP 204 ohne Body.
+- **Storno im Laden**: Cron erkennt `checkoutStatus` `DELETED` → Bestellung storniert (Kommentar „Checkout wurde im Laden storniert…“), ohne zweiten `DELETE` (Flag `PayInStore::FLAG_CHECKOUT_DELETED` am Payment).
 - Dev-Server: In-Store Pickup aktiv (`carriers/instore/active` = 1), Source `default` als Abholort „Testfiliale Berlin“ (DE, Berlin) per SQL eingerichtet.
 - Tests: Unit-Tests ergänzt (378, 100 % Coverage, phpcs sauber). E2E `37-payinstore`: nicht angeboten bei Flat Rate, Bestellung per Store Pickup (Rechnungsadresse im Zahlungsschritt), Cron-Storno + `DeleteCheckout`, Admin-Storno + `DeleteCheckout`, Storno im Laden (`deleteCheckoutAtPayone()` in `lib/server.js`) → Cron storniert. `fillGuestShippingStep()` wählt jetzt explizit Flat Rate.
 

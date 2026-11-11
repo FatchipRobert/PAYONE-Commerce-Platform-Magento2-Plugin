@@ -30,14 +30,14 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Store\Model\App\Emulation;
-use Payone\CommercePlatform\Observer\PayInStore\DeleteCheckout;
+use Payone\CommercePlatform\Model\Method\PayInStore;
 
 /**
  * Pay in Store: updates an open order according to the status of its PAYONE checkout
  *
  * The checkout has no order at PAYONE, the payment is made in the store (the till books SALE payment information).
  * Any payment, full or partial → invoice over the order total (offline, no API call), still waiting for the payment
- * after cancel_after_days (payment/payone_cp_payinstore/, 0 = never) → cancelled (Observer\PayInStore\DeleteCheckout
+ * after cancel_after_days (payment/payone_cp_payinstore/, 0 = never) → cancelled (Model\Method\PayInStore::onCancel()
  * deletes the checkout), checkout deleted in the store → cancelled. Nothing else is synchronized (decided with the
  * merchant): partial pickups and refunds in the store are not reflected in Magento.
  */
@@ -88,7 +88,7 @@ class OrderStatusUpdater
         $checkout = $this->commandPool->get('get_checkout_details')->execute(['order' => $order])->get();
         if (($checkout['checkoutStatus'] ?? null) === self::CHECKOUT_DELETED) {
             // already deleted at PAYONE - no DELETE call when the order is cancelled
-            $order->getPayment()->setData(DeleteCheckout::FLAG_CHECKOUT_DELETED, true);
+            $order->getPayment()->setData(PayInStore::FLAG_CHECKOUT_DELETED, true);
             $this->cancel($order, __('Checkout was cancelled in store, order cancelled.'));
             return;
         }
@@ -150,7 +150,7 @@ class OrderStatusUpdater
      * @param Order $order
      * @param Phrase $comment
      * @return void
-     * @throws CommandException if the checkout could not be deleted (Observer\PayInStore\DeleteCheckout)
+     * @throws CommandException if the checkout could not be deleted (Model\Method\PayInStore::onCancel())
      */
     private function cancel(Order $order, Phrase $comment): void
     {

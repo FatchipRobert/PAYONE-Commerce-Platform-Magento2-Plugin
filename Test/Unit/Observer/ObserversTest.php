@@ -21,59 +21,41 @@ declare(strict_types=1);
 
 namespace Payone\CommercePlatform\Test\Unit\Observer;
 
-use Magento\Framework\DataObject;
 use Magento\Framework\Event;
 use Magento\Framework\Event\Observer;
-use Magento\Payment\Model\InfoInterface;
-use Magento\Payment\Observer\AbstractDataAssignObserver;
-use Magento\Quote\Api\Data\PaymentInterface;
-use Magento\Quote\Model\Quote\Payment as QuotePayment;
+use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Model\Order\Invoice;
-use Payone\CommercePlatform\Observer\DataAssignObserver;
+use Magento\Sales\Model\Order\Payment;
+use Payone\CommercePlatform\Model\Method\PayoneMethod;
+use Payone\CommercePlatform\Observer\OrderPaymentCancel;
 use Payone\CommercePlatform\Observer\OrderPaymentCapture;
 use Payone\CommercePlatform\Test\Unit\Helper\OrderMockTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * DataAssignObserver and OrderPaymentCapture
+ * OrderPaymentCancel and OrderPaymentCapture
  */
 class ObserversTest extends TestCase
 {
     use OrderMockTrait;
 
-    private function createAssignObserver(?array $additionalData, InfoInterface $payment): Observer
+    public function testOrderPaymentCancelHandsTheCancellationToThePayoneMethod(): void
     {
-        $data = new DataObject([PaymentInterface::KEY_ADDITIONAL_DATA => $additionalData]);
-        return new Observer(['event' => new Event([
-            AbstractDataAssignObserver::DATA_CODE => $data,
-            AbstractDataAssignObserver::MODEL_CODE => $payment,
-        ])]);
+        $method = $this->createMock(PayoneMethod::class);
+        $payment = $this->createPaymentWithMethod($this->createOrder(), $method);
+        $method->expects($this->once())->method('onCancel')->with($payment);
+
+        (new OrderPaymentCancel())->execute(new Observer(['event' => new Event(['payment' => $payment])]));
     }
 
-    public function testDataAssignObserverCopiesConfiguredNonEmptyKeys(): void
+    public function testOrderPaymentCancelIgnoresOtherMethods(): void
     {
-        $payment = $this->createPartialStub(QuotePayment::class, []);
-        $payment->setAdditionalInformation('iban', 'OLD');
-        $observer = $this->createAssignObserver(
-            ['iban' => 'DE02120300000000202051', 'accountholder' => '', 'bic' => 'BYLADEM1001', 'other' => 'ignored'],
-            $payment
-        );
+        $method = $this->createMock(MethodInterface::class);
+        $method->expects($this->never())->method($this->anything());
+        $payment = $this->createPartialStub(Payment::class, ['getMethodInstance']);
+        $payment->method('getMethodInstance')->willReturn($method);
 
-        (new DataAssignObserver(['iban', 'accountholder', 'bic']))->execute($observer);
-
-        $this->assertSame(
-            ['iban' => 'DE02120300000000202051', 'bic' => 'BYLADEM1001'],
-            $payment->getAdditionalInformation()
-        );
-    }
-
-    public function testDataAssignObserverWithoutAdditionalData(): void
-    {
-        $payment = $this->createPartialStub(QuotePayment::class, []);
-
-        (new DataAssignObserver(['iban']))->execute($this->createAssignObserver(null, $payment));
-
-        $this->assertNull($payment->getAdditionalInformation('iban'));
+        (new OrderPaymentCancel())->execute(new Observer(['event' => new Event(['payment' => $payment])]));
     }
 
     public function testOrderPaymentCaptureHandsInvoiceToPayonePayments(): void

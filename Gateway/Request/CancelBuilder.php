@@ -24,7 +24,7 @@ namespace Payone\CommercePlatform\Gateway\Request;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Payone\CommercePlatform\Gateway\AmountConverter;
 use Payone\CommercePlatform\Gateway\SubjectReader;
-use Payone\CommercePlatform\Model\Payone;
+use Payone\CommercePlatform\Model\Method\PayoneMethod;
 
 /**
  * Payload of the cancellation (void/cancel) of the authorized amount which has not been captured yet
@@ -34,7 +34,7 @@ use Payone\CommercePlatform\Model\Payone;
 class CancelBuilder implements BuilderInterface
 {
     /**
-     * Reason sent for Buy Now Pay Later methods
+     * Reason sent if the method requires one (PayoneMethod::requiresCancellationReason(), Buy Now Pay Later)
      */
     public const CANCELLATION_REASON = 'CONSUMER_REQUEST';
 
@@ -64,10 +64,9 @@ class CancelBuilder implements BuilderInterface
             'amount' => $this->amountConverter->toMinorUnits($amount),
         ];
 
-        // Mandatory for Buy Now Pay Later. Magento has no reason for void/cancel, the merchant cancels on request
-        if ($payment->getMethodInstance()->getConfigData('payone_method_type', $order->getStoreId())
-            === Payone::METHOD_TYPE_FINANCING
-        ) {
+        // Magento has no reason for void/cancel, the merchant cancels on request
+        $method = $payment->getMethodInstance();
+        if ($method instanceof PayoneMethod && $method->requiresCancellationReason()) {
             $body['cancellationReason'] = self::CANCELLATION_REASON;
         }
 
