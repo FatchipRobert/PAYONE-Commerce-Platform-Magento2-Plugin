@@ -39,6 +39,7 @@ abstract class Payone
     public const METHOD_SECURED_INVOICE = 'payone_cp_securedinvoice';
     public const METHOD_SECURED_DIRECT_DEBIT = 'payone_cp_secureddirectdebit';
     public const METHOD_WERO = 'payone_cp_wero';
+    public const METHOD_PAY_IN_STORE = 'payone_cp_payinstore';
 
     /* All PAYONE payment methods - check with in_array($code, Payone::METHODS, true) */
     public const METHODS = [
@@ -50,6 +51,7 @@ abstract class Payone
         self::METHOD_SECURED_INVOICE,
         self::METHOD_SECURED_DIRECT_DEBIT,
         self::METHOD_WERO,
+        self::METHOD_PAY_IN_STORE,
     ];
 
     /* PAYONE Buy Now Pay Later methods (config value payone_method_type): need cancellationReason, device token, IP */

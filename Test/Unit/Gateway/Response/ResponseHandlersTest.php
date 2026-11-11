@@ -26,6 +26,7 @@ use Magento\Framework\DataObject;
 use Magento\Framework\TestFramework\Unit\Helper\MockCreationTrait;
 use Magento\Sales\Model\Order;
 use Payone\CommercePlatform\Block\Info\PaymentInstructions;
+use Payone\CommercePlatform\Gateway\Response\CheckoutIdsHandler;
 use Payone\CommercePlatform\Gateway\Response\PaymentIdsHandler;
 use Payone\CommercePlatform\Gateway\Response\PaymentInstructionsHandler;
 use Payone\CommercePlatform\Gateway\Response\PendingStateHandler;
@@ -88,6 +89,20 @@ class ResponseHandlersTest extends TestCase
 
         $this->assertFalse($order->getCanSendNewEmailFlag());
         $this->assertNull($order->getData('payone_cp_commerce_case_id'));
+        $this->assertNull($order->getPayment()->getTransactionId());
+    }
+
+    public function testCheckoutIdsHandlerStoresIdsWithoutTransaction(): void
+    {
+        $subject = $this->createSubject($order);
+        $order->setCanSendNewEmailFlag(true);
+        $response = ['commerceCaseId' => 'CC1', 'checkout' => ['checkoutId' => 'CK1']];
+
+        (new CheckoutIdsHandler(new SubjectReader()))->handle($subject, ['body' => $response]);
+
+        $this->assertSame('CC1', $order->getData('payone_cp_commerce_case_id'));
+        $this->assertSame('CK1', $order->getData('payone_cp_checkout_id'));
+        $this->assertTrue($order->getCanSendNewEmailFlag(), 'the order mail is sent right away');
         $this->assertNull($order->getPayment()->getTransactionId());
     }
 

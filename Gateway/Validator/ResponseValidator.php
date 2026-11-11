@@ -29,13 +29,14 @@ use Payone\CommercePlatform\Gateway\SubjectReader;
 /**
  * Checks if an API call was successful
  *
- * Successful: HTTP 2xx, a JSON object as body, no errors. On failure the first PAYONE error message
+ * Successful: HTTP 204 (no body) or HTTP 2xx, a JSON object as body, no errors. On failure the first PAYONE error message
  * is the fails description of the result (shown to the customer/admin via the error message mapper).
  */
 class ResponseValidator extends AbstractValidator
 {
     private const UNKNOWN_ERROR = 'An unknown error occurred.';
     private const STATUS_REJECTED = 'REJECTED';
+    private const HTTP_NO_CONTENT = 204;
 
     /**
      * Error message for a rejected payment without PAYONE error (translated by PassthroughMessageMapper)
@@ -78,6 +79,11 @@ class ResponseValidator extends AbstractValidator
     {
         $status = (int)($response['status'] ?? 0);
         $body = $response['body'] ?? null;
+
+        // No Content, e.g. DELETE of a checkout
+        if ($status === self::HTTP_NO_CONTENT) {
+            return true;
+        }
 
         return $status >= 200 && $status < 300
             && !empty($body) && is_array($body)

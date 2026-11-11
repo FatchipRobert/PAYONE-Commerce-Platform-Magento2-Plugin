@@ -33,3 +33,8 @@
 "PAYONE Wero","PAYONE Wero"
 "PAYONE could not execute this action for the payment (INVALID_REQUEST_ORDER). Please try again later or contact PAYONE support.","PAYONE konnte diese Aktion für die Zahlung nicht ausführen (INVALID_REQUEST_ORDER). Bitte versuchen Sie es später erneut oder wenden Sie sich an den PAYONE-Support."
 "The creditor identifier ""%1"" is invalid (format e.g. DE98ZZZ09999999999).","Die Gläubiger-ID ""%1"" ist ungültig (Format z. B. DE98ZZZ09999999999)."
+"Pay in Store","Bezahlung bei Abholung"
+"Cancel Unpaid Orders After (Days)","Unbezahlte Bestellungen stornieren nach (Tagen)"
+"Orders without payment in the store are cancelled automatically after this number of days (counted from the order date). 0 or empty: never.","Bestellungen ohne Zahlung im Laden werden nach dieser Anzahl Tagen (ab Bestelldatum) automatisch storniert. 0 oder leer: nie."
+"No payment received in store within %1 days, order cancelled.","Innerhalb von %1 Tagen keine Zahlung im Laden eingegangen, Bestellung storniert."
+"Checkout was cancelled in store, order cancelled.","Checkout wurde im Laden storniert, Bestellung storniert."

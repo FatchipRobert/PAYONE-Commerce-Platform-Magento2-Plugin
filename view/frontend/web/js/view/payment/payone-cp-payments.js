@@ -57,6 +57,10 @@ define(
             {
                 type: 'payone_cp_secureddirectdebit',
                 component: 'Payone_CommercePlatform/js/view/payment/method-renderer/secureddirectdebit-cp-method'
+            },
+            {
+                type: 'payone_cp_payinstore',
+                component: 'Payone_CommercePlatform/js/view/payment/method-renderer/payinstore-cp-method'
             }
         );
         // Message from the return of a redirect payment (e.g. cancelled payment) - shown in the checkout message area

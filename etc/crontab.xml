@@ -22,5 +22,9 @@
         <job name="payone_cp_webhook_retry" instance="Payone\CommercePlatform\Cron\RetryWebhooks" method="execute">
             <schedule>*/5 * * * *</schedule>
         </job>
+        <!-- Pay in Store: marks paid orders as paid, cancels unpaid ones after the configured number of days -->
+        <job name="payone_cp_payinstore_status" instance="Payone\CommercePlatform\Cron\CheckPayInStoreOrders" method="execute">
+            <schedule>*/15 * * * *</schedule>
+        </job>
     </group>
 </config>

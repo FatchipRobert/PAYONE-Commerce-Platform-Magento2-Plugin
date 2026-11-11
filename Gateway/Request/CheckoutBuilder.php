@@ -30,6 +30,8 @@ use Payone\CommercePlatform\Gateway\SubjectReader;
 
 /**
  * "checkout" of POST /commerce-cases: amount, cart and shipping address, executed directly with the order
+ *
+ * Pay in Store creates the checkout without order (autoExecuteOrder false, virtualType in etc/di.xml).
  */
 class CheckoutBuilder implements BuilderInterface
 {
@@ -39,6 +41,7 @@ class CheckoutBuilder implements BuilderInterface
      * @param MerchantReference $merchantReference
      * @param LineItemsBuilder $lineItemsBuilder
      * @param AddressMapper $addressMapper
+     * @param bool $autoExecuteOrder false: checkout without order (no orderRequest in the request)
      */
     public function __construct(
         private readonly SubjectReader $subjectReader,
@@ -46,6 +49,7 @@ class CheckoutBuilder implements BuilderInterface
         private readonly MerchantReference $merchantReference,
         private readonly LineItemsBuilder $lineItemsBuilder,
         private readonly AddressMapper $addressMapper,
+        private readonly bool $autoExecuteOrder = true,
     ) {
     }
 
@@ -78,6 +82,9 @@ class CheckoutBuilder implements BuilderInterface
                 'items' => $this->lineItemsBuilder->build($order),
             ],
         ];
+        if (!$this->autoExecuteOrder) {
+            unset($checkout['autoExecuteOrder']);
+        }
 
         $shipping = $this->getShipping($order);
         if ($shipping !== null) {

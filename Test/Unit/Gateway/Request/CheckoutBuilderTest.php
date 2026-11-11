@@ -44,6 +44,11 @@ class CheckoutBuilderTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->builder = $this->createBuilder(true);
+    }
+
+    private function createBuilder(bool $autoExecuteOrder): CheckoutBuilder
+    {
         $generalConfig = $this->createStub(GeneralConfig::class);
         $generalConfig->method('getRefPrefix')->willReturn('');
         $lineItemsBuilder = $this->createStub(LineItemsBuilder::class);
@@ -51,12 +56,13 @@ class CheckoutBuilderTest extends TestCase
         $addressMapper = $this->createStub(AddressMapper::class);
         $addressMapper->method('map')->willReturn(['street' => 'Main Street 1', 'countryCode' => 'DE']);
 
-        $this->builder = new CheckoutBuilder(
+        return new CheckoutBuilder(
             new SubjectReader(),
             new AmountConverter(),
             new MerchantReference($generalConfig),
             $lineItemsBuilder,
-            $addressMapper
+            $addressMapper,
+            $autoExecuteOrder
         );
     }
 
@@ -119,5 +125,18 @@ class CheckoutBuilderTest extends TestCase
         $checkout = $this->builder->build(['payment' => $this->createPaymentDataObject($payment)])['body']['checkout'];
 
         $this->assertSame(['firstName' => 'Max', 'surname' => 'Mustermann'], $checkout['shipping']['address']['name']);
+    }
+
+    public function testCheckoutWithoutOrderHasNoAutoExecuteOrder(): void
+    {
+        $order = $this->createCheckoutOrder();
+        $order->method('getShippingAddress')->willReturn(null);
+        $payment = $this->createPayment($order, [], [], 'payone_cp_payinstore');
+
+        $checkout = $this->createBuilder(false)->build(['payment' => $this->createPaymentDataObject($payment)])['body']['checkout'];
+
+        $this->assertArrayNotHasKey('autoExecuteOrder', $checkout);
+        $this->assertSame(9990, $checkout['amountOfMoney']['amount']);
+        $this->assertSame([['order items']], $checkout['shoppingCart']['items']);
     }
 }

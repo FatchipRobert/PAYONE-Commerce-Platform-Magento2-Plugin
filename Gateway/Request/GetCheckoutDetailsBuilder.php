@@ -25,7 +25,7 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Payone\CommercePlatform\Gateway\SubjectReader;
 
 /**
- * Request for GET /commerce-cases/{commerceCaseId}/checkouts/{checkoutId} - no payload
+ * Request for GET (and DELETE) /commerce-cases/{commerceCaseId}/checkouts/{checkoutId} - no payload
  *
  * Subject: ['order' => order] - uses the store of the order for the credentials
  */
