@@ -32,6 +32,7 @@ use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage;
 use Payone\CommercePlatform\Model\Webhook\IpValidator;
 use Payone\CommercePlatform\Model\Webhook\Processor;
 use Payone\CommercePlatform\Model\Webhook\QueueConsumer;
+use Payone\CommercePlatform\Model\Webhook\ShopFilter;
 use Payone\CommercePlatform\Model\Webhook\SignatureValidator;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -55,6 +56,10 @@ class IndexTest extends TestCase
      * @var bool
      */
     private bool $signatureValid = true;
+    /**
+     * @var bool
+     */
+    private bool $forThisShop = true;
     /**
      * @var string
      */
@@ -112,6 +117,8 @@ class IndexTest extends TestCase
         $signatureValidator->method('isValid')->willReturnCallback(
             fn ($validatedRequest, $rawBody) => $validatedRequest === $request && $rawBody === $this->body && $this->signatureValid
         );
+        $shopFilter = $this->createStub(ShopFilter::class);
+        $shopFilter->method('isForThisShop')->willReturnCallback(fn () => $this->forThisShop);
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->controller = new Index(
@@ -124,6 +131,7 @@ class IndexTest extends TestCase
             $ipValidator,
             $remoteIp,
             $signatureValidator,
+            $shopFilter,
             $this->logger
         );
     }
@@ -174,6 +182,19 @@ class IndexTest extends TestCase
         $this->webhookMessage->method('isEventReceived')->with('EV1')->willReturn(true);
         $this->webhookMessage->expects($this->never())->method('addWebhookMessage');
         $this->publisher->expects($this->never())->method('publish');
+        $this->expectResult(200, 'OK');
+
+        $this->controller->execute();
+    }
+
+    public function testMessageOfAnotherShopIsOnlyConfirmed(): void
+    {
+        $this->forThisShop = false;
+        $this->webhookMessage->method('isEventReceived')->willReturn(false);
+        $this->webhookMessage->expects($this->never())->method('addWebhookMessage');
+        $this->publisher->expects($this->never())->method('publish');
+        $this->processor->expects($this->never())->method('process');
+        $this->logger->expects($this->never())->method($this->anything());
         $this->expectResult(200, 'OK');
 
         $this->controller->execute();

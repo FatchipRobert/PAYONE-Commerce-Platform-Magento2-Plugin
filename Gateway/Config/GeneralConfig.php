@@ -152,7 +152,7 @@ class GeneralConfig
      */
     public function getRefPrefix(int|string|null $store = null): string
     {
-        return (string)$this->getGeneralValue('ref_prefix', 'global', $store);
+        return (string)$this->getGeneralValue('ref_prefix', 'shared_account', $store);
     }
 
     /**

@@ -59,7 +59,7 @@ class GeneralConfigTest extends TestCase
             'payone_cp_general/global/api_key@2' => 'key',
             'payone_cp_general/global/api_secret@2' => 'secret',
             'payone_cp_general/global/environment@2' => 'live',
-            'payone_cp_general/global/ref_prefix@2' => 'dev',
+            'payone_cp_general/shared_account/ref_prefix@2' => 'dev',
             'payone_cp_general/ip_addresses/transmit_ip@2' => '1',
         ];
 

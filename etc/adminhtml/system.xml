@@ -42,11 +42,6 @@
                     <source_model>Payone\CommercePlatform\Model\Source\Environment</source_model>
                     <tooltip>Production = live. Pre-Production = test.</tooltip>
                 </field>
-                <field id="ref_prefix" translate="label,comment,tooltip" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Referencenumber prefix</label>
-                    <comment><![CDATA[optional - Please consider the maximum length of our <a href="https://docs.payone.com/display/PLATFORM/reference+-+definition" target="_blank" rel="noopener noreferrer" title="Documentation: Reference Definition">reference parameter</a>. We strongly suggest using a max of 5 characters as your prefix.]]></comment>
-                    <tooltip>A unique referencenumber has to be transferred to PAYONE with every request. This is a consecutive number, normally starting at 1. When operating multiple shops ( e.g. live- and test-shop ) with the same PAYONE account-data there will be problems when the current referencenumber was already used. This can be avoided by using different prefixes on different shops.</tooltip>
-                </field>
             </group>
             <group id="ip_addresses" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>IP addresses</label>
@@ -141,6 +136,15 @@
                     <label>Delete log entries after (days)</label>
                     <comment>API and webhook log entries contain customer data (names, addresses, contact details). Entries older than this are deleted once a day by the Magento cron. Minimum 30 days, 0 = keep forever.</comment>
                     <validate>validate-digits</validate>
+                </field>
+            </group>
+            <group id="shared_account" translate="label,comment" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Several shops with one PAYONE account</label>
+                <comment>Only needed if more than one shop (e.g. a live and a test shop or several test shops) uses the same PAYONE account.</comment>
+                <field id="ref_prefix" translate="label,comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Reference prefix</label>
+                    <comment><![CDATA[Placed in front of the order number in the references sent to PAYONE, e.g. "ab-" gives "odab-000000123". Give every shop of the account its own prefix (if several store views: in every store view). Then the references stay unique, and the shop ignores webhooks of the other shops that reach its webhook URL. Up to 6 characters: letters, digits and + - . ( )]]></comment>
+                    <backend_model>Payone\CommercePlatform\Model\Config\Backend\RefPrefix</backend_model>
                 </field>
             </group>
         </section>

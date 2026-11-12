@@ -35,6 +35,7 @@ use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage;
 use Payone\CommercePlatform\Model\Webhook\IpValidator;
 use Payone\CommercePlatform\Model\Webhook\Processor;
 use Payone\CommercePlatform\Model\Webhook\QueueConsumer;
+use Payone\CommercePlatform\Model\Webhook\ShopFilter;
 use Payone\CommercePlatform\Model\Webhook\SignatureValidator;
 use Psr\Log\LoggerInterface;
 
@@ -53,6 +54,7 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
      * @param IpValidator $ipValidator
      * @param RemoteIp $remoteIp
      * @param SignatureValidator $signatureValidator
+     * @param ShopFilter $shopFilter
      * @param LoggerInterface $logger
      */
     public function __construct(
@@ -65,6 +67,7 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
         private readonly IpValidator $ipValidator,
         private readonly RemoteIp $remoteIp,
         private readonly SignatureValidator $signatureValidator,
+        private readonly ShopFilter $shopFilter,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -115,6 +118,11 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
 
         // Webhooks can be delivered multiple times (retries) - the event id is the idempotency key
         if ($this->webhookMessage->isEventReceived((string)$webhookMessage['id'])) {
+            return $this->getResult(200, 'OK');
+        }
+
+        // Several shops on one PAYONE account all get every webhook - confirm the ones of the other shops unseen
+        if (!$this->shopFilter->isForThisShop($webhookMessage)) {
             return $this->getResult(200, 'OK');
         }
 
