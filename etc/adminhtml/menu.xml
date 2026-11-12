@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * PAYONE Commerce Platform Magento 2 Connector
+ *
+ * Copyright (c) 2026 PAYONE GmbH
+ *
+ * This source file is subject to the MIT License that is bundled
+ * with this package in the file LICENSE.
+ *
+ * @category  Payone
+ * @package   Payone_CommercePlatform_Magento2_Plugin
+ * @author    FATCHIP GmbH <support@fatchip.de>
+ * @copyright 2026 PAYONE GmbH
+ * @license   https://opensource.org/licenses/MIT MIT License
+ * @link      https://www.payone.de
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>        
+        <add id="Payone_CommercePlatform::payone_cp" title="PAYONE" module="Payone_CommercePlatform" sortOrder="79" resource="Payone_CommercePlatform::payone_cp"/>
+        <add id="Payone_CommercePlatform::payone_cp_configuration" title="Configuration" module="Payone_CommercePlatform" sortOrder="20" parent="Payone_CommercePlatform::payone_cp" resource="Payone_CommercePlatform::payone_cp_configuration"/>
+        <add id="Payone_CommercePlatform::payone_cp_configuration_general" title="General" module="Payone_CommercePlatform" sortOrder="10" parent="Payone_CommercePlatform::payone_cp_configuration" action="adminhtml/system_config/edit/section/payone_cp_general" resource="Payone_CommercePlatform::payone_cp_configuration_general"/>
+        <add id="Payone_CommercePlatform::payone_cp_configuration_payment" title="Payment" module="Payone_CommercePlatform" sortOrder="20" parent="Payone_CommercePlatform::payone_cp_configuration" action="adminhtml/system_config/edit/section/payone_cp_payment" resource="Payone_CommercePlatform::payone_cp_configuration_payment"/>
+        <add id="Payone_CommercePlatform::payone_cp_protocol" title="Logs" module="Payone_CommercePlatform" sortOrder="30" parent="Payone_CommercePlatform::payone_cp" resource="Payone_CommercePlatform::payone_cp_protocol"/>
+        <add id="Payone_CommercePlatform::payone_cp_protocol_api" title="Api" module="Payone_CommercePlatform" sortOrder="10" parent="Payone_CommercePlatform::payone_cp_protocol" action="payone_cp/protocol_api" resource="Payone_CommercePlatform::payone_cp_protocol_api"/>
+        <add id="Payone_CommercePlatform::payone_cp_protocol_webhook" title="Webhook" module="Payone_CommercePlatform" sortOrder="20" parent="Payone_CommercePlatform::payone_cp_protocol" action="payone_cp/protocol_webhook" resource="Payone_CommercePlatform::payone_cp_protocol_webhook"/>
+    </menu>
+</config>
