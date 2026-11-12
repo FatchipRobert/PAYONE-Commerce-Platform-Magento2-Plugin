@@ -35,7 +35,8 @@ class SecuredDirectDebit extends BuyNowPayLater
     protected const PAYONE_PRODUCT_ID = 3392;
     protected const B2B_ALLOWED = false;
 
-    protected const ADDITIONAL_DATA_KEYS = ['dateofbirth', 'telephone', 'device_token', 'accountholder', 'iban'];
+    protected const ADDITIONAL_DATA_KEYS = ['dateofbirth', 'telephone', 'accountholder', 'iban'];
+    protected const MASKED_DATA_KEYS = ['iban'];
 
     /**
      * Capture mode plus the bank account (paymentProduct3392SpecificInput)

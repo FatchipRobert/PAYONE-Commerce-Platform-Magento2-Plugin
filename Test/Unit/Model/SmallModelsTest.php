@@ -23,14 +23,11 @@ namespace Payone\CommercePlatform\Test\Unit\Model;
 
 use Magento\Framework\Api\SearchCriteria;
 use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\App\Request\Http;
 use Magento\Sales\Api\Data\OrderSearchResultInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
 use Payone\CommercePlatform\Model\Api\Curl;
 use Payone\CommercePlatform\Model\ApiLog;
 use Payone\CommercePlatform\Model\OrderLocator;
-use Payone\CommercePlatform\Model\RemoteIp;
 use Payone\CommercePlatform\Model\ResourceModel\ApiLog as ApiLogResource;
 use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage as WebhookMessageResource;
 use Payone\CommercePlatform\Model\WebhookMessage;
@@ -39,7 +36,7 @@ use Payone\CommercePlatform\Test\Unit\Helper\OrderMockTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Log models, OrderLocator, RemoteIp and the Curl client
+ * Log models, OrderLocator and the Curl client
  */
 class SmallModelsTest extends TestCase
 {
@@ -121,24 +118,6 @@ class SmallModelsTest extends TestCase
         $repository->method('getList')->willReturn($searchResult);
 
         $this->assertNull((new OrderLocator($repository, $builder))->getByPayonePaymentId('PAY1'));
-    }
-
-    public function testRemoteIpUsesFirstIpOfForwardedList(): void
-    {
-        $generalConfig = $this->createStub(GeneralConfig::class);
-        $generalConfig->method('isProxyMode')->willReturn(true);
-        $request = $this->createMock(Http::class);
-        $request->expects($this->once())->method('getClientIp')->with(true)->willReturn('203.0.113.5, 10.0.0.1');
-
-        $this->assertSame('203.0.113.5', (new RemoteIp($request, $generalConfig))->get());
-    }
-
-    public function testRemoteIpWithoutIp(): void
-    {
-        $request = $this->createStub(Http::class);
-        $request->method('getClientIp')->willReturn(false);
-
-        $this->assertSame('', (new RemoteIp($request, $this->createStub(GeneralConfig::class)))->get());
     }
 
     public function testCurlSendRequestSupportsEveryHttpMethod(): void

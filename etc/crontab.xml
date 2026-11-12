@@ -26,5 +26,9 @@
         <job name="payone_cp_payinstore_status" instance="Payone\CommercePlatform\Cron\CheckPayInStoreOrders" method="execute">
             <schedule>*/15 * * * *</schedule>
         </job>
+        <!-- Deletes API and webhook log entries after the configured number of days -->
+        <job name="payone_cp_clean_logs" instance="Payone\CommercePlatform\Cron\CleanLogs" method="execute">
+            <schedule>30 3 * * *</schedule>
+        </job>
     </group>
 </config>

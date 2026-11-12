@@ -54,6 +54,7 @@ class Creditcard extends PayoneMethod
     ];
 
     protected const ADDITIONAL_DATA_KEYS = ['pseudocardpan', 'cardholder', 'cardtype', 'cardinputmode'];
+    protected const MASKED_DATA_KEYS = ['pseudocardpan'];
 
     /**
      * Styling of the hosted tokenization form: JS key => field in payone_cp_general/creditcard

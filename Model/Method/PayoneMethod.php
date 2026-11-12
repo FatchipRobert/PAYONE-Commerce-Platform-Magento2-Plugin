@@ -72,6 +72,17 @@ abstract class PayoneMethod extends Adapter
     protected const ADDITIONAL_DATA_KEYS = [];
 
     /**
+     * Keys of ADDITIONAL_DATA_KEYS that are only needed for the payment request - removed after it (reduceCheckoutInput())
+     */
+    protected const REQUEST_ONLY_DATA_KEYS = [];
+
+    /**
+     * Keys of ADDITIONAL_DATA_KEYS of which only the last 4 characters are kept after the payment request, e.g. the
+     * IBAN - enough to tell which account was used (reduceCheckoutInput())
+     */
+    protected const MASKED_DATA_KEYS = [];
+
+    /**
      * @param ManagerInterface $eventManager
      * @param ValueHandlerPoolInterface $valueHandlerPool
      * @param PaymentDataObjectFactory $paymentDataObjectFactory
@@ -164,6 +175,28 @@ abstract class PayoneMethod extends Adapter
     }
 
     /**
+     * Removes the checkout input of REQUEST_ONLY_DATA_KEYS and masks the one of MASKED_DATA_KEYS
+     *
+     * Called by Gateway\Response\CheckoutInputHandler after the successful payment request, the order is saved
+     * afterwards - the data is not needed for capture, refund or cancellation.
+     *
+     * @param Payment $payment
+     * @return void
+     */
+    public function reduceCheckoutInput(Payment $payment): void
+    {
+        foreach (static::REQUEST_ONLY_DATA_KEYS as $key) {
+            $payment->unsAdditionalInformation($key);
+        }
+        foreach (static::MASKED_DATA_KEYS as $key) {
+            $value = (string)$payment->getAdditionalInformation($key);
+            if (strlen($value) > 4) {
+                $payment->setAdditionalInformation($key, str_repeat('*', strlen($value) - 4).substr($value, -4));
+            }
+        }
+    }
+
+    /**
      * Returns window.checkoutConfig.payment.payone_cp.<method code> - only requested if the method is available
      *
      * Empty: no entry, the JS of the method gets [].
@@ -223,6 +256,19 @@ abstract class PayoneMethod extends Adapter
     public function requiresCustomerDevice(): bool
     {
         return false;
+    }
+
+    /**
+     * Returns the token of the device fingerprint of the checkout, empty for methods without fingerprint
+     *
+     * Sent as customerDevice.deviceToken if requiresCustomerDevice().
+     *
+     * @param int|string|null $storeId
+     * @return string
+     */
+    public function getDeviceToken(int|string|null $storeId = null): string
+    {
+        return '';
     }
 
     /**

@@ -62,5 +62,8 @@ class SecuredDirectDebitTest extends TestCase
                 'accountHolder' => str_repeat('a', 50),
             ]],
         ], $method->getSpecificInput($payment));
+
+        $method->reduceCheckoutInput($payment);
+        $this->assertSame('******************2051', $payment->getAdditionalInformation('iban'), 'masked after the request');
     }
 }

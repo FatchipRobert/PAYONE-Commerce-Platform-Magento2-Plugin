@@ -158,7 +158,6 @@ define(
                 if (this.requestTelephone()) {
                     parentReturn.additional_data.telephone = $.trim(this.telephone());
                 }
-                parentReturn.additional_data.device_token = this.getFrontendConfigParam('deviceToken');
                 return parentReturn;
             }
         });

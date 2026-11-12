@@ -267,6 +267,9 @@
             <emails>
                 <send_invoice_email>0</send_invoice_email>
             </emails>
+            <logs>
+                <retention_days>180</retention_days>
+            </logs>
         </payone_cp_general>
         <payone_cp_payment>
             <payone_cp_creditcard>

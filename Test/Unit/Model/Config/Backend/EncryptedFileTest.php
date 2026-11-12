@@ -25,6 +25,7 @@ use Magento\Framework\App\Cache\TypeListInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\File\UploaderFactory;
 use Magento\Framework\Filesystem\Driver\File;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Registry;
@@ -74,6 +75,14 @@ class EncryptedFileTest extends TestCase
         $config->method('getValue')->willReturn($oldValue);
         $fileDriver = $this->createStub(File::class);
         $fileDriver->method('fileGetContents')->willReturnCallback(fn (string $path) => $this->uploads[$path]);
+        // Magento's uploader only accepts files uploaded with the request
+        $uploaderFactory = $this->createStub(UploaderFactory::class);
+        $uploaderFactory->method('create')->willReturnCallback(function (array $data) {
+            if (!isset($this->uploads[$data['fileId']['tmp_name']])) {
+                throw new \InvalidArgumentException('Invalid parameter given. A valid $fileId[tmp_name] is expected.');
+            }
+            return null;
+        });
 
         $context = $this->createStub(Context::class);
         $context->method('getEventDispatcher')->willReturn($this->createStub(ManagerInterface::class));
@@ -84,6 +93,7 @@ class EncryptedFileTest extends TestCase
             $this->createStub(TypeListInterface::class),
             $this->encryptedFileValue,
             $fileDriver,
+            $uploaderFactory,
             $fileType
         );
         $backend->setValue($value);
@@ -165,6 +175,16 @@ class EncryptedFileTest extends TestCase
     public function testFailedUploadIsRejected(int $error, string $content): void
     {
         $backend = $this->createBackend(EncryptedFile::TYPE_PRIVATE_KEY, $this->upload('key.pem', $content, $error));
+
+        $this->expectException(LocalizedException::class);
+        $this->expectExceptionMessage('The file key.pem could not be uploaded.');
+        $backend->beforeSave();
+    }
+
+    public function testFileThatWasNotUploadedIsRejected(): void
+    {
+        $value = ['name' => 'key.pem', 'tmp_name' => '/var/www/key.pem', 'size' => 100, 'error' => UPLOAD_ERR_OK];
+        $backend = $this->createBackend(EncryptedFile::TYPE_PRIVATE_KEY, $value);
 
         $this->expectException(LocalizedException::class);
         $this->expectExceptionMessage('The file key.pem could not be uploaded.');

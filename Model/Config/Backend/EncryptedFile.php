@@ -26,6 +26,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Config\Value;
 use Magento\Framework\Data\Collection\AbstractDb;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\File\UploaderFactory;
 use Magento\Framework\Filesystem\Driver\File;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
@@ -53,6 +54,7 @@ class EncryptedFile extends Value
      * @param TypeListInterface $cacheTypeList
      * @param EncryptedFileValue $encryptedFile
      * @param File $fileDriver
+     * @param UploaderFactory $uploaderFactory
      * @param string $fileType
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
@@ -65,6 +67,7 @@ class EncryptedFile extends Value
         TypeListInterface $cacheTypeList,
         private readonly EncryptedFileValue $encryptedFile,
         private readonly File $fileDriver,
+        private readonly UploaderFactory $uploaderFactory,
         private readonly string $fileType = self::TYPE_CERTIFICATE,
         ?AbstractResource $resource = null,
         ?AbstractDb $resourceCollection = null,
@@ -107,6 +110,9 @@ class EncryptedFile extends Value
     /**
      * Returns the content of the uploaded file
      *
+     * The file is checked by Magento's uploader like its own config file uploads: tmp_name has to be a file
+     * uploaded with this request.
+     *
      * @param array $upload
      * @return string
      * @throws LocalizedException
@@ -115,6 +121,11 @@ class EncryptedFile extends Value
     {
         $size = (int)($upload['size'] ?? 0);
         if ((int)($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || $size === 0 || $size > self::MAX_SIZE) {
+            throw new LocalizedException(__('The file %1 could not be uploaded.', $upload['name'] ?? ''));
+        }
+        try {
+            $this->uploaderFactory->create(['fileId' => $upload]);
+        } catch (\Exception $e) {
             throw new LocalizedException(__('The file %1 could not be uploaded.', $upload['name'] ?? ''));
         }
         return $this->fileDriver->fileGetContents((string)$upload['tmp_name']);

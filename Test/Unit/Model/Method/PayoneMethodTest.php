@@ -46,6 +46,8 @@ class PayoneMethodTest extends TestCase
             protected const PAYONE_METHOD_TYPE = 'redirectPaymentMethod';
             protected const PAYONE_PRODUCT_ID = 840;
             protected const ADDITIONAL_DATA_KEYS = ['iban', 'accountholder', 'bic'];
+            protected const REQUEST_ONLY_DATA_KEYS = ['payment_token'];
+            protected const MASKED_DATA_KEYS = ['iban', 'pin', 'missing'];
         };
     }
 
@@ -59,6 +61,7 @@ class PayoneMethodTest extends TestCase
         $this->assertSame([], $method->getFrontendConfig());
         $this->assertFalse($method->requiresCancellationReason());
         $this->assertFalse($method->requiresCustomerDevice());
+        $this->assertSame('', $method->getDeviceToken());
         $this->assertTrue($method->canUseForCurrency('USD'), 'no currency restriction');
     }
 
@@ -94,6 +97,23 @@ class PayoneMethodTest extends TestCase
         $method->assignData(new DataObject());
 
         $this->assertSame([], $payment->getAdditionalInformation());
+    }
+
+    public function testReduceCheckoutInputRemovesRequestOnlyDataAndMasksTheRest(): void
+    {
+        $payment = $this->createPayment($this->createOrder(), [
+            'payment_token' => '{"data":"x"}',
+            'iban' => 'DE02120300000000202051',
+            'pin' => '1234',
+            'bic' => 'BYLADEM1001',
+        ]);
+
+        $this->createMethod()->reduceCheckoutInput($payment);
+
+        $this->assertSame(
+            ['iban' => '******************2051', 'pin' => '1234', 'bic' => 'BYLADEM1001'],
+            $payment->getAdditionalInformation()
+        );
     }
 
     public function testAutomaticCaptureFromConfig(): void

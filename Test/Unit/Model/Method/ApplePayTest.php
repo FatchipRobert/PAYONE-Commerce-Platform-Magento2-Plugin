@@ -163,4 +163,13 @@ class ApplePayTest extends TestCase
         $this->expectExceptionMessage('The Apple Pay payment data is missing.');
         $this->buildInput($token);
     }
+
+    public function testTokenIsRemovedAfterThePaymentRequest(): void
+    {
+        $payment = $this->createPayment($this->createOrder(), ['payment_token' => '{"paymentData":{}}']);
+
+        $this->createMethod()->reduceCheckoutInput($payment);
+
+        $this->assertSame([], $payment->getAdditionalInformation());
+    }
 }

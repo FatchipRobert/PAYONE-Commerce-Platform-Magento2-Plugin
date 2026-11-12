@@ -124,4 +124,14 @@ class DirectDebitTest extends TestCase
 
         $this->assertSame(str_repeat('Ü', 50), $bankAccount['accountHolder']);
     }
+
+    public function testIbanIsMaskedAfterThePaymentRequest(): void
+    {
+        $payment = $this->createPayment($this->createOrder(), ['iban' => 'DE02120300000000202051', 'bic' => 'BYLADEM1001']);
+
+        $this->createMethod()->reduceCheckoutInput($payment);
+
+        $this->assertSame('******************2051', $payment->getAdditionalInformation('iban'));
+        $this->assertSame('BYLADEM1001', $payment->getAdditionalInformation('bic'));
+    }
 }

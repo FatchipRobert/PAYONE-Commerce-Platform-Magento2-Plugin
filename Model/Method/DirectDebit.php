@@ -48,6 +48,7 @@ class DirectDebit extends PayoneMethod
     protected const PAYONE_METHOD_TYPE = 'sepaDirectDebitPaymentMethod';
     protected const PAYONE_PRODUCT_ID = 771;
     protected const ADDITIONAL_DATA_KEYS = ['bank_country', 'accountholder', 'iban', 'bic'];
+    protected const MASKED_DATA_KEYS = ['iban'];
 
     /**
      * uniqueMandateReference: max. 35 characters of A-Z a-z 0-9 + - . ( )

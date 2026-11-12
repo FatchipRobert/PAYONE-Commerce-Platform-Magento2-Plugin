@@ -48,10 +48,11 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 	Apple Pay is offered in Safari and, through Apple's Apple Pay JS SDK, also in other browsers (payment via QR code with an iPhone). The customer confirms the payment in the Apple Pay sheet, then the order is placed with the addresses of the checkout; a 3-D Secure redirect may follow.
 *	**Webhooks:** Configure the following webhook URL for your merchant account in the PAYONE Commerce Platform:
 	`https://<your-shop-domain>/payone_cp/webhook`
-	Webhooks are only accepted with a valid signature of your API key. Additionally, the IP addresses PAYONE sends webhooks from can be restricted with the setting *Valid PAYONE IPs*.
+	Webhooks are only accepted with a valid signature of your API key. Additionally, only the IP addresses PAYONE sends webhooks from are accepted (setting *Valid PAYONE IPs*, prefilled with PAYONE's addresses). We recommend keeping this list active; an empty list disables the check.
+*	**Shop behind a proxy or load balancer:** enter the IP addresses of your own proxies / load balancers (e.g. Varnish, SSL terminator, CDN) in *Trusted proxies*. For requests from these addresses the client IP is taken from the `X-Forwarded-For` header – otherwise the IP of the connection is used. This IP is checked against *Valid PAYONE IPs* and sent to PAYONE with the payment (*Transmit IP address*, always for Secured Invoice / Secured Direct Debit).
 *	**Pay in Store:** see [Pay in Store setup](#pay-in-store-setup).
 *	**Webhook processing:** see the next section.
-*	**Logs:** API calls and received webhooks can be found under *PAYONE → Logs → Api* and *PAYONE → Logs → Webhook*.
+*	**Logs:** API calls and received webhooks can be found under *PAYONE → Logs → Api* and *PAYONE → Logs → Webhook*. They contain customer data and are deleted by the cron job `payone_cp_clean_logs` after the number of days set in *General → Logs* (default 180, 0 = keep forever).
 
 ## Pay in Store setup
 With Pay in Store the customer orders online, picks up the order in a store and pays there at the till. PAYONE handles no online payment: when the order is placed, the extension creates a commerce case with a checkout (shopping cart) at PAYONE, the till books the payment on this checkout.

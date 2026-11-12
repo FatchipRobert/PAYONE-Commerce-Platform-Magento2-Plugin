@@ -360,6 +360,7 @@
                 <item name="payment_ids" xsi:type="string">Payone\CommercePlatform\Gateway\Response\PaymentIdsHandler</item>
                 <item name="redirect_url" xsi:type="string">Payone\CommercePlatform\Gateway\Response\RedirectUrlHandler</item>
                 <item name="payment_instructions" xsi:type="string">Payone\CommercePlatform\Gateway\Response\PaymentInstructionsHandler</item>
+                <item name="checkout_input" xsi:type="string">Payone\CommercePlatform\Gateway\Response\CheckoutInputHandler</item>
             </argument>
         </arguments>
     </virtualType>
@@ -369,6 +370,7 @@
                 <item name="payment_ids" xsi:type="string">Payone\CommercePlatform\Gateway\Response\PaymentIdsHandler</item>
                 <item name="redirect_url" xsi:type="string">Payone\CommercePlatform\Gateway\Response\RedirectUrlHandler</item>
                 <item name="pending_state" xsi:type="string">Payone\CommercePlatform\Gateway\Response\PendingStateHandler</item>
+                <item name="checkout_input" xsi:type="string">Payone\CommercePlatform\Gateway\Response\CheckoutInputHandler</item>
             </argument>
         </arguments>
     </virtualType>

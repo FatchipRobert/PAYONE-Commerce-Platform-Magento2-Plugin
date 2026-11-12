@@ -34,6 +34,7 @@ use Magento\Payment\Gateway\Command\CommandException;
 use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Payone\CommercePlatform\Model\Payone;
 use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage\CollectionFactory;
 
 /**
@@ -108,6 +109,17 @@ class Returned implements HttpGetActionInterface, HttpPostActionInterface, CsrfA
         $order = $this->checkoutSession->getLastRealOrder();
         if (!$order->getId()) {
             return $this->handleErrorState($order);
+        }
+
+        // The status lookup below is only needed while a PAYONE redirect payment is open, every other order is decided
+        if (!in_array((string)$order->getPayment()->getMethod(), Payone::METHODS, true)) {
+            return $this->handleSuccessState(); // no PAYONE payment, nothing to check
+        }
+        if ($order->getState() === Order::STATE_CANCELED) {
+            return $this->handleCancelState($order); // e.g. cancelled by the webhook before the customer returned
+        }
+        if ($order->getState() !== Order::STATE_PENDING_PAYMENT) {
+            return $this->handleSuccessState(); // e.g. authorized by the webhook before the customer returned
         }
 
         $status = $this->getPaymentStatus($order);

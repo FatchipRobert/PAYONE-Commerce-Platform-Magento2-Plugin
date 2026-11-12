@@ -25,31 +25,45 @@ use Magento\Framework\App\Request\Http;
 use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
 
 /**
- * IP of the requesting client, respecting the proxy mode setting
+ * IP of the requesting client, behind the configured trusted proxies of the shop
  */
 class RemoteIp
 {
     /**
      * @param Http $request
      * @param GeneralConfig $generalConfig
+     * @param IpAddressList $ipAddressList
      */
     public function __construct(
         private readonly Http $request,
         private readonly GeneralConfig $generalConfig,
+        private readonly IpAddressList $ipAddressList,
     ) {
     }
 
     /**
      * Returns the IP of the requesting client
      *
-     * In proxy mode the IP is taken from X-Forwarded-For, which may be a list like "<client>, <proxy1>, <proxy2>"
+     * Without trusted proxies this is REMOTE_ADDR. Every proxy appends the IP it was called from to
+     * X-Forwarded-For ("<client>, <proxy1>, <proxy2>"), so as long as the request came from a trusted proxy,
+     * the IP is taken from the end of the list. Entries before the first other IP are not used, they are not
+     * set by the own proxies.
      *
      * @return string
      */
     public function get(): string
     {
-        $clientIp = (string)$this->request->getClientIp($this->generalConfig->isProxyMode());
-        $splitIp = explode(',', $clientIp);
-        return trim((string)current($splitIp));
+        $ip = (string)$this->request->getServer('REMOTE_ADDR');
+        $trustedProxies = $this->generalConfig->getTrustedProxies();
+        if (empty($trustedProxies)) {
+            return $ip;
+        }
+
+        $forwardedFor = (string)$this->request->getServer('HTTP_X_FORWARDED_FOR');
+        $forwardedIps = $forwardedFor !== '' ? explode(',', $forwardedFor) : [];
+        while (!empty($forwardedIps) && $this->ipAddressList->contains($trustedProxies, $ip)) {
+            $ip = trim((string)array_pop($forwardedIps));
+        }
+        return $ip;
     }
 }

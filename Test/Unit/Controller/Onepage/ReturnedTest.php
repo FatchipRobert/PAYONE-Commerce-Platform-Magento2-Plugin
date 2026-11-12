@@ -34,6 +34,7 @@ use Magento\Payment\Gateway\Command\Result\ArrayResult;
 use Magento\Payment\Gateway\CommandInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Payment;
 use Payone\CommercePlatform\Controller\Onepage\Returned;
 use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage\Collection;
 use Payone\CommercePlatform\Model\ResourceModel\WebhookMessage\CollectionFactory;
@@ -71,6 +72,14 @@ class ReturnedTest extends TestCase
      * @var int
      */
     private int $apiCalls = 0;
+    /**
+     * @var string
+     */
+    private string $paymentMethod = 'payone_cp_creditcard';
+    /**
+     * @var bool
+     */
+    private bool $canCancel = true;
 
     /**
      * @var Session&MockObject
@@ -101,11 +110,15 @@ class ReturnedTest extends TestCase
     {
         $this->order = $this->getMockBuilder(Order::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['canCancel', 'cancel'])
+            ->onlyMethods(['canCancel', 'cancel', 'getPayment'])
             ->getMock();
         $this->order->setId(5);
+        $this->order->setState(Order::STATE_PENDING_PAYMENT);
         $this->order->setData('payone_cp_payment_id', 'PAY1');
-        $this->order->method('canCancel')->willReturn(true);
+        $this->order->method('canCancel')->willReturnCallback(fn () => $this->canCancel);
+        $payment = $this->createStub(Payment::class);
+        $payment->method('getMethod')->willReturnCallback(fn () => $this->paymentMethod);
+        $this->order->method('getPayment')->willReturn($payment);
 
         $this->session = $this->createPartialMockWithReflection(
             Session::class,
@@ -266,6 +279,44 @@ class ReturnedTest extends TestCase
             1 + Returned::FINAL_STATUS_WAIT_MILLISECONDS / Returned::FINAL_STATUS_POLL_MILLISECONDS,
             $this->webhookLookups
         );
+    }
+
+    public function testOrderOfOtherPaymentMethodIsNotChecked(): void
+    {
+        $this->paymentMethod = 'checkmo';
+        $this->expectSuccessPage();
+
+        $this->controller->execute();
+
+        $this->assertSame(0, $this->webhookLookups);
+        $this->assertSame(0, $this->apiCalls);
+    }
+
+    public function testOrderAuthorizedBeforeTheReturnIsNotChecked(): void
+    {
+        $this->order->setState(Order::STATE_PROCESSING);
+        $this->expectSuccessPage();
+        $this->messageManager->expects($this->never())->method('addNoticeMessage');
+
+        $this->controller->execute();
+
+        $this->assertSame(0, $this->webhookLookups);
+        $this->assertSame(0, $this->apiCalls);
+    }
+
+    public function testOrderCancelledBeforeTheReturnRestoresTheQuote(): void
+    {
+        $this->order->setState(Order::STATE_CANCELED);
+        $this->canCancel = false;
+        $this->order->expects($this->never())->method('cancel');
+        $this->session->expects($this->once())->method('restoreQuote');
+        $this->session->expects($this->once())->method('setPayoneCpCheckoutErrorMessage')->with('The payment has been cancelled.');
+        $this->redirect->expects($this->once())->method('setPath')->with('checkout', ['_fragment' => 'payment'])->willReturnSelf();
+
+        $this->controller->execute();
+
+        $this->assertSame(0, $this->webhookLookups);
+        $this->assertSame(0, $this->apiCalls);
     }
 
     public function testWithoutOrderInSessionTheQuoteIsRestored(): void

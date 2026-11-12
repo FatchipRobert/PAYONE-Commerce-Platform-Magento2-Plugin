@@ -34,12 +34,15 @@ class OrderBuilderTest extends TestCase
 {
     use OrderMockTrait;
 
-    private function build(bool $requiresCustomerDevice, bool $transmitIp, array $additionalInformation = []): array
+    private function build(bool $requiresCustomerDevice, bool $transmitIp): array
     {
-        $order = $this->createOrder(['increment_id' => '000000100']);
+        $order = $this->createOrder(['increment_id' => '000000100', 'store_id' => 3]);
         $method = $this->createMethodInstance();
         $method->method('requiresCustomerDevice')->willReturn($requiresCustomerDevice);
-        $payment = $this->createPaymentWithMethod($order, $method, $additionalInformation);
+        $method->method('getDeviceToken')->willReturnCallback(
+            static fn ($storeId) => $storeId === 3 ? 'partner_merchant_uuid' : 'wrong store'
+        );
+        $payment = $this->createPaymentWithMethod($order, $method, ['device_token' => 'from the checkout input']);
 
         $generalConfig = $this->createStub(GeneralConfig::class);
         $generalConfig->method('getRefPrefix')->willReturn('');
@@ -57,7 +60,7 @@ class OrderBuilderTest extends TestCase
             'orderType' => 'FULL',
             'orderReferences' => ['merchantReference' => 'od000000100'],
             'paymentMethodSpecificInput' => ['paymentChannel' => 'ECOMMERCE'],
-        ], $this->build(false, false, [OrderBuilder::KEY_DEVICE_TOKEN => 'ignored']));
+        ], $this->build(false, false));
     }
 
     public function testIpIsTransmittedWhenConfigured(): void
@@ -68,19 +71,10 @@ class OrderBuilderTest extends TestCase
         );
     }
 
-    public function testMethodRequiringCustomerDeviceAlwaysSendsIpAndDeviceToken(): void
+    public function testMethodRequiringCustomerDeviceAlwaysSendsIpAndTheDeviceTokenOfTheMethod(): void
     {
         $this->assertSame(
             ['ipAddress' => '203.0.113.5', 'deviceToken' => 'partner_merchant_uuid'],
-            $this->build(true, false, [OrderBuilder::KEY_DEVICE_TOKEN => 'partner_merchant_uuid'])
-                ['paymentMethodSpecificInput']['customerDevice']
-        );
-    }
-
-    public function testMethodRequiringCustomerDeviceWithoutDeviceToken(): void
-    {
-        $this->assertSame(
-            ['ipAddress' => '203.0.113.5'],
             $this->build(true, false)['paymentMethodSpecificInput']['customerDevice']
         );
     }
@@ -88,11 +82,7 @@ class OrderBuilderTest extends TestCase
     public function testOtherPaymentMethodsNeverSendTheDevice(): void
     {
         $order = $this->createOrder();
-        $payment = $this->createPaymentWithMethod(
-            $order,
-            $this->createStub(MethodInterface::class),
-            [OrderBuilder::KEY_DEVICE_TOKEN => 'ignored']
-        );
+        $payment = $this->createPaymentWithMethod($order, $this->createStub(MethodInterface::class));
         $generalConfig = $this->createStub(GeneralConfig::class);
         $builder = new OrderBuilder(
             new SubjectReader(),

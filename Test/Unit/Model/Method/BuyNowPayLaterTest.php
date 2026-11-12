@@ -149,6 +149,27 @@ class BuyNowPayLaterTest extends TestCase
             $method->getFrontendConfig()['deviceToken'],
             'same token for the whole checkout session'
         );
+        $this->assertSame('e7yeryF2of8X_P1_123_uuid-1', $method->getDeviceToken(1), 'same token for the payment request');
+    }
+
+    public function testDeviceTokenUsesTheConfigOfTheStore(): void
+    {
+        $session = $this->createPartialMockWithReflection(Session::class, ['getData']);
+        $session->expects($this->once())->method('getData')->with('payone_cp_device_session_id')->willReturn('uuid-1');
+        $generalConfig = $this->createStub(GeneralConfig::class);
+        $generalConfig->method('getMerchantId')->willReturnCallback(static fn ($storeId) => 'P1_'.$storeId);
+        $generalConfig->method('getPaymentValue')->willReturnCallback(
+            static fn ($code, $field, $storeId) => $field === 'payla_partner_id' ? 'partner'.$storeId : null
+        );
+        $method = new SecuredInvoice(
+            ...$this->methodArguments(),
+            generalConfig: $generalConfig,
+            checkoutSession: $session,
+            identityGenerator: $this->createStub(IdentityGeneratorInterface::class),
+            escaper: $this->createStub(Escaper::class)
+        );
+
+        $this->assertSame('partner2_P1_2_uuid-1', $method->getDeviceToken(2));
     }
 
     private function createQuoteAddress(array $data, bool $sameAsBilling = false): QuoteAddress

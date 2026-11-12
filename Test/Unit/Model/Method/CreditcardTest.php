@@ -134,4 +134,13 @@ class CreditcardTest extends TestCase
 
         $this->assertSame($expected, $this->createMethod($automaticCapture)->getSpecificInput($payment));
     }
+
+    public function testTokenIsMaskedAfterThePaymentRequest(): void
+    {
+        $payment = $this->createPayment($this->createOrder(), ['pseudocardpan' => 'pseudo123', 'cardtype' => 'VISA']);
+
+        $this->createMethod()->reduceCheckoutInput($payment);
+
+        $this->assertSame(['pseudocardpan' => '*****o123', 'cardtype' => 'VISA'], $payment->getAdditionalInformation());
+    }
 }

@@ -111,4 +111,13 @@ class GooglePayTest extends TestCase
             $this->createMethod(false)->getSpecificInput($payment)['authorizationMode']
         );
     }
+
+    public function testTokenIsRemovedAfterThePaymentRequest(): void
+    {
+        $payment = $this->createPayment($this->createOrder(), ['payment_token' => '{"signedMessage":"{}"}']);
+
+        $this->createMethod()->reduceCheckoutInput($payment);
+
+        $this->assertSame([], $payment->getAdditionalInformation());
+    }
 }

@@ -43,7 +43,8 @@ use Psr\Log\LoggerInterface;
  * Base of the PAYONE Buy Now Pay Later methods: Secured Invoice and Secured Direct Debit
  *
  * Direct methods (authorize). Date of birth and phone of the checkout are sent by Gateway\Request\Mapper\CustomerMapper,
- * the device token of the Payla fingerprint and the IP by Gateway\Request\OrderBuilder (requiresCustomerDevice()).
+ * the device token of the Payla fingerprint (getDeviceToken()) and the IP by Gateway\Request\OrderBuilder
+ * (requiresCustomerDevice()).
  * Capture (final partial) and cancellation need a cancellationReason. Only EUR; the countries (DE, AT) are restricted
  * by the "country" validator (specificcountry in config.xml). PAYONE only accepts a shipping address identical to the
  * billing address, B2B only if B2B_ALLOWED, and needs date of birth (adult) and phone.
@@ -52,7 +53,7 @@ abstract class BuyNowPayLater extends PayoneMethod
 {
     protected const PAYONE_METHOD_TYPE = 'financingPaymentMethod';
     protected const ALLOWED_CURRENCIES = ['EUR'];
-    protected const ADDITIONAL_DATA_KEYS = ['dateofbirth', 'telephone', 'device_token'];
+    protected const ADDITIONAL_DATA_KEYS = ['dateofbirth', 'telephone'];
 
     /**
      * Whether billing addresses with a company are accepted
@@ -178,23 +179,45 @@ abstract class BuyNowPayLater extends PayoneMethod
     /**
      * Payla device fingerprint and the legal text
      *
-     * The device token "<Payla partner id>_<merchant id>_<session id>" is created once per checkout session.
-     * The checkout JS loads the Payla fingerprint script with it and sends it back with the payment data.
+     * The checkout JS loads the Payla fingerprint script with the device token (getDeviceToken()).
      *
      * @return array
      */
     public function getFrontendConfig(): array
     {
-        $partnerId = (string)$this->generalConfig->getPaymentValue($this->getCode(), 'payla_partner_id');
-        $merchantId = $this->generalConfig->getMerchantId();
-
         return [
-            'paylaPartnerId' => $partnerId,
-            'paylaMerchantId' => $merchantId,
+            'paylaPartnerId' => $this->getPaylaPartnerId(),
+            'paylaMerchantId' => $this->generalConfig->getMerchantId(),
             'paylaEnvironment' => $this->generalConfig->isLiveMode() ? 'p' : 't',
-            'deviceToken' => $partnerId.'_'.$merchantId.'_'.$this->getDeviceSessionId(),
+            'deviceToken' => $this->getDeviceToken(),
             'legalText' => $this->getLegalText(),
         ];
+    }
+
+    /**
+     * Returns the token of the Payla device fingerprint: "<Payla partner id>_<merchant id>_<session id>"
+     *
+     * The session id is created once per checkout session, so the payment request (Gateway\Request\OrderBuilder)
+     * sends the token the fingerprint script of the checkout page was loaded with.
+     *
+     * @param int|string|null $storeId
+     * @return string
+     */
+    public function getDeviceToken(int|string|null $storeId = null): string
+    {
+        return $this->getPaylaPartnerId($storeId).'_'.$this->generalConfig->getMerchantId($storeId).'_'
+            .$this->getDeviceSessionId();
+    }
+
+    /**
+     * Returns the Payla partner id of the method
+     *
+     * @param int|string|null $storeId
+     * @return string
+     */
+    private function getPaylaPartnerId(int|string|null $storeId = null): string
+    {
+        return (string)$this->generalConfig->getPaymentValue($this->getCode(), 'payla_partner_id', $storeId);
     }
 
     /**

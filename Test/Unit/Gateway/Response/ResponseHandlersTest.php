@@ -24,15 +24,18 @@ namespace Payone\CommercePlatform\Test\Unit\Gateway\Response;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\DataObject;
 use Magento\Framework\TestFramework\Unit\Helper\MockCreationTrait;
+use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Model\Order;
 use Payone\CommercePlatform\Block\Info\PaymentInstructions;
 use Payone\CommercePlatform\Gateway\Response\CheckoutIdsHandler;
+use Payone\CommercePlatform\Gateway\Response\CheckoutInputHandler;
 use Payone\CommercePlatform\Gateway\Response\PaymentIdsHandler;
 use Payone\CommercePlatform\Gateway\Response\PaymentInstructionsHandler;
 use Payone\CommercePlatform\Gateway\Response\PendingStateHandler;
 use Payone\CommercePlatform\Gateway\Response\RedirectUrlHandler;
 use Payone\CommercePlatform\Gateway\Response\TransactionIdHandler;
 use Payone\CommercePlatform\Gateway\SubjectReader;
+use Payone\CommercePlatform\Model\Method\PayoneMethod;
 use Payone\CommercePlatform\Test\Unit\Helper\OrderMockTrait;
 use PHPUnit\Framework\TestCase;
 
@@ -90,6 +93,34 @@ class ResponseHandlersTest extends TestCase
         $this->assertFalse($order->getCanSendNewEmailFlag());
         $this->assertNull($order->getData('payone_cp_commerce_case_id'));
         $this->assertNull($order->getPayment()->getTransactionId());
+    }
+
+    public function testCheckoutInputHandlerLetsThePaymentMethodReduceTheInput(): void
+    {
+        $method = $this->createMock(PayoneMethod::class);
+        $payment = $this->createPaymentWithMethod($this->createOrder(), $method);
+        $method->expects($this->once())->method('reduceCheckoutInput')->with($payment);
+
+        (new CheckoutInputHandler(new SubjectReader()))->handle(
+            ['payment' => $this->createPaymentDataObject($payment)],
+            ['body' => self::ONE_STEP_RESPONSE]
+        );
+    }
+
+    public function testCheckoutInputHandlerIgnoresOtherPaymentMethods(): void
+    {
+        $payment = $this->createPaymentWithMethod(
+            $this->createOrder(),
+            $this->createStub(MethodInterface::class),
+            ['iban' => 'DE02120300000000202051']
+        );
+
+        (new CheckoutInputHandler(new SubjectReader()))->handle(
+            ['payment' => $this->createPaymentDataObject($payment)],
+            ['body' => self::ONE_STEP_RESPONSE]
+        );
+
+        $this->assertSame(['iban' => 'DE02120300000000202051'], $payment->getAdditionalInformation());
     }
 
     public function testCheckoutIdsHandlerStoresIdsWithoutTransaction(): void

@@ -47,6 +47,7 @@ class ApplePay extends PayoneMethod
     protected const PAYONE_METHOD_TYPE = 'mobilePaymentMethod';
     protected const PAYONE_PRODUCT_ID = 302;
     protected const ADDITIONAL_DATA_KEYS = ['payment_token'];
+    protected const REQUEST_ONLY_DATA_KEYS = ['payment_token'];
 
     /**
      * @param ManagerInterface $eventManager

@@ -45,6 +45,7 @@ class GooglePay extends PayoneMethod
     protected const PAYONE_METHOD_TYPE = 'mobilePaymentMethod';
     protected const PAYONE_PRODUCT_ID = 320;
     protected const ADDITIONAL_DATA_KEYS = ['payment_token'];
+    protected const REQUEST_ONLY_DATA_KEYS = ['payment_token'];
 
     private const DEFAULT_STORE_NAME = 'Online Store';
 

@@ -41,7 +41,10 @@ class GeneralConfigTest extends TestCase
     {
         $scopeConfig = $this->createStub(ScopeConfigInterface::class);
         $scopeConfig->method('getValue')->willReturnCallback(
-            function (string $path, string $scope, $store) {
+            function (string $path, string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT, $store = null) {
+                if ($scope === ScopeConfigInterface::SCOPE_TYPE_DEFAULT) {
+                    return $this->values[$path.'@global'] ?? null;
+                }
                 $this->assertSame(ScopeInterface::SCOPE_STORES, $scope);
                 return $this->values[$path.'@'.($store ?? 'current')] ?? null;
             }
@@ -58,7 +61,6 @@ class GeneralConfigTest extends TestCase
             'payone_cp_general/global/environment@2' => 'live',
             'payone_cp_general/global/ref_prefix@2' => 'dev',
             'payone_cp_general/global/transmit_ip@2' => '1',
-            'payone_cp_general/global/proxy_mode@2' => '0',
         ];
 
         $this->assertSame('P1_123', $this->config->getMerchantId(2));
@@ -68,7 +70,6 @@ class GeneralConfigTest extends TestCase
         $this->assertTrue($this->config->isLiveMode(2));
         $this->assertSame('dev', $this->config->getRefPrefix(2));
         $this->assertTrue($this->config->isTransmitIp(2));
-        $this->assertFalse($this->config->isProxyMode(2));
     }
 
     public function testMissingValuesAreCastToEmptyDefaults(): void
@@ -98,10 +99,24 @@ class GeneralConfigTest extends TestCase
         $this->assertSame('Arial', $this->config->getGeneralValue('font_family', 'creditcard', 'default'));
     }
 
-    public function testGetValidIpsSplitsLinesAndDropsEmptyOnes(): void
+    public function testLogRetentionDaysIsAGlobalSetting(): void
     {
-        $this->values = ['payone_cp_general/global/valid_ips@current' => " 1.2.3.4 \r\n\n10.0.0.0/8\r\n  \n5.6.*.*"];
+        $this->values = [
+            'payone_cp_general/logs/retention_days@global' => '90',
+            'payone_cp_general/logs/retention_days@current' => '1',
+        ];
+        $this->assertSame(90, $this->config->getLogRetentionDays());
+    }
+
+    public function testIpListsSplitLinesAndDropEmptyOnes(): void
+    {
+        $this->values = [
+            'payone_cp_general/global/valid_ips@current' => " 1.2.3.4 \r\n\n10.0.0.0/8\r\n  \n5.6.*.*",
+            'payone_cp_general/global/trusted_proxies@2' => "127.0.0.1\n\n 10.0.0.0/8 ",
+        ];
         $this->assertSame(['1.2.3.4', '10.0.0.0/8', '5.6.*.*'], $this->config->getValidIps());
+        $this->assertSame(['127.0.0.1', '10.0.0.0/8'], $this->config->getTrustedProxies(2));
+        $this->assertSame([], $this->config->getTrustedProxies());
     }
 
     public function testLocaleAndLanguage(): void

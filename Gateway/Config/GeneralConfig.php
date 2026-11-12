@@ -162,14 +162,24 @@ class GeneralConfig
     }
 
     /**
-     * Whether the shop runs behind a proxy (client IP from X-Forwarded-For)
+     * Returns after how many days API and webhook log entries are deleted, 0 = never (global setting)
+     *
+     * @return int
+     */
+    public function getLogRetentionDays(): int
+    {
+        return (int)$this->scopeConfig->getValue(self::SECTION_GENERAL.'/logs/retention_days');
+    }
+
+    /**
+     * Returns the IPs of the proxies the shop runs behind (client IP from X-Forwarded-For), one entry per line
      *
      * @param int|string|null $store
-     * @return bool
+     * @return string[]
      */
-    public function isProxyMode(int|string|null $store = null): bool
+    public function getTrustedProxies(int|string|null $store = null): array
     {
-        return (bool)$this->getGeneralValue('proxy_mode', 'global', $store);
+        return $this->getIpList('trusted_proxies', $store);
     }
 
     /**
@@ -180,8 +190,20 @@ class GeneralConfig
      */
     public function getValidIps(int|string|null $store = null): array
     {
-        $validIps = preg_split('/\R/', (string)$this->getGeneralValue('valid_ips', 'global', $store));
-        return array_values(array_filter(array_map('trim', $validIps)));
+        return $this->getIpList('valid_ips', $store);
+    }
+
+    /**
+     * Returns the lines of a textarea field with IPs from section payone_cp_general/global
+     *
+     * @param string $field
+     * @param int|string|null $store
+     * @return string[]
+     */
+    private function getIpList(string $field, int|string|null $store): array
+    {
+        $ipList = preg_split('/\R/', (string)$this->getGeneralValue($field, 'global', $store));
+        return array_values(array_filter(array_map('trim', $ipList)));
     }
 
     /**

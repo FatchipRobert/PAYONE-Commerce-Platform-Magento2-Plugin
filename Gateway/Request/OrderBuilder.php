@@ -36,11 +36,6 @@ use Payone\CommercePlatform\Model\RemoteIp;
 class OrderBuilder implements BuilderInterface
 {
     /**
-     * additional_information key of the device token from the checkout (PAYONE Buy Now Pay Later)
-     */
-    public const KEY_DEVICE_TOKEN = 'device_token';
-
-    /**
      * @param SubjectReader $subjectReader
      * @param MerchantReference $merchantReference
      * @param GeneralConfig $generalConfig
@@ -77,13 +72,13 @@ class OrderBuilder implements BuilderInterface
             ],
         ];
 
-        // e.g. Buy Now Pay Later: always the IP and the token of the Payla device fingerprint from the checkout
+        // e.g. Buy Now Pay Later: always the IP and the token of the device fingerprint of the checkout
         if ($requiresDevice || $this->generalConfig->isTransmitIp($order->getStoreId())) {
             $orderRequest['paymentMethodSpecificInput']['customerDevice']['ipAddress'] = $this->remoteIp->get();
         }
-        if ($requiresDevice && !empty($payment->getAdditionalInformation(self::KEY_DEVICE_TOKEN))) {
+        if ($requiresDevice) {
             $orderRequest['paymentMethodSpecificInput']['customerDevice']['deviceToken']
-                = $payment->getAdditionalInformation(self::KEY_DEVICE_TOKEN);
+                = $method->getDeviceToken($order->getStoreId());
         }
 
         return ['body' => ['checkout' => ['orderRequest' => $orderRequest]]];

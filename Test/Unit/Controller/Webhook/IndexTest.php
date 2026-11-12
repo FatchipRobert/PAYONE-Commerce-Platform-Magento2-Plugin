@@ -89,9 +89,6 @@ class IndexTest extends TestCase
         $request = $this->createStub(Http::class);
         $request->method('getContent')->willReturnCallback(fn () => $this->body);
         $request->method('getHeader')->willReturn('KEY_DE');
-        $request->method('getServer')->willReturnCallback(
-            static fn ($name) => $name === 'REQUEST_TIME_FLOAT' ? microtime(true) - 0.05 : null
-        );
         $this->result = $this->createMock(Raw::class);
         $resultFactory = $this->createStub(RawFactory::class);
         $resultFactory->method('create')->willReturn($this->result);
@@ -144,10 +141,7 @@ class IndexTest extends TestCase
             ->with(json_decode(self::BODY, true))->willReturn(42);
         $this->publisher->expects($this->once())->method('publish')->with(QueueConsumer::TOPIC, '42');
         $this->processor->expects($this->never())->method('process');
-        $this->logger->expects($this->once())->method('info')->with(
-            'PAYONE CP webhook accepted',
-            $this->callback(static fn (array $context) => $context['eventId'] === 'EV1' && $context['durationMs'] >= 0)
-        );
+        $this->logger->expects($this->never())->method($this->anything());
         $this->expectResult(200, 'OK');
 
         $this->assertSame($this->result, $this->controller->execute());
@@ -171,7 +165,6 @@ class IndexTest extends TestCase
         $this->webhookMessage->method('isEventReceived')->with('EV1')->willReturn(true);
         $this->webhookMessage->expects($this->never())->method('addWebhookMessage');
         $this->publisher->expects($this->never())->method('publish');
-        $this->logger->expects($this->once())->method('info')->with('PAYONE CP webhook duplicate');
         $this->expectResult(200, 'OK');
 
         $this->controller->execute();
