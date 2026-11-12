@@ -15,7 +15,7 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 *	Seamless integration of Magento's OnePage Checkout
 *	Central configuration on the Magento Admin Panel, configurable per website and store view
 *	Authorization with later capture or automatic capture (sale), configurable per payment method
-*	Partial and multiple captures for partial deliveries
+*	Partial and multiple captures for partial deliveries – capture partial amounts from Magento (invoice with the delivered items). A capture made in the PAYONE portal is recorded in Magento as an invoice over the full order total.
 *	Full and partial refunds via credit memos
 *	Void and cancellation of open authorizations directly from the order
 *	Shopping cart transmission with line items, shipping costs and discounts
