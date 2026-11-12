@@ -96,6 +96,7 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
     {
         if (!$this->ipValidator->isValid($this->remoteIp->get())) {
             $this->logRejected('IP not allowed');
+            $this->logUntrustedProxyHint();
             return $this->getResult(403, 'Access denied');
         }
 
@@ -173,5 +174,35 @@ class Index implements HttpPostActionInterface, CsrfAwareActionInterface
             'ip' => $this->remoteIp->get(),
             'keyId' => (string)$this->request->getHeader(SignatureValidator::HEADER_KEY_ID),
         ]);
+    }
+
+    /**
+     * Logs a hint if the webhook was forwarded for a PAYONE IP by a proxy that is not a trusted proxy
+     *
+     * Typical for a shop behind a load balancer without the setting "Trusted proxies": every webhook is rejected
+     * with the IP of the load balancer. X-Forwarded-For is only shown in the log here, the check never uses it.
+     *
+     * @return void
+     */
+    private function logUntrustedProxyHint(): void
+    {
+        $remoteAddr = (string)$this->request->getServer('REMOTE_ADDR');
+        $forwardedFor = (string)$this->request->getServer('HTTP_X_FORWARDED_FOR');
+        // The header was evaluated (request from a trusted proxy) or there is none
+        if ($forwardedFor === '' || $this->remoteIp->get() !== $remoteAddr) {
+            return;
+        }
+
+        $forwardedIps = explode(',', $forwardedFor);
+        $senderIp = trim((string)end($forwardedIps));
+        if (!$this->ipValidator->isValid($senderIp)) {
+            return;
+        }
+
+        $this->logger->warning(
+            'PAYONE CP webhook: the request came from '.$remoteAddr.' on behalf of the PAYONE IP '.$senderIp
+            .'. If '.$remoteAddr.' is a proxy or load balancer of your own shop, enter it in the setting'
+            .' "Trusted proxies" of the PAYONE general configuration.'
+        );
     }
 }

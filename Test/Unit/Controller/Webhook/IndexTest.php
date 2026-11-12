@@ -60,6 +60,14 @@ class IndexTest extends TestCase
      */
     private string $body = self::BODY;
     /**
+     * @var string
+     */
+    private string $remoteIp = '185.60.20.1';
+    /**
+     * @var array
+     */
+    private array $server = [];
+    /**
      * @var WebhookMessage&MockObject
      */
     private MockObject $webhookMessage;
@@ -89,6 +97,7 @@ class IndexTest extends TestCase
         $request = $this->createStub(Http::class);
         $request->method('getContent')->willReturnCallback(fn () => $this->body);
         $request->method('getHeader')->willReturn('KEY_DE');
+        $request->method('getServer')->willReturnCallback(fn ($name) => $this->server[$name] ?? null);
         $this->result = $this->createMock(Raw::class);
         $resultFactory = $this->createStub(RawFactory::class);
         $resultFactory->method('create')->willReturn($this->result);
@@ -98,7 +107,7 @@ class IndexTest extends TestCase
         $ipValidator = $this->createStub(IpValidator::class);
         $ipValidator->method('isValid')->willReturnCallback(fn ($ip) => $ip === '185.60.20.1' && $this->ipValid);
         $remoteIp = $this->createStub(RemoteIp::class);
-        $remoteIp->method('get')->willReturn('185.60.20.1');
+        $remoteIp->method('get')->willReturnCallback(fn () => $this->remoteIp);
         $signatureValidator = $this->createStub(SignatureValidator::class);
         $signatureValidator->method('isValid')->willReturnCallback(
             fn ($validatedRequest, $rawBody) => $validatedRequest === $request && $rawBody === $this->body && $this->signatureValid
@@ -176,6 +185,47 @@ class IndexTest extends TestCase
         $this->webhookMessage->expects($this->never())->method('addWebhookMessage');
         $this->logger->expects($this->once())->method('warning')
             ->with('PAYONE CP webhook rejected: IP not allowed', ['ip' => '185.60.20.1', 'keyId' => 'KEY_DE']);
+        $this->expectResult(403, 'Access denied');
+
+        $this->controller->execute();
+    }
+
+    public function testForbiddenIpFromUntrustedProxyLogsHint(): void
+    {
+        $this->remoteIp = '10.0.0.5';
+        $this->server = ['REMOTE_ADDR' => '10.0.0.5', 'HTTP_X_FORWARDED_FOR' => '1.2.3.4, 185.60.20.1'];
+        $messages = [];
+        $this->logger->expects($this->exactly(2))->method('warning')
+            ->willReturnCallback(function ($message) use (&$messages) {
+                $messages[] = $message;
+            });
+        $this->expectResult(403, 'Access denied');
+
+        $this->controller->execute();
+
+        $this->assertSame('PAYONE CP webhook rejected: IP not allowed', $messages[0]);
+        $this->assertSame(
+            'PAYONE CP webhook: the request came from 10.0.0.5 on behalf of the PAYONE IP 185.60.20.1.'
+            .' If 10.0.0.5 is a proxy or load balancer of your own shop, enter it in the setting'
+            .' "Trusted proxies" of the PAYONE general configuration.',
+            $messages[1]
+        );
+    }
+
+    public static function noProxyHintProvider(): array
+    {
+        return [
+            'forwarded ip is no PAYONE ip' => ['10.0.0.5', ['REMOTE_ADDR' => '10.0.0.5', 'HTTP_X_FORWARDED_FOR' => '1.2.3.4']],
+            'header already evaluated' => ['1.2.3.4', ['REMOTE_ADDR' => '10.0.0.5', 'HTTP_X_FORWARDED_FOR' => '1.2.3.4']],
+        ];
+    }
+
+    #[DataProvider('noProxyHintProvider')]
+    public function testForbiddenIpWithoutProxyHint(string $remoteIp, array $server): void
+    {
+        $this->remoteIp = $remoteIp;
+        $this->server = $server;
+        $this->logger->expects($this->once())->method('warning')->with('PAYONE CP webhook rejected: IP not allowed');
         $this->expectResult(403, 'Access denied');
 
         $this->controller->execute();
