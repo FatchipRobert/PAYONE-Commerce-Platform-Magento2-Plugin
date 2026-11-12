@@ -25,7 +25,7 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 
 ## Requirements
 *	Magento 2.4.4 or higher
-*	PHP 8.1, 8.2, 8.3 or 8.4
+*	PHP 8.1, 8.2, 8.3, 8.4 or 8.5
 *	A PAYONE Commerce Platform merchant account with API key and API secret
 *	Magento cron (`bin/magento cron:run`) running every minute – it starts the message queue consumer that processes the webhooks
 
