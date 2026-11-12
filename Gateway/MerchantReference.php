@@ -26,7 +26,7 @@ use Magento\Sales\Model\Order\Invoice;
 use Payone\CommercePlatform\Gateway\Config\GeneralConfig;
 
 /**
- * Builds the merchant references: <type prefix><configured prefix><order increment id>, e.g. "cp000000207"
+ * Builds the merchant references: <type prefix><reference prefix><order increment id>, e.g. "cp000000207"
  */
 class MerchantReference
 {
@@ -36,6 +36,11 @@ class MerchantReference
     public const PREFIX_CAPTURE = 'cp';
     public const PREFIX_REFUND = 'rf';
     public const PREFIX_MANDATE = 'md'; // SEPA mandate reference
+
+    /**
+     * Key in additional_information of the payment: reference prefix the references of the order are built with
+     */
+    public const REF_PREFIX_KEY = 'payone_cp_ref_prefix';
 
     /**
      * @param GeneralConfig $generalConfig
@@ -54,7 +59,27 @@ class MerchantReference
      */
     public function get(Order $order, string $typePrefix): string
     {
-        return $typePrefix.$this->generalConfig->getRefPrefix($order->getStoreId()).$order->getIncrementId();
+        return $typePrefix.$this->getRefPrefix($order).$order->getIncrementId();
+    }
+
+    /**
+     * Returns the reference prefix of the order
+     *
+     * The configured prefix is stored on the payment with the first reference (payment request), so all later
+     * references of the order (captures, refunds with the capture reference) keep it if the setting is changed.
+     *
+     * @param Order $order
+     * @return string
+     */
+    private function getRefPrefix(Order $order): string
+    {
+        $payment = $order->getPayment();
+        $refPrefix = $payment->getAdditionalInformation(self::REF_PREFIX_KEY);
+        if ($refPrefix === null) {
+            $refPrefix = $this->generalConfig->getRefPrefix($order->getStoreId());
+            $payment->setAdditionalInformation(self::REF_PREFIX_KEY, $refPrefix);
+        }
+        return (string)$refPrefix;
     }
 
     /**
