@@ -35,6 +35,11 @@ class GeneralConfig
 {
     public const ENVIRONMENT_LIVE = 'live';
 
+    /**
+     * Minimum number of days API and webhook log entries are kept (getLogRetentionDays())
+     */
+    public const MIN_LOG_RETENTION_DAYS = 30;
+
     private const SECTION_GENERAL = 'payone_cp_general';
     private const SECTION_PAYMENT = 'payone_cp_payment';
 
@@ -164,11 +169,18 @@ class GeneralConfig
     /**
      * Returns after how many days API and webhook log entries are deleted, 0 = never (global setting)
      *
+     * Smaller values are raised to MIN_LOG_RETENTION_DAYS: the webhook processing still reads recent entries (event
+     * ids of received webhooks, successful captures in the API log).
+     *
      * @return int
      */
     public function getLogRetentionDays(): int
     {
-        return (int)$this->scopeConfig->getValue(self::SECTION_GENERAL.'/logs/retention_days');
+        $days = (int)$this->scopeConfig->getValue(self::SECTION_GENERAL.'/logs/retention_days');
+        if ($days > 0 && $days < self::MIN_LOG_RETENTION_DAYS) {
+            return self::MIN_LOG_RETENTION_DAYS;
+        }
+        return $days;
     }
 
     /**
@@ -202,8 +214,14 @@ class GeneralConfig
      */
     private function getIpList(string $field, int|string|null $store): array
     {
-        $ipList = preg_split('/\R/', (string)$this->getGeneralValue($field, 'global', $store));
-        return array_values(array_filter(array_map('trim', $ipList)));
+        $ipList = [];
+        foreach (preg_split('/\R/', (string)$this->getGeneralValue($field, 'global', $store)) as $line) {
+            $ip = trim($line);
+            if ($ip !== '') {
+                $ipList[] = $ip;
+            }
+        }
+        return $ipList;
     }
 
     /**

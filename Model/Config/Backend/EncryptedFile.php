@@ -126,7 +126,7 @@ class EncryptedFile extends Value
         try {
             $this->uploaderFactory->create(['fileId' => $upload]);
         } catch (\Exception $e) {
-            throw new LocalizedException(__('The file %1 could not be uploaded.', $upload['name'] ?? ''));
+            throw new LocalizedException(__('The file %1 could not be uploaded.', $upload['name'] ?? ''), $e);
         }
         return $this->fileDriver->fileGetContents((string)$upload['tmp_name']);
     }

@@ -38,6 +38,9 @@
         <index referenceId="PAYONE_CP_API_LOG_ORDER_INCREMENT_ID" indexType="btree">
             <column name="order_increment_id"/>
         </index>
+        <index referenceId="PAYONE_CP_PROTOCOL_API_DATE" indexType="btree">
+            <column name="date"/>
+        </index>
     </table>
     <table name="payone_cp_protocol_webhook" resource="default" engine="innodb" comment="Log all webhook messages">
         <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true"/>
@@ -61,6 +64,9 @@
         </index>
         <index referenceId="PAYONE_CP_PROTOCOL_WEBHOOK_EVENT_ID" indexType="btree">
             <column name="event_id"/>
+        </index>
+        <index referenceId="PAYONE_CP_PROTOCOL_WEBHOOK_DATE" indexType="btree">
+            <column name="date"/>
         </index>
     </table>
     <table name="sales_order" resource="sales" engine="innodb" comment="Sales Flat Order">

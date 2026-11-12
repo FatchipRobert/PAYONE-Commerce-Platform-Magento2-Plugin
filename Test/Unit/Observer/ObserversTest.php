@@ -24,16 +24,19 @@ namespace Payone\CommercePlatform\Test\Unit\Observer;
 use Magento\Framework\Event;
 use Magento\Framework\Event\Observer;
 use Magento\Payment\Model\MethodInterface;
+use Magento\Quote\Model\Quote;
+use Magento\Quote\Model\Quote\Payment as QuotePayment;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\Order\Payment;
 use Payone\CommercePlatform\Model\Method\PayoneMethod;
 use Payone\CommercePlatform\Observer\OrderPaymentCancel;
 use Payone\CommercePlatform\Observer\OrderPaymentCapture;
+use Payone\CommercePlatform\Observer\QuoteSubmitSuccess;
 use Payone\CommercePlatform\Test\Unit\Helper\OrderMockTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * OrderPaymentCancel and OrderPaymentCapture
+ * OrderPaymentCancel, OrderPaymentCapture and QuoteSubmitSuccess
  */
 class ObserversTest extends TestCase
 {
@@ -79,5 +82,37 @@ class ObserversTest extends TestCase
         $observer->execute(new Observer(['invoice' => $invoice]));
 
         $this->assertNull($payment->getData(OrderPaymentCapture::PAYMENT_KEY_CAPTURE_INVOICE));
+    }
+
+    public function testQuoteSubmitSuccessLetsThePaymentMethodReduceTheQuotePayment(): void
+    {
+        $method = $this->createMock(PayoneMethod::class);
+        $quote = $this->createQuoteWithMethod($method);
+        $method->expects($this->once())->method('reduceCheckoutInput')->with($quote->getPayment());
+
+        (new QuoteSubmitSuccess())->execute(new Observer(['event' => new Event(['quote' => $quote])]));
+    }
+
+    public function testQuoteSubmitSuccessIgnoresOtherMethods(): void
+    {
+        $method = $this->createMock(MethodInterface::class);
+        $method->expects($this->never())->method($this->anything());
+
+        (new QuoteSubmitSuccess())->execute(
+            new Observer(['event' => new Event(['quote' => $this->createQuoteWithMethod($method)])])
+        );
+    }
+
+    /**
+     * @param MethodInterface $method
+     * @return Quote
+     */
+    private function createQuoteWithMethod(MethodInterface $method): Quote
+    {
+        $payment = $this->createPartialStub(QuotePayment::class, ['getMethodInstance']);
+        $payment->method('getMethodInstance')->willReturn($method);
+        $quote = $this->createPartialStub(Quote::class, ['getPayment']);
+        $quote->method('getPayment')->willReturn($payment);
+        return $quote;
     }
 }

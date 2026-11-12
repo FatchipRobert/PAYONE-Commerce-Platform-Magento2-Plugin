@@ -27,6 +27,7 @@ use Magento\Payment\Gateway\Command\CommandPoolInterface;
 use Magento\Payment\Gateway\Config\ValueHandlerPoolInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectFactory;
 use Magento\Payment\Gateway\Validator\ValidatorPoolInterface;
+use Magento\Payment\Model\InfoInterface;
 use Magento\Payment\Model\Method\Adapter;
 use Magento\Quote\Api\Data\PaymentInterface;
 use Magento\Sales\Model\Order\Payment;
@@ -177,13 +178,14 @@ abstract class PayoneMethod extends Adapter
     /**
      * Removes the checkout input of REQUEST_ONLY_DATA_KEYS and masks the one of MASKED_DATA_KEYS
      *
-     * Called by Gateway\Response\CheckoutInputHandler after the successful payment request, the order is saved
-     * afterwards - the data is not needed for capture, refund or cancellation.
+     * Called after the successful payment request for the order payment (Gateway\Response\CheckoutInputHandler, the
+     * order is saved afterwards) and for the quote payment (Observer\QuoteSubmitSuccess) - the data is not needed for
+     * capture, refund or cancellation.
      *
-     * @param Payment $payment
+     * @param InfoInterface $payment
      * @return void
      */
-    public function reduceCheckoutInput(Payment $payment): void
+    public function reduceCheckoutInput(InfoInterface $payment): void
     {
         foreach (static::REQUEST_ONLY_DATA_KEYS as $key) {
             $payment->unsAdditionalInformation($key);

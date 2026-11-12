@@ -108,6 +108,15 @@ class GeneralConfigTest extends TestCase
         $this->assertSame(90, $this->config->getLogRetentionDays());
     }
 
+    public function testLogRetentionDaysHaveAMinimumOf30Days(): void
+    {
+        $this->values = ['payone_cp_general/logs/retention_days@global' => '7'];
+        $this->assertSame(30, $this->config->getLogRetentionDays());
+
+        $this->values = ['payone_cp_general/logs/retention_days@global' => '0'];
+        $this->assertSame(0, $this->config->getLogRetentionDays()); // keep forever
+    }
+
     public function testIpListsSplitLinesAndDropEmptyOnes(): void
     {
         $this->values = [

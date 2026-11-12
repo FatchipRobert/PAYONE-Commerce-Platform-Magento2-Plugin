@@ -23,6 +23,9 @@
     <event name="sales_order_payment_capture">
         <observer name="payone_cp_order_payment_capture" instance="Payone\CommercePlatform\Observer\OrderPaymentCapture" />
     </event>
+    <event name="sales_model_service_quote_submit_success">
+        <observer name="payone_cp_quote_submit_success" instance="Payone\CommercePlatform\Observer\QuoteSubmitSuccess" />
+    </event>
     <event name="payone_cp_webhook_all">
         <observer name="payone_cp_webhook_all" instance="Payone\CommercePlatform\Observer\Webhook\All" />
     </event>

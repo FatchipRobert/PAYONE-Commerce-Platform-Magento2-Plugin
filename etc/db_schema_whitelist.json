@@ -17,7 +17,8 @@
             "payment_execution_id": true
         },
         "index": {
-            "PAYONE_CP_PROTOCOL_API_ORDER_INCREMENT_ID": true
+            "PAYONE_CP_PROTOCOL_API_ORDER_INCREMENT_ID": true,
+            "PAYONE_CP_PROTOCOL_API_DATE": true
         },
         "constraint": {
             "PRIMARY": true
@@ -41,7 +42,8 @@
         },
         "index": {
             "PAYONE_CP_PROTOCOL_WEBHOOK_ORDER_INCREMENT_ID": true,
-            "PAYONE_CP_PROTOCOL_WEBHOOK_EVENT_ID": true
+            "PAYONE_CP_PROTOCOL_WEBHOOK_EVENT_ID": true,
+            "PAYONE_CP_PROTOCOL_WEBHOOK_DATE": true
         },
         "constraint": {
             "PRIMARY": true

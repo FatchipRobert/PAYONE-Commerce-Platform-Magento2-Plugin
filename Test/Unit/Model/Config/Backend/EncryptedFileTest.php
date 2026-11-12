@@ -186,9 +186,13 @@ class EncryptedFileTest extends TestCase
         $value = ['name' => 'key.pem', 'tmp_name' => '/var/www/key.pem', 'size' => 100, 'error' => UPLOAD_ERR_OK];
         $backend = $this->createBackend(EncryptedFile::TYPE_PRIVATE_KEY, $value);
 
-        $this->expectException(LocalizedException::class);
-        $this->expectExceptionMessage('The file key.pem could not be uploaded.');
-        $backend->beforeSave();
+        try {
+            $backend->beforeSave();
+            $this->fail('The file was accepted');
+        } catch (LocalizedException $e) {
+            $this->assertSame('The file key.pem could not be uploaded.', $e->getMessage());
+            $this->assertInstanceOf(\InvalidArgumentException::class, $e->getPrevious()); // reason of the uploader
+        }
     }
 
     public function testDeleteCheckboxRemovesTheFile(): void

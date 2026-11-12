@@ -159,7 +159,7 @@
                 <label>Logs</label>
                 <field id="retention_days" translate="label,comment" type="text" sortOrder="10" showInDefault="1">
                     <label>Delete log entries after (days)</label>
-                    <comment>API and webhook log entries contain customer data (names, addresses, contact details). Entries older than this are deleted once a day by the Magento cron. 0 = keep forever.</comment>
+                    <comment>API and webhook log entries contain customer data (names, addresses, contact details). Entries older than this are deleted once a day by the Magento cron. Minimum 30 days, 0 = keep forever.</comment>
                     <validate>validate-digits</validate>
                 </field>
             </group>
