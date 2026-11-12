@@ -199,16 +199,7 @@ define(
                     showCardholderName:true,
                     strictCardholderName:false,
                     isSecurityCodeMasked: true,
-                    allowedCardSchemes: [
-                        "visa",
-                        "mastercard",
-                        "amex",
-                        "diners",
-                        "jcb",
-                        "discover",
-                        "maestro",
-                        "unionpay",
-                    ],
+                    allowedCardSchemes: this.getFrontendConfigParam('allowedCardSchemes', []), // only brands with a PAYONE product id
                     CTPConfig: {
                         enableCTP: this.getIsCTPEnabled(),
                         enableCustomerOnboarding: this.getIsCTPRegisterEnabled(),

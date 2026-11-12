@@ -21,6 +21,7 @@ declare(strict_types=1);
 
 namespace Payone\CommercePlatform\Test\Unit\Model\Source;
 
+use Payone\CommercePlatform\Model\Method\Creditcard;
 use Payone\CommercePlatform\Model\Source\ApplePayNetworks;
 use Payone\CommercePlatform\Model\Source\ButtonTextCase;
 use Payone\CommercePlatform\Model\Source\CreditcardTypes;
@@ -68,6 +69,7 @@ class SourceModelsTest extends TestCase
             ],
             $source->toOptionArray()
         );
-        $this->assertSame(4, $source->getCreditcardTypes()['americanexpress']['cvc_length']);
+        // every brand has a card scheme of the tokenization form
+        $this->assertSame(array_keys(Creditcard::CARD_SCHEMES), self::values($source->toOptionArray()));
     }
 }

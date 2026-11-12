@@ -49,6 +49,5 @@
             <label>Sort Order</label>
             <config_path>payment/payone_cp_paypal/sort_order</config_path>
         </field>
-        <!--include path="Payone_Core::system/default_fields.xml"/-->
     </group>
 </include>

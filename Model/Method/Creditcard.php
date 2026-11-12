@@ -53,8 +53,26 @@ class Creditcard extends PayoneMethod
         'DINERS' => 132,
     ];
 
+    /**
+     * Card brands of the admin setting "types" (Model\Source\CreditcardTypes) => card scheme of the tokenization form
+     * (allowedCardSchemes) - only brands with a PAYONE payment product id in PAYMENT_PRODUCT_IDS, the form rejects all
+     * other brands
+     */
+    public const CARD_SCHEMES = [
+        'visa' => 'visa',
+        'mastercard' => 'mastercard',
+        'americanexpress' => 'amex',
+        'dinersclub' => 'diners',
+    ];
+
     protected const ADDITIONAL_DATA_KEYS = ['pseudocardpan', 'cardholder', 'cardtype', 'cardinputmode'];
     protected const MASKED_DATA_KEYS = ['pseudocardpan'];
+
+    /**
+     * Click to Pay is not offered yet: its admin fields are commented out in etc/adminhtml/system/payone_cp_creditcard.xml
+     * and the stored values are ignored. To offer it, set this to true and restore the fields.
+     */
+    private const CLICK_TO_PAY_AVAILABLE = false;
 
     /**
      * Styling of the hosted tokenization form: JS key => field in payone_cp_general/creditcard
@@ -130,9 +148,13 @@ class Creditcard extends PayoneMethod
         $code = $this->getCode();
         $config = [
             'mode' => $this->generalConfig->getEnvironment(),
-            'ctpEnabled' => $this->generalConfig->getPaymentValue($code, 'clicktopay_enabled'),
-            'ctpRegisterEnabled' => $this->generalConfig->getPaymentValue($code, 'clicktopay_register_enabled'),
-            'ctpShopName' => $this->generalConfig->getPaymentValue($code, 'clicktopay_shopname'),
+            'ctpEnabled' => self::CLICK_TO_PAY_AVAILABLE
+                ? $this->generalConfig->getPaymentValue($code, 'clicktopay_enabled') : '0',
+            'ctpRegisterEnabled' => self::CLICK_TO_PAY_AVAILABLE
+                ? $this->generalConfig->getPaymentValue($code, 'clicktopay_register_enabled') : '0',
+            'ctpShopName' => self::CLICK_TO_PAY_AVAILABLE
+                ? $this->generalConfig->getPaymentValue($code, 'clicktopay_shopname') : '',
+            'allowedCardSchemes' => $this->getAllowedCardSchemes(),
         ];
         if ($this->generalConfig->getGeneralValue('customization_enabled', 'creditcard')) {
             foreach (self::UI_CONFIG_FIELDS as $key => $field) {
@@ -141,6 +163,22 @@ class Creditcard extends PayoneMethod
         }
 
         return $config;
+    }
+
+    /**
+     * Returns the card schemes of the card brands selected in the admin, all of CARD_SCHEMES if none is selected
+     *
+     * @return string[]
+     */
+    private function getAllowedCardSchemes(): array
+    {
+        $schemes = [];
+        foreach (explode(',', (string)$this->generalConfig->getPaymentValue($this->getCode(), 'types')) as $type) {
+            if (isset(self::CARD_SCHEMES[$type])) {
+                $schemes[] = self::CARD_SCHEMES[$type];
+            }
+        }
+        return $schemes ?: array_values(self::CARD_SCHEMES);
     }
 
     /**

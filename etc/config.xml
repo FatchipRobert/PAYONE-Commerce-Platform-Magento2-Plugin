@@ -248,6 +248,8 @@
             <global>
                 <api_key></api_key>
                 <api_secret backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+            </global>
+            <ip_addresses>
                 <transmit_ip>1</transmit_ip>
                 <valid_ips><![CDATA[185.60.20.0/24
 52.57.137.71
@@ -257,16 +259,10 @@
 3.75.34.70
 3.127.45.36
 18.198.31.240]]></valid_ips>
-            </global>
-            <invoicing>
-                <transmit_enabled>1</transmit_enabled>
-            </invoicing>
+            </ip_addresses>
             <creditcard>
                 <customization_enabled>0</customization_enabled>
             </creditcard>
-            <emails>
-                <send_invoice_email>0</send_invoice_email>
-            </emails>
             <logs>
                 <retention_days>180</retention_days>
             </logs>
@@ -275,7 +271,7 @@
             <payone_cp_creditcard>
                 <clicktopay_enabled>1</clicktopay_enabled>
                 <clicktopay_register_enabled>1</clicktopay_register_enabled>
-                <mode>live</mode>
+                <types>visa,mastercard,americanexpress,dinersclub</types>
             </payone_cp_creditcard>
             <payone_cp_directdebit>
                 <creditor_id>DE98ZZZ09999999999</creditor_id>

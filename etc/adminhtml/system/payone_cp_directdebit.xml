@@ -54,28 +54,9 @@
             <label>Request BIC</label>
             <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
         </field>
-        <field id="check_bankaccount" translate="label" type="select" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Validate bank code</label>
-            <comment>Requires PAYONE Riskmanagement Module</comment>
-            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-        </field>
-        <!--field id="bankaccountcheck_type" translate="label" type="select" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Bank code validation type</label>
-            <depends>
-                <field id="check_bankaccount">1</field>
-            </depends>
-            <source_model>Payone\Core\Model\Source\BankaccountCheckType</source_model>
-        </field-->
-        <field id="message_response_blocked" translate="label" type="text" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Message to display for blocked bank accounts</label>
-            <depends>
-                <field id="check_bankaccount">1</field>
-            </depends>
-        </field>
         <field id="sepa_country" translate="label" type="multiselect" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="1">
             <label>List of supported SEPA countries</label>
             <source_model>Payone\CommercePlatform\Model\Source\SepaCountry</source_model>
         </field>
-        <!--include path="Payone_Core::system/default_fields.xml"/-->
     </group>
 </include>

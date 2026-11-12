@@ -163,7 +163,7 @@ class GeneralConfig
      */
     public function isTransmitIp(int|string|null $store = null): bool
     {
-        return (bool)$this->getGeneralValue('transmit_ip', 'global', $store);
+        return (bool)$this->getGeneralValue('transmit_ip', 'ip_addresses', $store);
     }
 
     /**
@@ -206,7 +206,7 @@ class GeneralConfig
     }
 
     /**
-     * Returns the lines of a textarea field with IPs from section payone_cp_general/global
+     * Returns the lines of a textarea field with IPs from payone_cp_general/ip_addresses
      *
      * @param string $field
      * @param int|string|null $store
@@ -215,7 +215,7 @@ class GeneralConfig
     private function getIpList(string $field, int|string|null $store): array
     {
         $ipList = [];
-        foreach (preg_split('/\R/', (string)$this->getGeneralValue($field, 'global', $store)) as $line) {
+        foreach (preg_split('/\R/', (string)$this->getGeneralValue($field, 'ip_addresses', $store)) as $line) {
             $ip = trim($line);
             if ($ip !== '') {
                 $ipList[] = $ip;

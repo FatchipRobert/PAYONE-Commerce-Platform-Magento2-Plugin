@@ -18,48 +18,36 @@
  */
 
 declare(strict_types=1);
+declare(strict_types=1);
 
 namespace Payone\CommercePlatform\Model\Source;
 
 use Magento\Framework\Data\OptionSourceInterface;
 
 /**
- * Source class for existing creditcard types
+ * Card brands of the credit card setting "types" - the keys of Creditcard::CARD_SCHEMES
  */
 class CreditcardTypes implements OptionSourceInterface
 {
-    /**
-     * Creditcard types
-     */
     private const TYPES = [
-        'visa'              => ['name' => 'Visa',                  'cardtype' => 'V', 'cvc_length' => 3],
-        'mastercard'        => ['name' => 'Mastercard',            'cardtype' => 'M', 'cvc_length' => 3],
-        'americanexpress'   => ['name' => 'American Express',      'cardtype' => 'A', 'cvc_length' => 4],
-        'dinersclub'        => ['name' => 'Diners Club',           'cardtype' => 'D', 'cvc_length' => 3],
+        'visa' => 'Visa',
+        'mastercard' => 'Mastercard',
+        'americanexpress' => 'American Express',
+        'dinersclub' => 'Diners Club',
     ];
 
     /**
-     * Return available creditcard type array
-     *
-     * @return array
-     */
-    public function getCreditcardTypes(): array
-    {
-        return self::TYPES;
-    }
-
-    /**
-     * Return existing creditcard types
+     * Return the card brands
      *
      * @return array
      */
     public function toOptionArray(): array
     {
         $options = [];
-        foreach (self::TYPES as $id => $type) {
+        foreach (self::TYPES as $id => $name) {
             $options[] = [
                 'value' => $id,
-                'label' => $type['name'],
+                'label' => $name,
             ];
         }
         return $options;

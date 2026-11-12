@@ -82,13 +82,18 @@ class CreditcardTest extends TestCase
             'payone_cp_creditcard/clicktopay_enabled' => '1',
             'payone_cp_creditcard/clicktopay_register_enabled' => '0',
             'payone_cp_creditcard/clicktopay_shopname' => 'My Shop',
+            'payone_cp_creditcard/types' => 'visa,americanexpress,jcb',
         ];
         $this->assertSame([
             'mode' => 'test',
-            'ctpEnabled' => '1',
+            'ctpEnabled' => '0', // Click to Pay not offered yet, stored values are ignored
             'ctpRegisterEnabled' => '0',
-            'ctpShopName' => 'My Shop',
+            'ctpShopName' => '',
+            'allowedCardSchemes' => ['visa', 'amex'], // unknown brands are dropped
         ], $method->getFrontendConfig());
+
+        $this->paymentValues = ['payone_cp_creditcard/types' => ''];
+        $this->assertSame(['visa', 'mastercard', 'amex', 'diners'], $method->getFrontendConfig()['allowedCardSchemes']);
 
         $this->generalValues = [
             'creditcard/customization_enabled' => '1',
@@ -100,7 +105,7 @@ class CreditcardTest extends TestCase
         $this->assertSame('Arial', $config['uiConfigFontFamily']);
         $this->assertSame('#ff0000', $config['uiConfigAccentColor']);
         $this->assertNull($config['uiConfigCardItemRadius']);
-        $this->assertCount(26, $config);
+        $this->assertCount(27, $config);
     }
 
     public static function specificInputProvider(): array
