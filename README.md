@@ -1,6 +1,51 @@
 # PAYONE COMMERCE PLATFORM FOR YOUR MAGENTO 2 SHOP
 The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYONE Commerce Platform](https://www.payone.com) API. Payments are created as commerce cases including the shopping cart, and all follow-up operations such as capture, refund and cancellation are handled directly from the Magento Admin Panel.
 
+## Requirements
+*	Magento 2.4.4 or higher
+*	PHP 8.1, 8.2, 8.3, 8.4 or 8.5
+*	A PAYONE Commerce Platform merchant account with API key and API secret
+*	Magento cron (`bin/magento cron:run`) running every minute – it starts the message queue consumer that processes the webhooks
+
+## Installation
+The installation consists of four steps. **Steps 2 and 4 are required** – without the Magento cron and the webhook in the PAYONE Commerce Portal, payments are not completed in Magento.
+
+### 1. Install the extension
+The extension is installed with Composer. Go to the installation directory of Magento 2 and run:
+
+```
+composer require <packagist-package-name>
+php bin/magento setup:upgrade
+php bin/magento setup:di:compile
+php bin/magento setup:static-content:deploy   # production mode only
+php bin/magento cache:flush
+```
+
+**Update:** `composer update <packagist-package-name>`, then the same commands as above and `php bin/magento queue:consumers:restart` (see [Webhook processing](#webhook-processing-message-queue)).
+
+### 2. Set up the Magento cron (required)
+The extension needs the Magento cron running every minute. If it is not set up yet, install it as the user that owns the Magento files:
+
+```
+php bin/magento cron:install
+```
+
+Check it with `crontab -l` (see also [Configure and run cron](https://experienceleague.adobe.com/en/docs/commerce-operations/configuration-guide/cli/configure-cron-jobs) in the Adobe Commerce documentation). The cron starts the message queue consumer that processes the webhooks of PAYONE, retries failed webhooks, checks open Pay in Store orders and cleans up the logs. **Without the cron, orders paid by credit card, PayPal, Wero, Google Pay or Apple Pay stay in *Pending Payment* and no invoices are created for automatic captures.**
+
+### 3. Enter the API credentials
+Create an API key and API secret in the PAYONE Commerce Portal under *Configuration → API Authentication*. Enter them together with your Merchant ID in Magento under *Stores → Configuration → Payone Commerce Platform → General* and choose the API environment (test or live). Then activate the payment methods (see [Configuration](#configuration)).
+
+### 4. Register the webhook in the PAYONE Commerce Portal (required)
+PAYONE reports the result of payments (e.g. after a 3-D Secure or PayPal redirect) and captures to the shop via webhooks. The webhook URL must be registered in the PAYONE Commerce Portal – separately for the test and the live environment:
+
+1. Log in to the PAYONE Commerce Portal – live: https://portal.commerce.payone.com/, test: https://portal.preprod.commerce.payone.com/ – and open *Configuration → Webhooks*.
+2. Click *Add new webhook*.
+3. Enter the webhook URL of your shop in the *URL* field: the base URL of the shop followed by `payone_cp/webhook`, e.g. `https://www.example.com/payone_cp/webhook` (if your shop URL contains `/pub/`, the webhook URL does as well).
+4. Select **all** event types: *Payments*, *Refund*, *Payout*, *Checkout*, *Commerce Case*, *Payment Execution* and *Payment Information*.
+5. Click *Submit*.
+
+One webhook URL per Magento installation is enough, also with several websites or store views. Webhooks are only accepted with a valid signature and from PAYONE's IP addresses (see [Configuration](#configuration)).
+
 ## Payment methods
 *	Credit card (Visa, Mastercard, American Express, …) via PAYONE Hosted Tokenization
 *	SEPA Direct Debit
@@ -23,18 +68,10 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 *	Status updates via webhooks, secured by HMAC signature check and an optional IP whitelist, processed asynchronously via the Magento message queue
 *	Protocol of all API calls and webhooks in the Admin Panel, with sensitive data such as IBAN and tokens masked
 
-## Requirements
-*	Magento 2.4.4 or higher
-*	PHP 8.1, 8.2, 8.3, 8.4 or 8.5
-*	A PAYONE Commerce Platform merchant account with API key and API secret
-*	Magento cron (`bin/magento cron:run`) running every minute – it starts the message queue consumer that processes the webhooks
+## Operation alongside the PAYONE module for Magento 2
+This module can be installed in the same shop as the previous PAYONE module (`payone-gmbh/magento-2`, module `Payone_Core`) with version X.Y.Z or higher. Older versions of that module change the order status of the PAYONE Commerce Platform payment methods when an order is placed, so orders paid with a redirect payment method (credit card, PayPal, Wero, Google Pay, Apple Pay) are not completed.
 
-## Installation
-*	Go to your installation directory of Magento 2 and perform the following commands
-*	`composer require payone-gmbh/commerce-platform-magento-2`
-*	`php bin/magento setup:upgrade`
-*	`php bin/magento setup:di:compile`
-*	`php bin/magento cache:clean`
+If the address check or credit rating of the previous module is active, it filters all payment methods of the checkout by the customer's score, including the PAYONE Commerce Platform payment methods. For a yellow or red score, only the payment methods selected in that module's settings *PROTECT → Credit rating → Allowed Payment-Methods for Result "YELLOW"* / *"RED"* are offered – add the PAYONE Commerce Platform payment methods there if they should remain available.
 
 ## Configuration
 *	**General settings:** *Stores → Configuration → Payone Commerce Platform → General* (or *PAYONE → Configuration → General* in the admin menu). Enter your Merchant ID, API Key and API Secret and choose the API environment (test or live).
@@ -46,8 +83,7 @@ The PAYONE Commerce Platform extension connects your Magento 2 shop to the [PAYO
 	3. Create the Apple Pay Payment Processing Certificate with the certificate signing request you receive from PAYONE customer service – PAYONE decrypts the payment data with it.
 
 	Apple Pay is offered in Safari and, through Apple's Apple Pay JS SDK, also in other browsers (payment via QR code with an iPhone). The customer confirms the payment in the Apple Pay sheet, then the order is placed with the addresses of the checkout; a 3-D Secure redirect may follow.
-*	**Webhooks:** Configure the following webhook URL for your merchant account in the PAYONE Commerce Platform:
-	`https://<your-shop-domain>/payone_cp/webhook`
+*	**Webhooks:** Register the webhook URL `https://<your-shop-domain>/payone_cp/webhook` in the PAYONE Commerce Portal (see [Installation](#4-register-the-webhook-in-the-payone-commerce-portal-required)).
 	Webhooks are only accepted with a valid signature of your API key. Additionally, only the IP addresses PAYONE sends webhooks from are accepted (setting *General → IP addresses → Valid PAYONE IPs*, prefilled with PAYONE's addresses). We recommend keeping this list active; an empty list disables the check.
 *	**Shop behind a proxy or load balancer:** enter the IP addresses of your own proxies / load balancers (e.g. Varnish, SSL terminator, CDN) in *General → IP addresses → Trusted proxies*. For requests from these addresses the client IP is taken from the `X-Forwarded-For` header – otherwise the IP of the connection is used. This IP is checked against *Valid PAYONE IPs* and sent to PAYONE with the payment (*Transmit IP address*, always for Secured Invoice / Secured Direct Debit). Without this setting every webhook is rejected with the IP of the proxy, and PAYONE gets the proxy's IP instead of the customer's (which weakens the risk check of Secured Invoice / Secured Direct Debit). If a webhook from a PAYONE IP arrives through a proxy that is not configured, the extension writes a hint with the proxy's IP to the log (`var/log/system.log`) – only enter it if it really is your own proxy.
 *	**Pay in Store:** see [Pay in Store setup](#pay-in-store-setup).
