@@ -180,9 +180,9 @@ class ResponseHandlersTest extends TestCase
 
     public function testRedirectUrlHandlerStoresUrlInCheckoutSession(): void
     {
-        $session = $this->createPartialMockWithReflection(Session::class, ['unsPayoneRedirectUrl', 'setPayoneRedirectUrl']);
-        $session->expects($this->once())->method('unsPayoneRedirectUrl');
-        $session->expects($this->once())->method('setPayoneRedirectUrl')->with('https://payone.test/3ds');
+        $session = $this->createPartialMockWithReflection(Session::class, ['unsPayoneCpRedirectUrl', 'setPayoneCpRedirectUrl']);
+        $session->expects($this->once())->method('unsPayoneCpRedirectUrl');
+        $session->expects($this->once())->method('setPayoneCpRedirectUrl')->with('https://payone.test/3ds');
 
         (new RedirectUrlHandler(new SubjectReader(), $session))->handle([], ['body' => self::ONE_STEP_RESPONSE]);
     }
@@ -199,9 +199,9 @@ class ResponseHandlersTest extends TestCase
     #[\PHPUnit\Framework\Attributes\DataProvider('noRedirectProvider')]
     public function testRedirectUrlHandlerOnlyClearsOldUrl(?array $body): void
     {
-        $session = $this->createPartialMockWithReflection(Session::class, ['unsPayoneRedirectUrl', 'setPayoneRedirectUrl']);
-        $session->expects($this->once())->method('unsPayoneRedirectUrl');
-        $session->expects($this->never())->method('setPayoneRedirectUrl');
+        $session = $this->createPartialMockWithReflection(Session::class, ['unsPayoneCpRedirectUrl', 'setPayoneCpRedirectUrl']);
+        $session->expects($this->once())->method('unsPayoneCpRedirectUrl');
+        $session->expects($this->never())->method('setPayoneCpRedirectUrl');
 
         (new RedirectUrlHandler(new SubjectReader(), $session))->handle([], $body === null ? [] : ['body' => $body]);
     }

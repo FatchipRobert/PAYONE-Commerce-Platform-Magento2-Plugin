@@ -51,12 +51,12 @@ class RedirectUrlHandler implements HandlerInterface
      */
     public function handle(array $handlingSubject, array $response): void
     {
-        $this->checkoutSession->unsPayoneRedirectUrl();
+        $this->checkoutSession->unsPayoneCpRedirectUrl();
 
         $body = $response['body'] ?? [];
         $redirectUrl = $this->subjectReader->findValue($body, 'redirectURL');
         if (!empty($this->subjectReader->findValue($body, 'paymentId')) && !empty($redirectUrl)) {
-            $this->checkoutSession->setPayoneRedirectUrl($redirectUrl);
+            $this->checkoutSession->setPayoneCpRedirectUrl($redirectUrl);
         }
     }
 }

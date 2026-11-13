@@ -17,14 +17,14 @@
  */
 -->
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
-    <route url="/V1/guest-carts/:cartId/payone-getJwt" method="POST">
+    <route url="/V1/guest-carts/:cartId/payone-cp-getJwt" method="POST">
         <service class="Payone\CommercePlatform\Api\ClickToPayInterface" method="getJwtGuest"/>
         <resources>
             <resource ref="anonymous" />
         </resources>
     </route>
 
-    <route url="/V1/carts/mine/payone-getJwt" method="POST">
+    <route url="/V1/carts/mine/payone-cp-getJwt" method="POST">
         <service class="Payone\CommercePlatform\Api\ClickToPayInterface" method="getJwt"/>
         <resources>
             <resource ref="self" />
@@ -34,14 +34,14 @@
         </data>
     </route>
 
-    <route url="/V1/guest-carts/:cartId/payone-applePaySession" method="POST">
+    <route url="/V1/guest-carts/:cartId/payone-cp-applePaySession" method="POST">
         <service class="Payone\CommercePlatform\Api\ApplePayInterface" method="getSessionGuest"/>
         <resources>
             <resource ref="anonymous" />
         </resources>
     </route>
 
-    <route url="/V1/carts/mine/payone-applePaySession" method="POST">
+    <route url="/V1/carts/mine/payone-cp-applePaySession" method="POST">
         <service class="Payone\CommercePlatform\Api\ApplePayInterface" method="getSession"/>
         <resources>
             <resource ref="self" />

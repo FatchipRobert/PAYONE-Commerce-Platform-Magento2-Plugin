@@ -31,11 +31,11 @@ define([
             cartId: quote.getQuoteId()
         };
         if (!customer.isLoggedIn()) {
-            serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/payone-getJwt', {
+            serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/payone-cp-getJwt', {
                 cartId: quote.getQuoteId()
             });
         } else {
-            serviceUrl = urlBuilder.createUrl('/carts/mine/payone-getJwt', {});
+            serviceUrl = urlBuilder.createUrl('/carts/mine/payone-cp-getJwt', {});
         }
 
         fullScreenLoader.startLoader();

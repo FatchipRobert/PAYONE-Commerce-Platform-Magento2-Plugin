@@ -30,7 +30,7 @@ define(
         /**
          * Apple Pay on the web: the payment sheet only authorizes the payment, the order is placed with the addresses
          * of the checkout. The token of the sheet (ApplePayPayment.token) is decrypted by PAYONE, the merchant
-         * validation is done by the shop (REST payone-applePaySession, Merchant Identity Certificate).
+         * validation is done by the shop (REST payone-cp-applePaySession, Merchant Identity Certificate).
          */
         return Component.extend({
             defaults: {
@@ -125,9 +125,9 @@ define(
             },
             validateMerchant: function (session, validationUrl) {
                 var self = this;
-                var serviceUrl = urlBuilder.createUrl('/carts/mine/payone-applePaySession', {});
+                var serviceUrl = urlBuilder.createUrl('/carts/mine/payone-cp-applePaySession', {});
                 if (!customer.isLoggedIn()) {
-                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/payone-applePaySession', {
+                    serviceUrl = urlBuilder.createUrl('/guest-carts/:cartId/payone-cp-applePaySession', {
                         cartId: quote.getQuoteId()
                     });
                 }

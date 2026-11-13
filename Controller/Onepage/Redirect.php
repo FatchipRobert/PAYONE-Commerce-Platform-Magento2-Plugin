@@ -48,7 +48,7 @@ class Redirect implements HttpGetActionInterface
      */
     public function execute(): RedirectResult
     {
-        $payoneRedirectUrl = (string)$this->checkoutSession->getPayoneRedirectUrl();
+        $payoneRedirectUrl = (string)$this->checkoutSession->getPayoneCpRedirectUrl();
         if ($payoneRedirectUrl !== '') {
             return $this->resultRedirectFactory->create()->setUrl($payoneRedirectUrl);
         }

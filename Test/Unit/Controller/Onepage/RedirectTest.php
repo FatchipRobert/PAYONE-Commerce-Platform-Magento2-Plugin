@@ -34,8 +34,8 @@ class RedirectTest extends TestCase
 
     private function execute(?string $redirectUrl): Redirect
     {
-        $session = $this->createPartialMockWithReflection(Session::class, ['getPayoneRedirectUrl']);
-        $session->expects($this->once())->method('getPayoneRedirectUrl')->willReturn($redirectUrl);
+        $session = $this->createPartialMockWithReflection(Session::class, ['getPayoneCpRedirectUrl']);
+        $session->expects($this->once())->method('getPayoneCpRedirectUrl')->willReturn($redirectUrl);
         $redirect = $this->createMock(Redirect::class);
         if ($redirectUrl) {
             $redirect->expects($this->once())->method('setUrl')->with($redirectUrl)->willReturnSelf();
