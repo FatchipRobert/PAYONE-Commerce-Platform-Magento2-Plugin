@@ -20,7 +20,7 @@
     <default>
         <payment>
             <payone_cp_creditcard>
-                <active>1</active>
+                <active>0</active>
                 <payment_action>authorize</payment_action>
                 <model>Payone\CommercePlatform\Model\Method\Creditcard</model>
                 <automatic_capture>0</automatic_capture>
@@ -45,7 +45,7 @@
                 <can_deny_payment>0</can_deny_payment>
             </payone_cp_creditcard>
             <payone_cp_directdebit>
-                <active>1</active>
+                <active>0</active>
                 <payment_action>authorize</payment_action>
                 <model>Payone\CommercePlatform\Model\Method\DirectDebit</model>
                 <title>PAYONE Direct Debit</title>
@@ -68,7 +68,7 @@
                 <can_deny_payment>0</can_deny_payment>
             </payone_cp_directdebit>
             <payone_cp_paypal>
-                <active>1</active>
+                <active>0</active>
                 <payment_action>authorize</payment_action>
                 <model>Payone\CommercePlatform\Model\Method\PayPal</model>
                 <automatic_capture>0</automatic_capture>
@@ -118,7 +118,7 @@
                 <can_deny_payment>0</can_deny_payment>
             </payone_cp_wero>
             <payone_cp_googlepay>
-                <active>1</active>
+                <active>0</active>
                 <payment_action>authorize</payment_action>
                 <model>Payone\CommercePlatform\Model\Method\GooglePay</model>
                 <automatic_capture>0</automatic_capture>
