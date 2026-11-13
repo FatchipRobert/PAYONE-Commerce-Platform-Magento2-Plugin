@@ -46,8 +46,8 @@ class PaymentInstructions extends Info
         self::KEY_PAYEE_NAME => 'Account holder',
         self::KEY_PAYEE_IBAN => 'IBAN',
         self::KEY_PAYEE_BIC => 'BIC',
-        self::KEY_REFERENCE_NUMBER => 'Payment reference',
-        self::KEY_DUE_DATE => 'Due date',
+        self::KEY_REFERENCE_NUMBER => 'Transfer reference',
+        self::KEY_DUE_DATE => 'Payment due date',
     ];
 
     /**

@@ -60,7 +60,7 @@ define(
                     return false;
                 }
                 if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{10,30}$/.test(this.getCleanedIban())) {
-                    this.messageContainer.addErrorMessage({'message': $t('Please enter a valid IBAN.')});
+                    this.messageContainer.addErrorMessage({'message': $t('The IBAN is not valid.')});
                     return false;
                 }
                 return this._super();

@@ -56,7 +56,7 @@ define(
                     return false;
                 }
                 if (this.iban() == '') {
-                    this.messageContainer.addErrorMessage({'message': $t('Please enter a valid IBAN.')});
+                    this.messageContainer.addErrorMessage({'message': $t('The IBAN is not valid.')});
                     return false;
                 }
                 if (this.accountholder() == '') {

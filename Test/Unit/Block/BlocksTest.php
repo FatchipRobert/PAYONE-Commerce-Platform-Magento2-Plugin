@@ -77,8 +77,8 @@ class BlocksTest extends TestCase
         $this->assertSame([
             'Account holder' => 'PAYONE GmbH',
             'IBAN' => 'DE00123',
-            'Payment reference' => 'REF1',
-            'Due date' => '03.12.2026|'.\IntlDateFormatter::MEDIUM.'|'.\IntlDateFormatter::NONE.'|UTC',
+            'Transfer reference' => 'REF1',
+            'Payment due date' => '03.12.2026|'.\IntlDateFormatter::MEDIUM.'|'.\IntlDateFormatter::NONE.'|UTC',
         ], $block->getSpecificInformation());
     }
 
@@ -89,7 +89,7 @@ class BlocksTest extends TestCase
         $info = $this->createPartialStub(Info::class);
         $info->setAdditionalInformation(PaymentInstructions::KEY_DUE_DATE, '2026-12-03');
         $block->setInfo($info);
-        $this->assertSame(['Due date' => '2026-12-03'], $block->getSpecificInformation());
+        $this->assertSame(['Payment due date' => '2026-12-03'], $block->getSpecificInformation());
 
         $block = new PaymentInstructions($context);
         $block->setInfo($this->createPartialStub(Info::class));
