@@ -287,7 +287,7 @@ class Returned implements HttpGetActionInterface, HttpPostActionInterface, CsrfA
         $this->cancelOrderAndRestoreQuote($order);
         // The checkout page does not render session messages (page.messages is removed in checkout_index_index.xml),
         // so the message is handed to the checkout JS via ConfigProvider
-        $this->checkoutSession->setPayoneCpCheckoutErrorMessage((string)__('The payment has been cancelled.'));
+        $this->checkoutSession->setPayoneCpCheckoutErrorMessage((string)__('The payment could not be completed. Please try again or choose another payment method.'));
         return $this->resultRedirectFactory->create()->setPath('checkout', ['_fragment' => 'payment']);
     }
 

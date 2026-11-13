@@ -187,7 +187,7 @@ class ReturnedTest extends TestCase
         $this->order->expects($this->once())->method('cancel');
         $this->orderRepository->expects($this->once())->method('save')->with($this->order);
         $this->session->expects($this->once())->method('restoreQuote');
-        $this->session->expects($this->once())->method('setPayoneCpCheckoutErrorMessage')->with('The payment has been cancelled.');
+        $this->session->expects($this->once())->method('setPayoneCpCheckoutErrorMessage')->with('The payment could not be completed. Please try again or choose another payment method.');
         $this->redirect->expects($this->once())->method('setPath')->with('checkout', ['_fragment' => 'payment'])->willReturnSelf();
     }
 
@@ -310,7 +310,7 @@ class ReturnedTest extends TestCase
         $this->canCancel = false;
         $this->order->expects($this->never())->method('cancel');
         $this->session->expects($this->once())->method('restoreQuote');
-        $this->session->expects($this->once())->method('setPayoneCpCheckoutErrorMessage')->with('The payment has been cancelled.');
+        $this->session->expects($this->once())->method('setPayoneCpCheckoutErrorMessage')->with('The payment could not be completed. Please try again or choose another payment method.');
         $this->redirect->expects($this->once())->method('setPath')->with('checkout', ['_fragment' => 'payment'])->willReturnSelf();
 
         $this->controller->execute();

@@ -63,7 +63,7 @@ class ConfigProviderTest extends TestCase
         $escaper->method('escapeHtml')->willReturnCallback(static fn ($value) => htmlspecialchars((string)$value));
         $session = $this->createMock(Session::class);
         $session->expects($this->once())->method('getData')->with('payone_cp_checkout_error_message', true)
-            ->willReturn('The payment has been cancelled.');
+            ->willReturn('The payment could not be completed. Please try again or choose another payment method.');
         $generalConfig = $this->createStub(GeneralConfig::class);
         $generalConfig->method('getEnvironment')->willReturn('test');
         $generalConfig->method('getLocale')->willReturn('de_DE');
@@ -74,7 +74,7 @@ class ConfigProviderTest extends TestCase
             'payone_cp' => [
                 'mode' => 'test',
                 'fullLocale' => 'de_DE',
-                'checkoutErrorMessage' => 'The payment has been cancelled.',
+                'checkoutErrorMessage' => 'The payment could not be completed. Please try again or choose another payment method.',
                 Payone::METHOD_DIRECT_DEBIT => ['requestBic' => true],
             ],
             'instructions' => [
