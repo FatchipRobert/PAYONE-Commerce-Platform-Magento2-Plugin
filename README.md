@@ -69,7 +69,7 @@ One webhook URL per Magento installation is enough, also with several websites o
 *	Protocol of all API calls and webhooks in the Admin Panel, with sensitive data such as IBAN and tokens masked
 
 ## Operation alongside the PAYONE module for Magento 2
-This module can be installed in the same shop as the previous PAYONE module (`payone-gmbh/magento-2`, module `Payone_Core`) with version X.Y.Z or higher. Older versions of that module change the order status of the PAYONE Commerce Platform payment methods when an order is placed, so orders paid with a redirect payment method (credit card, PayPal, Wero, Google Pay, Apple Pay) are not completed.
+This module can be installed in the same shop as the previous PAYONE module (`payone-gmbh/magento-2`, module `Payone_Core`) with version 3.17.3 or higher. Older versions of that module change the order status of the PAYONE Commerce Platform payment methods when an order is placed, so orders paid with a redirect payment method (credit card, PayPal, Wero, Google Pay, Apple Pay) are not completed.
 
 If the address check or credit rating of the previous module is active, it filters all payment methods of the checkout by the customer's score, including the PAYONE Commerce Platform payment methods. For a yellow or red score, only the payment methods selected in that module's settings *PROTECT → Credit rating → Allowed Payment-Methods for Result "YELLOW"* / *"RED"* are offered – add the PAYONE Commerce Platform payment methods there if they should remain available.
 
